@@ -2,16 +2,20 @@
 	import { type Snippet } from 'svelte';
 
 	interface Props {
-		variant?: 'primary' | 'secondary' | 'accent' | 'success' | 'warning' | 'error' | 'coming-soon' | 'section';
+		variant?:
+			| 'primary'
+			| 'secondary'
+			| 'accent'
+			| 'success'
+			| 'warning'
+			| 'error'
+			| 'coming-soon'
+			| 'section';
 		class?: string;
 		children?: Snippet;
 	}
 
-	let {
-		variant = 'accent',
-		class: className = '',
-		children
-	}: Props = $props();
+	let { variant = 'accent', class: className = '', children }: Props = $props();
 </script>
 
 <span class="badge badge-{variant} {className}">
@@ -50,7 +54,7 @@
 		font-size: 0.85rem;
 		margin-bottom: 1.5rem;
 	}
-	
+
 	:global([data-theme='dark']) .badge-section {
 		background: rgba(255, 255, 255, 0.05);
 		color: var(--color-white);

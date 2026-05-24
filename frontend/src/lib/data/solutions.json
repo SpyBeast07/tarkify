@@ -1,0 +1,162 @@
+[
+	{
+		"id": "devbeast",
+		"title": "DevBeast",
+		"badge": "DevOps Control Plane",
+		"description": "A local-first DevOps control plane that gives developers structural visibility and high-speed control over their entire development stack.",
+		"price": "₹29",
+		"priceDetail": "per dev / month",
+		"iconName": "Terminal",
+		"githubUrl": "https://github.com/IshitaAgarwal05/devbeast",
+		"about": "DevBeast is a local-first DevOps control plane that gives developers structural visibility and high-speed control over their entire development stack — containers, databases, and services — in a single pane of glass.",
+		"problem": {
+			"title": "Modern development requires juggling multiple fragmented tools:",
+			"points": [
+				"Portainer / Docker Desktop for managing containers and volumes.",
+				"pgAdmin / Adminer / DBeaver for database structural inspection and querying.",
+				"Scattered terminals for log streams, command runs, and open ports.",
+				"Mental mapping of network dependencies and database connections."
+			]
+		},
+		"whyUs": {
+			"title": "The Developer-Trust-First Approach",
+			"points": [
+				{
+					"title": "Unified Visibility",
+					"description": "See your entire infrastructure in a single pane of glass."
+				},
+				{
+					"title": "Architectural Intelligence",
+					"description": "Identify performance hotspots and structural volatility through manual, advisory-only insights."
+				},
+				{
+					"title": "Transparent Execution",
+					"description": "No background \"smart\" loops. All schema migrations and optimizations are manual, explicit, and developer-verified."
+				},
+				{
+					"title": "High-Speed Control",
+					"description": "Kill ports, restart containers, and restore backups in seconds."
+				}
+			]
+		},
+		"pillars": [
+			{
+				"title": "Architecture",
+				"subtitle": "Performance Insights",
+				"description": "View aggregated performance patterns and structural volatility. Identify the slowest queries and most-impacted tables across your last 100 executions without background telemetry.",
+				"iconName": "Cpu"
+			},
+			{
+				"title": "Auditor",
+				"subtitle": "Audit & Migrations",
+				"description": "Manual structural comparative analysis. Review schema diffs and preview migration SQL with explicit risk indicators before applying changes.",
+				"iconName": "ShieldAlert"
+			},
+			{
+				"title": "History",
+				"subtitle": "Audit Logs",
+				"description": "A transparent, searchable record of every segment executed. Audit execution times, affected rows, and table-level impact to debug regressions fast.",
+				"iconName": "History"
+			},
+			{
+				"title": "Library",
+				"subtitle": "Snippets",
+				"description": "A collection of SQL utility assets and favorites. Quickly re-use complex queries or structural templates without leaving the workspace.",
+				"iconName": "FolderCode"
+			}
+		],
+		"workflows": [
+			{
+				"title": "Debug a Broken API",
+				"iconName": "Bug",
+				"steps": [
+					"Click on a failed service in the topological graph layout.",
+					"Instantly view the connected databases and specific schemas.",
+					"Trace network mappings and dependent tables.",
+					"Identify failing query paths via visual trace context."
+				]
+			},
+			{
+				"title": "Safe Schema Changes",
+				"iconName": "ShieldCheck",
+				"steps": [
+					"Propose your schema modification (e.g. ALTER TABLE or DROP).",
+					"View the computed Blast Radius showing affected services and downstream containers.",
+					"Review Optimization Insights: copy manual SQL suggestions (Add Index, Analyze) directly to editor."
+				]
+			},
+			{
+				"title": "Reset & Recover Fast",
+				"iconName": "RefreshCw",
+				"steps": [
+					"Create idempotent backups with a single click before risky refactoring.",
+					"Wipe the public schema completely if structural collisions occur.",
+					"Reseed clean test data instantly via the Docker-based runner."
+				]
+			}
+		],
+		"comparison": {
+			"headers": ["Problem / Metric", "Existing Tools", "DevBeast"],
+			"rows": [
+				["Full Stack Visibility", "Fragmented (Portainer + pgAdmin)", "Unified Pane of Glass"],
+				["Dependency Mapping", "Manual / Mental mapping", "Live Topological Graph"],
+				["Optimization", "Advisory but Clunky", "Manual-Action Advisory (Copy/Send)"],
+				["Recovery", "Complex manual dumps & imports", "One-Click Snapshots"],
+				["Context Switching", "Highly required across tools", "Completely Eliminated"]
+			]
+		},
+		"techStack": [
+			{
+				"category": "Frontend",
+				"technologies": [
+					"SvelteKit (Svelte 5 Runes)",
+					"Tailwind CSS v4",
+					"CodeMirror 6",
+					"Vis-Network"
+				]
+			},
+			{
+				"category": "Backend",
+				"technologies": ["Python", "FastAPI", "Psycopg2", "Pandas", "PyDBML"]
+			},
+			{
+				"category": "Execution Engine",
+				"technologies": ["Local Docker Engine", "Subprocess Wrapper"]
+			}
+		],
+		"features": [
+			"Unified container, port & database dashboard",
+			"Live topological dependency graph",
+			"Risk-aware SQL impact analysis (Blast Radius)",
+			"Idempotent backup & restore with one click"
+		]
+	},
+	{
+		"id": "legal-redline",
+		"title": "Legal Redline",
+		"badge": "Legal AI",
+		"description": "AI-powered contract review and redlining tool that automatically flags risk, suggests compliant clauses, and accelerates negotiations.",
+		"iconName": "Shield",
+		"features": [
+			"Automated contract risk assessment",
+			"Context-aware clause compliance recommendations",
+			"SaaS legal playbook alignment engine",
+			"Real-time collaborative editing & change logs"
+		],
+		"comingSoon": true
+	},
+	{
+		"id": "em-sme",
+		"title": "EM SME",
+		"badge": "Engineering Management AI",
+		"description": "Your automated Engineering Management Subject Matter Expert. Streamline sprint planning, analyze commit velocity, and resolve blocks.",
+		"iconName": "Cpu",
+		"features": [
+			"Sprint commitment risk prediction metrics",
+			"Commit & PR velocity pattern matching",
+			"AI-guided blocker & dependency resolution recommendations",
+			"Automated daily standup summary generator"
+		],
+		"comingSoon": true
+	}
+]

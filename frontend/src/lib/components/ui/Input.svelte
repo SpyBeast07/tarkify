@@ -4,6 +4,7 @@
 
 	interface Props {
 		type?: 'text' | 'email' | 'password' | 'textarea' | 'select' | 'tel' | 'url' | 'number';
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		value: any;
 		label?: string;
 		placeholder?: string;
@@ -56,17 +57,10 @@
 				{required}
 				{rows}
 				bind:value
-				class={error ? 'input-error' : ''}
-			></textarea>
+				class={error ? 'input-error' : ''}></textarea>
 		{:else if type === 'select'}
-			<select
-				{id}
-				{name}
-				{required}
-				bind:value
-				class={error ? 'input-error' : ''}
-			>
-				{#each options as option}
+			<select {id} {name} {required} bind:value class={error ? 'input-error' : ''}>
+				{#each options as option (typeof option === 'string' ? option : option.value)}
 					{#if typeof option === 'string'}
 						<option value={option}>{option}</option>
 					{:else}

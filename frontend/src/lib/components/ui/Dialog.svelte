@@ -47,8 +47,6 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <dialog
 	bind:this={dialogEl}
 	class="dialog-element glass"
@@ -86,7 +84,9 @@
 		max-width: 450px;
 		width: calc(100% - 2rem);
 		color: var(--color-text);
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+		box-shadow:
+			0 20px 25px -5px rgba(0, 0, 0, 0.1),
+			0 10px 10px -5px rgba(0, 0, 0, 0.04);
 		background: var(--color-glass-bg);
 		backdrop-filter: var(--glass-blur);
 	}

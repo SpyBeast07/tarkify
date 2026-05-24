@@ -16,7 +16,8 @@
 	// Page route transition scroll-reset (equivalent to React's App.tsx scrollTo)
 	$effect(() => {
 		// Read page store to track pathname changes
-		const path = $page.url.pathname;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const pathname = $page.url.pathname;
 		if (typeof window !== 'undefined') {
 			window.scrollTo(0, 0);
 		}

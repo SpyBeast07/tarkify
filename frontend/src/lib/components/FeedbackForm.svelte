@@ -3,6 +3,8 @@
 	import { Star, Send, User, Mail, CheckCircle, AlertCircle, MessageSquare } from '@lucide/svelte';
 	import Input from './ui/Input.svelte';
 	import Loading from './ui/Loading.svelte';
+	import { validateRequired, validateEmail } from '$lib/utils/validation';
+	import { submitFeedback } from '$lib/api/client';
 
 	let formData = $state({
 		firstName: '',
@@ -18,19 +20,9 @@
 	let errors = $state<Record<string, string>>({});
 	let hoverRating = $state<number | null>(null);
 
-	const products = [
-		'DevBeast',
-		'Legal Redline',
-		'EM SME',
-		'General Website / Other'
-	];
+	const products = ['DevBeast', 'Legal Redline', 'EM SME', 'General Website / Other'];
 
-	const feedbackTypes = [
-		'Bug Report',
-		'Feature Request',
-		'General Feedback',
-		'UI/UX Suggestion'
-	];
+	const feedbackTypes = ['Bug Report', 'Feature Request', 'General Feedback', 'UI/UX Suggestion'];
 
 	const ratingLabels: Record<number, string> = {
 		1: 'Needs Improvement 😠',
@@ -49,16 +41,16 @@
 
 	function validate() {
 		const newErrors: Record<string, string> = {};
-		if (!formData.firstName.trim()) newErrors.firstName = 'Required';
-		if (!formData.lastName.trim()) newErrors.lastName = 'Required';
-		
-		if (!formData.email.trim()) {
+		if (!validateRequired(formData.firstName)) newErrors.firstName = 'Required';
+		if (!validateRequired(formData.lastName)) newErrors.lastName = 'Required';
+
+		if (!validateRequired(formData.email)) {
 			newErrors.email = 'Required';
-		} else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+		} else if (!validateEmail(formData.email)) {
 			newErrors.email = 'Invalid email';
 		}
-		
-		if (!formData.message.trim()) newErrors.message = 'Required';
+
+		if (!validateRequired(formData.message)) newErrors.message = 'Required';
 		if (formData.rating < 1 || formData.rating > 5) newErrors.rating = 'Please select a rating';
 
 		errors = newErrors;
@@ -72,11 +64,7 @@
 		status = 'loading';
 
 		try {
-			const response = await fetch('/api/feedback', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(formData)
-			});
+			const response = await submitFeedback(formData);
 
 			if (response.ok) {
 				status = 'success';
@@ -89,8 +77,9 @@
 					rating: 5,
 					message: ''
 				};
+
 				// Reset form state to idle after 6 seconds
-				setTimeout(() => status = 'idle', 6000);
+				setTimeout(() => (status = 'idle'), 6000);
 			} else {
 				status = 'error';
 			}
@@ -107,51 +96,43 @@
 			<span class="section-badge">Product Feedback</span>
 			<h1>Help Us <span class="text-accent-green">Optimize</span> Tarkify</h1>
 			<p class="section-subtext" style="max-width: 600px; margin: 0 auto;">
-				Encountered a bug, have a feature request, or want to suggest UI improvements? 
-				Share your feedback to help us build a better platform.
+				Encountered a bug, have a feature request, or want to suggest UI improvements? Share your
+				feedback to help us build a better platform.
 			</p>
 		</div>
 
 		<div class="feedback-container">
-			<div
-				class="contact-form-card feedback-form-card"
-				style="padding: 3rem; border-radius: 3rem;"
-			>
+			<div class="contact-form-card feedback-form-card" style="padding: 3rem; border-radius: 3rem;">
 				{#if status === 'success'}
-					<div
-						class="feedback-status-success text-center py-8"
-						transition:fade={{ duration: 300 }}
-					>
+					<div class="feedback-status-success text-center py-8" transition:fade={{ duration: 300 }}>
 						<div class="success-icon-wrapper mb-6 flex justify-center">
 							<CheckCircle size={64} class="text-accent-green" />
 						</div>
 						<h2 class="mb-4">Thank You!</h2>
 						<p class="text-lg opacity-85 mb-8 max-w-md mx-auto">
-							Your feedback has been successfully submitted. We review every submission closely to keep improving Tarkify.
+							Your feedback has been successfully submitted. We review every submission closely to
+							keep improving Tarkify.
 						</p>
-						<button 
-							onclick={() => status = 'idle'} 
-							class="btn btn-secondary"
-						>
+						<button onclick={() => (status = 'idle')} class="btn btn-secondary">
 							Submit Another Response
 						</button>
 					</div>
 				{:else}
 					<form onsubmit={handleSubmit} novalidate>
 						<div class="form-row mb-6">
-							<Input 
-								label="First Name" 
+							<Input
+								label="First Name"
 								name="firstName"
-								placeholder="John" 
+								placeholder="John"
 								bind:value={formData.firstName}
 								error={errors.firstName}
 								icon={User}
 								required
 							/>
-							<Input 
-								label="Last Name" 
+							<Input
+								label="Last Name"
 								name="lastName"
-								placeholder="Doe" 
+								placeholder="Doe"
 								bind:value={formData.lastName}
 								error={errors.lastName}
 								icon={User}
@@ -159,11 +140,11 @@
 							/>
 						</div>
 
-						<Input 
-							label="Email Address" 
+						<Input
+							label="Email Address"
 							name="email"
 							type="email"
-							placeholder="john@example.com" 
+							placeholder="john@example.com"
 							bind:value={formData.email}
 							error={errors.email}
 							icon={Mail}
@@ -172,16 +153,16 @@
 						/>
 
 						<div class="form-row mb-6">
-							<Input 
-								label="Select Product" 
+							<Input
+								label="Select Product"
 								name="product"
 								type="select"
 								options={products}
 								bind:value={formData.product}
 								icon={MessageSquare}
 							/>
-							<Input 
-								label="Feedback Category" 
+							<Input
+								label="Feedback Category"
 								name="feedbackType"
 								type="select"
 								options={feedbackTypes}
@@ -193,21 +174,27 @@
 						<!-- Star Rating Section -->
 						<div class="form-group mb-8">
 							<label class="form-label" for="star-rating">Rating</label>
-							<div id="star-rating" class="feedback-rating-container flex flex-col sm:flex-row sm:items-center gap-4">
+							<div
+								id="star-rating"
+								class="feedback-rating-container flex flex-col sm:flex-row sm:items-center gap-4"
+							>
 								<div class="flex items-center gap-2 feedback-stars">
-									{#each [1, 2, 3, 4, 5] as index}
-										{@const isFilled = hoverRating !== null ? index <= hoverRating : index <= formData.rating}
+									{#each [1, 2, 3, 4, 5] as index (index)}
+										{@const isFilled =
+											hoverRating !== null ? index <= hoverRating : index <= formData.rating}
 										<button
 											type="button"
 											onclick={() => handleRatingSelect(index)}
-											onmouseenter={() => hoverRating = index}
-											onmouseleave={() => hoverRating = null}
+											onmouseenter={() => (hoverRating = index)}
+											onmouseleave={() => (hoverRating = null)}
 											class="rating-star-btn focus:outline-none"
 											style="background: none; border: none; padding: 0.25rem; cursor: pointer;"
 										>
-											<Star 
+											<Star
 												size={32}
-												class="transition-all duration-200 {isFilled ? 'text-accent-green fill-accent-green star-filled-glow' : 'text-gray-400 opacity-40'}"
+												class="transition-all duration-200 {isFilled
+													? 'text-accent-green fill-accent-green star-filled-glow'
+													: 'text-gray-400 opacity-40'}"
 											/>
 										</button>
 									{/each}
@@ -221,11 +208,11 @@
 							{/if}
 						</div>
 
-						<Input 
-							label="How can we improve?" 
+						<Input
+							label="How can we improve?"
 							name="message"
 							type="textarea"
-							placeholder="Provide detailed feedback, steps to reproduce a bug, or features you would like to see..." 
+							placeholder="Provide detailed feedback, steps to reproduce a bug, or features you would like to see..."
 							rows={5}
 							bind:value={formData.message}
 							error={errors.message}
@@ -234,8 +221,8 @@
 							required
 						/>
 
-						<button 
-							type="submit" 
+						<button
+							type="submit"
 							class="btn btn-submit w-full py-4 flex items-center justify-center gap-3"
 							disabled={status === 'loading'}
 						>
@@ -249,7 +236,7 @@
 						</button>
 
 						{#if status === 'error'}
-							<div 
+							<div
 								class="error-banner mt-6 flex items-center gap-2 text-red-500 bg-red-500/10 p-4 rounded-xl border border-red-500/20"
 								transition:slide
 							>
@@ -271,7 +258,7 @@
 		margin-top: 0.25rem;
 		display: block;
 	}
-	
+
 	:global(.feedback-stars button) {
 		outline: none;
 	}

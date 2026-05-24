@@ -42,19 +42,19 @@
 			{/if}
 		</div>
 	{/if}
-	
+
 	<h3>
 		{title}
 		{#if comingSoon}
 			<span class="coming-soon-badge">Soon</span>
 		{/if}
 	</h3>
-	
+
 	<p class="product-description">{description}</p>
-	
+
 	{#if features && features.length > 0}
 		<ul class="product-features">
-			{#each features as feature}
+			{#each features as feature, index (`${feature}-${index}`)}
 				<li class="product-feature-item">
 					<span class="feature-dot"></span>
 					<span>{feature}</span>
@@ -62,9 +62,9 @@
 			{/each}
 		</ul>
 	{/if}
-	
-	<button 
-		class="btn product-btn {comingSoon ? 'btn-secondary btn-disabled' : 'btn-primary'}" 
+
+	<button
+		class="btn product-btn {comingSoon ? 'btn-secondary btn-disabled' : 'btn-primary'}"
 		onclick={comingSoon ? undefined : onButtonClick}
 		disabled={comingSoon}
 	>

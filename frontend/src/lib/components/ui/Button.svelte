@@ -27,7 +27,9 @@
 {#if href}
 	<a
 		{href}
-		class="btn btn-{variant} {size === 'sm' ? 'btn-sm' : size === 'lg' ? 'btn-lg' : ''} {disabled ? 'btn-disabled' : ''} {className}"
+		class="btn btn-{variant} {size === 'sm' ? 'btn-sm' : size === 'lg' ? 'btn-lg' : ''} {disabled
+			? 'btn-disabled'
+			: ''} {className}"
 		role="button"
 		aria-disabled={disabled}
 		onclick={(e) => {
@@ -45,7 +47,9 @@
 {:else}
 	<button
 		{type}
-		class="btn btn-{variant} {size === 'sm' ? 'btn-sm' : size === 'lg' ? 'btn-lg' : ''} {disabled ? 'btn-disabled' : ''} {className}"
+		class="btn btn-{variant} {size === 'sm' ? 'btn-sm' : size === 'lg' ? 'btn-lg' : ''} {disabled
+			? 'btn-disabled'
+			: ''} {className}"
 		{disabled}
 		{onclick}
 	>

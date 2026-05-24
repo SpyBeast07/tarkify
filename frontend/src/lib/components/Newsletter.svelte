@@ -42,7 +42,13 @@
 						class="btn btn-submit newsletter-btn"
 						disabled={status === 'loading'}
 					>
-						<span>{status === 'success' ? 'Joined!' : status === 'loading' ? 'Joining...' : 'Subscribe'}</span>
+						<span
+							>{status === 'success'
+								? 'Joined!'
+								: status === 'loading'
+									? 'Joining...'
+									: 'Subscribe'}</span
+						>
 						<Send size={15} />
 					</button>
 				</div>

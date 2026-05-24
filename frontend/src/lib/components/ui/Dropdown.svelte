@@ -62,15 +62,12 @@
 	{/if}
 
 	{#if isOpen}
-		<div
-			class="dropdown-menu glass menu-align-{align}"
-			transition:fly={{ y: -10, duration: 200 }}
-		>
+		<div class="dropdown-menu glass menu-align-{align}" transition:fly={{ y: -10, duration: 200 }}>
 			{#if children}
 				{@render children()}
 			{:else}
 				<ul class="dropdown-list">
-					{#each items as item}
+					{#each items as item, index (`${item.label}-${index}`)}
 						<li>
 							{#if item.href}
 								<a
@@ -130,7 +127,9 @@
 		min-width: 180px;
 		border-radius: 12px;
 		z-index: 1000;
-		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+		box-shadow:
+			0 10px 15px -3px rgba(0, 0, 0, 0.1),
+			0 4px 6px -2px rgba(0, 0, 0, 0.05);
 		overflow: hidden;
 		padding: 0.35rem 0;
 	}

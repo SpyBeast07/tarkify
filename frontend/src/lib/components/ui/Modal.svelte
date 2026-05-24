@@ -47,11 +47,7 @@
 	<!-- Backdrop -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div
-		class="modal-backdrop"
-		transition:fade={{ duration: 200 }}
-		onclick={handleBackdropClick}
-	>
+	<div class="modal-backdrop" transition:fade={{ duration: 200 }} onclick={handleBackdropClick}>
 		<!-- Modal Content Sheet -->
 		<div
 			class="modal-card glass {className}"
