@@ -1,0 +1,354 @@
+<script lang="ts">
+	import { slide, fly } from 'svelte/transition';
+	import {
+		Briefcase,
+		MapPin,
+		Clock,
+		Send,
+		Loader2,
+		CheckCircle,
+		AlertCircle,
+		Link as LinkIcon,
+		User,
+		Mail,
+		Phone,
+		ChevronDown
+	} from '@lucide/svelte';
+	import Newsletter from '$lib/components/Newsletter.svelte';
+
+	const OPEN_ROLES = ['Full Stack Developer'];
+
+	let jobOpen = $state(false);
+
+	let formData = $state({
+		name: '',
+		email: '',
+		phone: '',
+		role: '',
+		cvLink: '',
+		linkedin: '',
+		portfolio: '',
+		message: ''
+	});
+	let status = $state<'idle' | 'loading' | 'success' | 'error'>('idle');
+	let formErrors = $state<string[]>([]);
+
+	function handleChange(
+		e: Event & { currentTarget: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement }
+	) {
+		const target = e.currentTarget;
+		formData = { ...formData, [target.name]: target.value };
+		if (formErrors.length > 0) formErrors = [];
+	}
+
+	const validate = (): string[] => {
+		const errors: string[] = [];
+		if (!formData.role) errors.push('Please select a role.');
+		if (!formData.name.trim()) errors.push('Full Name is required.');
+		if (!formData.email.trim()) errors.push('Email Address is required.');
+		else if (!/\S+@\S+\.\S+/.test(formData.email))
+			errors.push('Please enter a valid email address.');
+		if (!formData.phone.trim()) errors.push('Phone Number is required.');
+		if (!formData.cvLink.trim()) errors.push('Resume / CV link is required.');
+		if (!formData.linkedin.trim()) errors.push('LinkedIn URL is required.');
+		if (!formData.portfolio.trim()) errors.push('Portfolio / GitHub link is required.');
+		if (!formData.message.trim()) errors.push('Cover Message is required.');
+		return errors;
+	};
+
+	function handleSubmit(e: SubmitEvent) {
+		e.preventDefault();
+		const errors = validate();
+		if (errors.length > 0) {
+			formErrors = errors;
+			return;
+		}
+		status = 'loading';
+		formErrors = [];
+		setTimeout(() => {
+			status = 'success';
+			formData = {
+				name: '',
+				email: '',
+				phone: '',
+				role: '',
+				cvLink: '',
+				linkedin: '',
+				portfolio: '',
+				message: ''
+			};
+			setTimeout(() => (status = 'idle'), 5000);
+		}, 1500);
+	}
+</script>
+
+<svelte:head>
+	<title>Careers | Join the Automation Revolution</title>
+	<meta
+		name="description"
+		content="Build the future of AI automation with Tarkify. We are hiring passionate engineers and innovators."
+	/>
+</svelte:head>
+
+<div class="careers-page pt-32 pb-20">
+	<div class="container">
+		<!-- Hero -->
+		<div transition:fly={{ y: 20, duration: 400 }} class="careers-hero mb-16">
+			<span class="section-badge">Join the Team</span>
+			<h1>Build the future of <span class="text-accent-green">automation</span>.</h1>
+			<p>
+				We are on a mission to simplify life by automating complex workflows. If you're passionate
+				about AI, developer tools, and scalable architecture, you belong here.
+			</p>
+		</div>
+
+		<!-- Two-column: Open Roles + Apply Form -->
+		<div class="careers-layout">
+			<!-- LEFT: Open Positions -->
+			<div transition:fly={{ x: -20, duration: 400, delay: 100 }}>
+				<h2 class="text-2xl font-bold mb-6 font-heading">Open Positions</h2>
+
+				<div class="job-card-collapse glass">
+					<button
+						class="job-card-header w-full text-left"
+						onclick={() => (jobOpen = !jobOpen)}
+						aria-expanded={jobOpen}
+					>
+						<div class="job-card-header-left">
+							<span class="job-card-title">Full Stack Developer</span>
+							<div class="job-meta mt-3">
+								<span class="job-meta-tag"><Clock size={13} /> 0–1 Years</span>
+								<span class="job-meta-tag"><MapPin size={13} /> Remote / Jaipur</span>
+								<span class="job-meta-tag"><Briefcase size={13} /> Full-Time</span>
+							</div>
+						</div>
+						<div class="job-card-chevron" class:open={jobOpen}>
+							<ChevronDown size={20} />
+						</div>
+					</button>
+
+					{#if jobOpen}
+						<div transition:slide={{ duration: 400 }} class="overflow-hidden">
+							<div class="job-card-body">
+								<div class="job-body">
+									<div class="job-section pt-5">
+										<h3>Role Overview</h3>
+										<p>
+											As a Full Stack Developer at Tarkify, you will build the interfaces and
+											backend systems that power our next-generation AI agents and developer tools
+											like DevBeast and EM SME.
+										</p>
+									</div>
+									<div class="job-section">
+										<h3>Responsibilities</h3>
+										<ul>
+											<li>
+												Develop modern, responsive web apps using React, Vite, and TypeScript.
+											</li>
+											<li>Build scalable backend APIs using Node.js and Express/FastAPI.</li>
+											<li>Integrate complex AI models and LLM APIs into user-facing features.</li>
+											<li>Design and implement database schemas (PostgreSQL/Supabase).</li>
+											<li>Write clean, maintainable, and well-documented code.</li>
+										</ul>
+									</div>
+									<div class="job-section">
+										<h3>Requirements</h3>
+										<ul>
+											<li>0–1 years of experience (strong portfolio required).</li>
+											<li>Proficiency in React.js, TypeScript, and CSS.</li>
+											<li>Experience with Node.js and RESTful API design.</li>
+											<li>Familiarity with Git and basic CI/CD workflows.</li>
+										</ul>
+									</div>
+									<div class="job-section">
+										<h3>Nice-to-haves</h3>
+										<ul>
+											<li>Experience with Framer Motion or animation libraries.</li>
+											<li>Familiarity with Python (FastAPI/Flask).</li>
+											<li>Experience with OpenAI, Anthropic, or open-source LLMs.</li>
+											<li>Understanding of containerization (Docker).</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+					{/if}
+				</div>
+			</div>
+
+			<!-- RIGHT: Application Form -->
+			<div transition:fly={{ x: 20, duration: 400, delay: 150 }} class="careers-form-sticky">
+				<div class="careers-form-card">
+					<h3>Apply for a Role</h3>
+					<form onsubmit={handleSubmit} novalidate class="careers-form">
+						<!-- Role Dropdown -->
+						<div class="form-group">
+							<label for="car-role" class="form-label">Select Role *</label>
+							<div class="careers-select-wrap">
+								<select
+									id="car-role"
+									name="role"
+									value={formData.role}
+									onchange={handleChange}
+									class="careers-select"
+								>
+									<option value="" disabled>Choose a position...</option>
+									{#each OPEN_ROLES as r (r)}
+										<option value={r}>{r}</option>
+									{/each}
+								</select>
+								<ChevronDown class="select-chevron" size={16} />
+							</div>
+						</div>
+
+						<div class="careers-form-row">
+							<div class="form-group">
+								<label for="car-name" class="form-label">Full Name *</label>
+								<div class="careers-input-wrap">
+									<User class="careers-input-icon" size={15} />
+									<input
+										type="text"
+										id="car-name"
+										name="name"
+										placeholder="John Doe"
+										value={formData.name}
+										oninput={handleChange}
+										class="careers-input"
+									/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="car-email" class="form-label">Email Address *</label>
+								<div class="careers-input-wrap">
+									<Mail class="careers-input-icon" size={15} />
+									<input
+										type="email"
+										id="car-email"
+										name="email"
+										placeholder="you@example.com"
+										value={formData.email}
+										oninput={handleChange}
+										class="careers-input"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<div class="careers-form-row">
+							<div class="form-group">
+								<label for="car-phone" class="form-label">Phone Number *</label>
+								<div class="careers-input-wrap">
+									<Phone class="careers-input-icon" size={15} />
+									<input
+										type="tel"
+										id="car-phone"
+										name="phone"
+										placeholder="+91 98765 43210"
+										value={formData.phone}
+										oninput={handleChange}
+										class="careers-input"
+									/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="car-cv" class="form-label">Resume / CV Link *</label>
+								<div class="careers-input-wrap">
+									<LinkIcon class="careers-input-icon" size={15} />
+									<input
+										type="url"
+										id="car-cv"
+										name="cvLink"
+										placeholder="drive.google.com/..."
+										value={formData.cvLink}
+										oninput={handleChange}
+										class="careers-input"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<div class="careers-form-row">
+							<div class="form-group">
+								<label for="car-linkedin" class="form-label">LinkedIn *</label>
+								<div class="careers-input-wrap">
+									<LinkIcon class="careers-input-icon" size={15} />
+									<input
+										type="url"
+										id="car-linkedin"
+										name="linkedin"
+										placeholder="linkedin.com/in/..."
+										value={formData.linkedin}
+										oninput={handleChange}
+										class="careers-input"
+									/>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="car-portfolio" class="form-label">Portfolio / GitHub *</label>
+								<div class="careers-input-wrap">
+									<LinkIcon class="careers-input-icon" size={15} />
+									<input
+										type="url"
+										id="car-portfolio"
+										name="portfolio"
+										placeholder="github.com/..."
+										value={formData.portfolio}
+										oninput={handleChange}
+										class="careers-input"
+									/>
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group">
+							<label for="car-message" class="form-label">Cover Message *</label>
+							<textarea
+								id="car-message"
+								name="message"
+								placeholder="Why are you a great fit for Tarkify?"
+								class="careers-textarea"
+								value={formData.message}
+								oninput={handleChange}></textarea>
+						</div>
+
+						<button
+							type="submit"
+							class="btn btn-submit w-full flex items-center justify-center gap-2 p-3"
+							disabled={status === 'loading'}
+						>
+							{#if status === 'loading'}
+								<span>Submitting...</span>
+								<Loader2 class="spinner animate-spin" size={17} />
+							{:else}
+								<span>Submit Application</span>
+								<Send size={17} />
+							{/if}
+						</button>
+
+						<!-- Errors shown below submit -->
+						{#if formErrors.length > 0}
+							<div transition:fly={{ y: 6, duration: 200 }} class="careers-errors">
+								{#each formErrors as err, i (`err-${i}`)}
+									<p class="careers-error-item flex items-center gap-1">
+										<AlertCircle size={13} />
+										{err}
+									</p>
+								{/each}
+							</div>
+						{/if}
+						{#if status === 'success'}
+							<div
+								transition:fly={{ y: 8, duration: 200 }}
+								class="form-message success flex items-center justify-center gap-2"
+							>
+								<CheckCircle size={15} /> Application submitted successfully!
+							</div>
+						{/if}
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<Newsletter />
+	</div>
+</div>

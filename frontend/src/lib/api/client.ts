@@ -17,6 +17,7 @@ export interface ContactSubmission {
 	lastName: string;
 	email: string;
 	company?: string;
+	service?: string;
 	message: string;
 }
 
