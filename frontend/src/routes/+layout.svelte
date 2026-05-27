@@ -5,6 +5,7 @@
 	import Navbar from '$lib/components/layout/Navbar.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
 	import favicon from '$lib/assets/favicon.svg';
+	import InteractiveBackground from '$lib/components/InteractiveBackground.svelte';
 	import './layout.css';
 
 	let { children } = $props();
@@ -29,6 +30,7 @@
 </svelte:head>
 
 <div class="app">
+	<InteractiveBackground />
 	<Navbar />
 	<main>
 		{@render children()}

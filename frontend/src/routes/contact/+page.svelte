@@ -104,34 +104,35 @@
 <div class="contact-page pt-32 pb-20">
 	<div class="container">
 		<div class="contact-grid">
-			<div transition:fly={{ x: -40, duration: 600 }}>
+			<!-- Left column: heading + contact info -->
+			<div class="contact-left" transition:fly={{ x: -40, duration: 600 }}>
 				<span class="section-badge">Get in Touch</span>
-				<h1 class="mb-8 leading-none">
-					Let's build the <br /><span class="text-accent-green">future</span> together.
+				<h1 class="contact-heading">
+					Let's build the <br /><span class="accent-green">future</span> together.
 				</h1>
-				<p class="text-lg opacity-80 mb-12 max-w-md">
+				<p class="contact-subtext">
 					Ready to automate your workflow? Reach out and our team of AI experts will help you find
 					the perfect solution for your business scaling.
 				</p>
 
-				<div class="contact-info space-y-10">
-					<div class="input-with-icon group p-0 pb-4">
-						<div
-							class="info-icon glass transition-transform group-hover:scale-110 relative left-0 p-5 mr-6"
-						>
-							<Mail class="text-accent-green" size={28} />
+				<div class="contact-info">
+					<div class="contact-info-item">
+						<div class="info-icon glass">
+							<Mail size={28} />
 						</div>
 						<div>
-							<p class="text-xs uppercase tracking-wider opacity-50 mb-1">Email us at</p>
-							<p class="font-bold text-xl">tarkify.ai@gmail.com</p>
+							<p class="info-label">Email us at</p>
+							<p class="info-value">tarkify.ai@gmail.com</p>
 						</div>
 					</div>
 				</div>
 			</div>
 
+			<!-- Right column: form card -->
 			<div
 				transition:fly={{ x: 40, duration: 600, delay: 200 }}
-				class="contact-form-card rounded-[3rem] p-12"
+				class="contact-form-card"
+				style="padding: 3rem; border-radius: 3rem;"
 			>
 				<form onsubmit={handleSubmit} novalidate>
 					<div class="form-row">
@@ -239,14 +240,10 @@
 						{/if}
 					</div>
 
-					<button
-						type="submit"
-						class="btn btn-submit w-full p-5 flex items-center justify-center gap-4 text-lg"
-						disabled={status === 'loading'}
-					>
+					<button type="submit" class="btn btn-submit submit-full" disabled={status === 'loading'}>
 						{#if status === 'loading'}
 							<span>Sending...</span>
-							<Loader2 class="spinner animate-spin" size={22} />
+							<Loader2 class="spinner" size={22} />
 						{:else}
 							<span>Send Message</span>
 							<Send size={22} />
@@ -254,34 +251,30 @@
 					</button>
 
 					{#if status === 'success'}
-						<div
-							transition:fly={{ y: 10, duration: 200 }}
-							class="form-message success flex items-center justify-center gap-2 mt-4"
-						>
+						<div transition:fly={{ y: 10, duration: 200 }} class="form-message success">
 							<CheckCircle size={18} />
 							Message sent successfully! We'll be in touch soon.
 						</div>
 					{/if}
 					{#if status === 'error'}
-						<div
-							transition:fly={{ y: 10, duration: 200 }}
-							class="form-message error flex items-center justify-center gap-2 mt-4"
-						>
+						<div transition:fly={{ y: 10, duration: 200 }} class="form-message error">
 							<AlertCircle size={18} />
 							Something went wrong. Please try again.
 						</div>
 					{/if}
 
-					<p class="text-center text-sm opacity-50 italic mt-6">
-						We typically respond within 24 hours.
-					</p>
+					<p class="form-footer-note">We typically respond within 24 hours.</p>
 				</form>
 			</div>
 		</div>
 
 		<!-- Tarkify Team Section -->
-		<div class="team-section mt-32 mb-20">
-			<div transition:fly={{ y: 20, duration: 400 }} class="section-header text-center mb-16">
+		<div class="team-section" style="margin-top: 8rem; margin-bottom: 5rem;">
+			<div
+				transition:fly={{ y: 20, duration: 400 }}
+				class="section-header text-center"
+				style="margin-bottom: 4rem;"
+			>
 				<span class="section-badge">Our Founders</span>
 				<h2>Meet the Tarkify Team</h2>
 				<p class="section-subtext">The minds behind the next-gen AI automation solutions.</p>
@@ -416,8 +409,84 @@
 			</div>
 		</div>
 
-		<div class="mt-20">
+		<div style="margin-top: 5rem;">
 			<Newsletter />
 		</div>
 	</div>
 </div>
+
+<style>
+	/* ── Contact page scoped styles ── */
+	.contact-heading {
+		margin-bottom: 2rem;
+		line-height: 1.1;
+	}
+
+	.accent-green {
+		color: var(--color-accent-green);
+	}
+
+	.contact-subtext {
+		font-size: 1.125rem;
+		opacity: 0.8;
+		margin-bottom: 3rem;
+		max-width: 28rem;
+		line-height: 1.7;
+	}
+
+	.contact-info {
+		display: flex;
+		flex-direction: column;
+		gap: 2.5rem;
+	}
+
+	.contact-info-item {
+		display: flex;
+		align-items: center;
+		padding-left: 0;
+		padding-bottom: 1rem;
+	}
+
+	.contact-info-item .info-icon {
+		position: relative;
+		left: 0;
+		padding: 1.25rem;
+		margin-right: 1.5rem;
+	}
+
+	.info-label {
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		opacity: 0.5;
+		margin-bottom: 0.25rem;
+	}
+
+	.info-value {
+		font-weight: 700;
+		font-size: 1.25rem;
+	}
+
+	.submit-full {
+		width: 100%;
+		padding: 1.25rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		font-size: 1.125rem;
+	}
+
+	.form-footer-note {
+		text-align: center;
+		font-size: 0.875rem;
+		opacity: 0.5;
+		font-style: italic;
+		margin-top: 1.5rem;
+	}
+
+	/* Accent color for the info-icon Mail icon */
+	.contact-info-item :global(svg) {
+		color: var(--color-accent-green);
+	}
+</style>
