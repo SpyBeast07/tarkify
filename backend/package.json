@@ -1,0 +1,25 @@
+{
+  "name": "tarkify-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "db:start": "docker-compose up -d",
+    "db:stop": "docker-compose down",
+    "db:migrate": "bun run scripts/migrate.ts"
+  },
+  "dependencies": {
+    "hono": "^4.7.0",
+    "pg": "^8.13.0",
+    "razorpay": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0",
+    "typescript": "^5.7.0",
+    "@types/bun": "latest"
+  },
+  "module": "index.ts"
+}

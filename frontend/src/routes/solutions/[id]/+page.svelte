@@ -24,10 +24,12 @@
 		AlertTriangle,
 		ListOrdered,
 		Link as LinkIcon,
-		AlertCircle
+		AlertCircle,
+		ShoppingCart
 	} from '@lucide/svelte';
 	import type { Component } from 'svelte';
 	import { solutionsData } from '$lib/data/solutions';
+	import PurchaseModal from '$lib/components/PurchaseModal.svelte';
 
 	const mockups: Record<string, string> = {
 		devbeast: '/assets/devbeast_mockup.webp',
@@ -72,10 +74,14 @@
 	};
 
 	let slideIndex = $state(0);
+	let showPurchaseModal = $state(false);
 
 	let id = $derived($page.params.id);
 	let solution = $derived(solutionsData.find((s) => s.id === id));
 	let mockupImage = $derived(solution ? mockups[solution.id] : undefined);
+
+	// Products with a price are purchasable — they get "Buy Now" instead of "Get Started"
+	let isPurchasable = $derived(!!solution?.price);
 
 	// Slideshow interval timer
 	$effect(() => {
@@ -90,7 +96,11 @@
 	});
 
 	function handleGetStarted() {
-		if (solution) {
+		if (!solution) return;
+
+		if (isPurchasable) {
+			showPurchaseModal = true;
+		} else {
 			goto(`/contact?service=${encodeURIComponent(solution.title)}`);
 		}
 	}
@@ -141,9 +151,15 @@
 					{/if}
 
 					<div class="hero-buttons">
-						<button onclick={handleGetStarted} class="btn btn-primary btn-with-icon">
-							Get Started <Zap size={18} />
-						</button>
+						{#if isPurchasable}
+							<button onclick={handleGetStarted} class="btn btn-primary btn-with-icon" id="buy-now-hero">
+								Buy Now <ShoppingCart size={18} />
+							</button>
+						{:else}
+							<button onclick={handleGetStarted} class="btn btn-primary btn-with-icon">
+								Get Started <Zap size={18} />
+							</button>
+						{/if}
 						{#if solution.githubUrl}
 							<a
 								href={solution.githubUrl}
@@ -336,9 +352,15 @@
 					</div>
 
 					<div class="final-cta-buttons">
-						<button onclick={handleGetStarted} class="btn btn-primary btn-with-icon">
-							Get Started Now <Zap size={18} />
-						</button>
+						{#if isPurchasable}
+							<button onclick={handleGetStarted} class="btn btn-primary btn-with-icon" id="buy-now-cta">
+								Buy Now <ShoppingCart size={18} />
+							</button>
+						{:else}
+							<button onclick={handleGetStarted} class="btn btn-primary btn-with-icon">
+								Get Started Now <Zap size={18} />
+							</button>
+						{/if}
 						{#if solution.githubUrl}
 							<a
 								href={solution.githubUrl}
@@ -354,4 +376,14 @@
 			{/if}
 		</div>
 	</div>
+
+	<!-- Purchase Modal -->
+	{#if solution && isPurchasable}
+		<PurchaseModal
+			bind:open={showPurchaseModal}
+			productSlug={solution.id}
+			productName={solution.title}
+			onclose={() => (showPurchaseModal = false)}
+		/>
+	{/if}
 {/if}
