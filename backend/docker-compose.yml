@@ -2,8 +2,9 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: tarkify-postgres
+    restart: always
     ports:
-      - "5432:5432"
+      - "5439:5432"
     environment:
       POSTGRES_USER: tarkify_user
       POSTGRES_PASSWORD: tarkifyPassword
@@ -15,6 +16,28 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tarkify-backend
+    restart: always
+    ports:
+      - "3009:3001"
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgresql://tarkify_user:tarkifyPassword@postgres:5432/tarkifyDB
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
+      FRONTEND_URL: ${FRONTEND_URL}
+      STORAGE_PATH: /app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./storage:/app/storage
 
 volumes:
   pgdata:
