@@ -26,6 +26,11 @@ app.get('/api/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ── Root / Welcome ───────────────────────────────────────────────
+app.get('/', (c) => {
+  return c.json({ name: 'Tarkify API', status: 'active', version: '1.0.0' });
+});
+
 // ── Route Groups ─────────────────────────────────────────────────
 app.route('/api/products', products);
 app.route('/api/payments', payments);
