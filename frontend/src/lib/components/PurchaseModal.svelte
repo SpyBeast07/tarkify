@@ -18,6 +18,7 @@
 	let email = $state('');
 	let flowState: PurchaseFlowState = $state('collecting_email');
 	let errorMessage = $state('');
+	let downloadToken = $state<string | undefined>(undefined);
 
 	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 	let isEmailValid = $derived(emailRegex.test(email));
@@ -28,6 +29,7 @@
 			if (!wasOpen) {
 				flowState = 'collecting_email';
 				errorMessage = '';
+				downloadToken = undefined;
 				wasOpen = true;
 			}
 			if (flowState === 'checkout_open') {
@@ -91,12 +93,14 @@
 
 		try {
 			// Step 3: Verify payment on backend
-			await verifyPayment(
+			const result = await verifyPayment(
 				response.razorpay_order_id,
 				response.razorpay_payment_id,
 				response.razorpay_signature
 			);
 
+			// Store the secure download token returned by the backend.
+			downloadToken = result.downloadToken;
 			flowState = 'success';
 		} catch (error) {
 			flowState = 'error';
@@ -220,7 +224,16 @@
 				<p class="purchase-subtitle">
 					Thank you for purchasing {productName}. Your download access has been activated.
 				</p>
-				<button class="btn btn-primary purchase-submit-btn" onclick={handleClose}>
+				{#if downloadToken}
+					<a
+						href="/api/downloads/{productSlug}?token={downloadToken}"
+						class="btn btn-primary purchase-submit-btn"
+						download
+					>
+						Download Now
+					</a>
+				{/if}
+				<button class="btn {downloadToken ? 'btn-outline' : 'btn-primary'} purchase-submit-btn" onclick={handleClose}>
 					Done
 				</button>
 			</div>

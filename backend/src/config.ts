@@ -31,4 +31,11 @@ export const config = {
   frontendUrl: optionalEnv('FRONTEND_URL', 'http://localhost:5173'),
 
   storagePath: optionalEnv('STORAGE_PATH', './storage'),
+
+  /** Download token TTL in seconds (default: 10 minutes). */
+  downloadTokenTtlSeconds: parseInt(
+    optionalEnv('DOWNLOAD_TOKEN_TTL_SECONDS', '600'),
+    10
+  ),
 } as const;
+

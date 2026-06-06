@@ -7,7 +7,11 @@
  * Even if the user's browser closes or the frontend callback fails,
  * the webhook ensures the purchase is completed and entitlement granted.
  *
- * Idempotent: safe to receive duplicate webhook events.
+ * Handles:
+ *   payment.captured — complete purchase + grant entitlement (idempotent)
+ *   payment.refunded — mark purchase refunded + revoke entitlement
+ *
+ * Both paths are idempotent: duplicate webhook deliveries are safe.
  */
 
 import { Hono } from 'hono';
@@ -18,7 +22,7 @@ import type { RazorpayWebhookPayload } from '../types/index.js';
 const webhooks = new Hono();
 
 webhooks.post('/razorpay', async (c) => {
-  // Read raw body for signature verification
+  // Read raw body for signature verification — must happen before any parsing.
   const rawBody = await c.req.text();
   const signature = c.req.header('x-razorpay-signature');
 
@@ -27,7 +31,8 @@ webhooks.post('/razorpay', async (c) => {
     return c.json({ error: 'Missing signature' }, 400);
   }
 
-  // Verify webhook signature
+  // Verify webhook signature using HMAC SHA256.
+  // verifyWebhookSignature safely returns false on malformed input.
   const isValid = razorpayService.verifyWebhookSignature(rawBody, signature);
   if (!isValid) {
     console.error('Webhook signature verification failed');
@@ -42,54 +47,98 @@ webhooks.post('/razorpay', async (c) => {
     return c.json({ error: 'Invalid payload' }, 400);
   }
 
-  // Only handle payment.captured events
-  if (payload.event !== 'payment.captured') {
-    return c.json({ status: 'ignored', event: payload.event });
+  const { event } = payload;
+
+  // ── payment.captured ──────────────────────────────────────────
+  if (event === 'payment.captured') {
+    const paymentEntity = payload.payload.payment.entity;
+    const { id: paymentId, order_id: orderId } = paymentEntity;
+
+    if (!orderId || !paymentId) {
+      console.error('Webhook payment.captured: missing order_id or payment id');
+      return c.json({ error: 'Missing required fields in payload' }, 400);
+    }
+
+    // Find the purchase record.
+    const purchase = await purchaseService.getPurchaseByOrderId(orderId);
+    if (!purchase) {
+      // Razorpay can deliver webhooks for orders not originated by us
+      // (e.g. test mode). Return 200 so Razorpay stops retrying.
+      console.warn(`Webhook payment.captured: unknown order ${orderId}`);
+      return c.json({ status: 'order_not_found' }, 200);
+    }
+
+    // Already completed — acknowledge without re-processing (idempotent).
+    if (purchase.status === 'paid') {
+      return c.json({ status: 'already_processed' });
+    }
+
+    try {
+      // Atomically complete purchase + grant entitlement.
+      // The signature stored here is the real Razorpay payment signature.
+      const updated = await purchaseService.completePurchaseAndGrantEntitlement(
+        orderId,
+        paymentId,
+        signature  // actual HMAC signature — not a truncated sentinel value
+      );
+
+      if (!updated) {
+        console.error(`Webhook payment.captured: failed to complete purchase ${orderId}`);
+        return c.json({ error: 'Failed to process' }, 500);
+      }
+
+      console.info(
+        `Webhook payment.captured: purchase=${updated.id} order=${orderId} payment=${paymentId}`
+      );
+      return c.json({ status: 'processed' });
+    } catch (error) {
+      console.error(`Webhook payment.captured: error for order ${orderId}`, error);
+      return c.json({ error: 'Failed to process' }, 500);
+    }
   }
 
-  const paymentEntity = payload.payload.payment.entity;
-  const { id: paymentId, order_id: orderId } = paymentEntity;
+  // ── payment.refunded ──────────────────────────────────────────
+  if (event === 'payment.refunded') {
+    const paymentEntity = payload.payload.payment.entity;
+    const { order_id: orderId } = paymentEntity;
 
-  if (!orderId || !paymentId) {
-    console.error('Webhook payload missing order_id or payment id');
-    return c.json({ error: 'Missing required fields in payload' }, 400);
+    if (!orderId) {
+      console.error('Webhook payment.refunded: missing order_id');
+      return c.json({ error: 'Missing required fields in payload' }, 400);
+    }
+
+    const purchase = await purchaseService.getPurchaseByOrderId(orderId);
+    if (!purchase) {
+      console.warn(`Webhook payment.refunded: unknown order ${orderId}`);
+      return c.json({ status: 'order_not_found' }, 200);
+    }
+
+    // Already refunded — idempotent.
+    if (purchase.status === 'refunded') {
+      return c.json({ status: 'already_refunded' });
+    }
+
+    try {
+      // Atomically mark purchase refunded + revoke entitlement + expire tokens.
+      const updated = await purchaseService.refundPurchase(orderId);
+
+      if (!updated) {
+        console.error(`Webhook payment.refunded: failed to refund purchase ${orderId}`);
+        return c.json({ error: 'Failed to process refund' }, 500);
+      }
+
+      console.info(
+        `Webhook payment.refunded: purchase=${updated.id} order=${orderId}`
+      );
+      return c.json({ status: 'refund_processed' });
+    } catch (error) {
+      console.error(`Webhook payment.refunded: error for order ${orderId}`, error);
+      return c.json({ error: 'Failed to process refund' }, 500);
+    }
   }
 
-  // Find the purchase record
-  const purchase = await purchaseService.getPurchaseByOrderId(orderId);
-  if (!purchase) {
-    console.error('Webhook received for unknown order:', orderId);
-    return c.json({ status: 'order_not_found' }, 200);
-  }
-
-  // Already completed — acknowledge without error (idempotent)
-  if (purchase.status === 'paid') {
-    return c.json({ status: 'already_processed' });
-  }
-
-  // Complete the purchase
-  const updated = await purchaseService.completePurchase(
-    orderId,
-    paymentId,
-    `webhook_verified_${signature.substring(0, 16)}`
-  );
-
-  if (!updated) {
-    console.error('Failed to complete purchase from webhook:', orderId);
-    return c.json({ error: 'Failed to process' }, 500);
-  }
-
-  // Grant entitlement via guest_email (idempotent)
-  if (purchase.guest_email) {
-    await purchaseService.grantEntitlement(
-      purchase.guest_email,
-      purchase.product_id,
-      purchase.id
-    );
-  }
-
-  console.info(`Webhook: Purchase completed for ${purchase.guest_email} - product ${purchase.product_id}`);
-  return c.json({ status: 'processed' });
+  // Unhandled event — acknowledge to prevent Razorpay retry spam.
+  return c.json({ status: 'ignored', event });
 });
 
 export default webhooks;

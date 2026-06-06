@@ -17,11 +17,27 @@ const razorpayInstance = new Razorpay({
 });
 
 /**
+ * Generate a Razorpay-safe receipt ID.
+ *
+ * Razorpay limits receipt IDs to 40 characters.
+ * We produce: "r_" + first 6 chars of slug + "_" + 8 hex chars from a random value.
+ * Maximum length: 2 + 6 + 1 + 8 = 17 characters — always well within the limit.
+ *
+ * Using crypto.randomBytes for unpredictability (not for security — Razorpay
+ * itself enforces order integrity via signatures).
+ */
+export function generateReceipt(productSlug: string): string {
+  const slugPrefix = productSlug.slice(0, 6).replace(/[^a-z0-9]/gi, '');
+  const rand = crypto.randomBytes(4).toString('hex'); // 8 hex chars
+  return `r_${slugPrefix}_${rand}`;
+}
+
+/**
  * Create a Razorpay Order.
  *
  * @param amount - Amount in smallest currency unit (paise for INR)
  * @param currency - ISO currency code (e.g., 'INR')
- * @param receipt - Unique receipt identifier for this order
+ * @param receipt - Unique receipt identifier for this order (max 40 chars)
  */
 export async function createOrder(
   amount: number,
@@ -43,6 +59,9 @@ export async function createOrder(
  *
  * The signature is computed over: orderId|paymentId
  * This ensures the payment genuinely belongs to the order.
+ *
+ * HARDENED: timingSafeEqual throws if buffers have different lengths.
+ * We catch that and return false so the caller always gets a boolean.
  */
 export function verifyPaymentSignature(
   orderId: string,
@@ -55,10 +74,15 @@ export function verifyPaymentSignature(
     .update(body)
     .digest('hex');
 
-  return crypto.timingSafeEqual(
-    Buffer.from(expectedSignature),
-    Buffer.from(signature)
-  );
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(expectedSignature),
+      Buffer.from(signature)
+    );
+  } catch {
+    // timingSafeEqual throws if buffers have different lengths (malformed input)
+    return false;
+  }
 }
 
 /**

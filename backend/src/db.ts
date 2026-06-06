@@ -27,6 +27,34 @@ export async function query<T extends pg.QueryResultRow = pg.QueryResultRow>(
 }
 
 /**
+ * Run multiple queries atomically inside a BEGIN/COMMIT transaction.
+ * If the callback throws, ROLLBACK is issued automatically before re-throwing.
+ *
+ * Usage:
+ *   const result = await withTransaction(async (client) => {
+ *     await client.query('UPDATE ...');
+ *     await client.query('INSERT ...');
+ *     return someValue;
+ *   });
+ */
+export async function withTransaction<T>(
+  fn: (client: pg.PoolClient) => Promise<T>
+): Promise<T> {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await fn(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+/**
  * Verify database connectivity at startup.
  */
 export async function testConnection(): Promise<void> {

@@ -56,6 +56,15 @@ export interface Entitlement {
   revoked_at: Date | null;
 }
 
+export interface DownloadToken {
+  id: string;
+  token: string;
+  purchase_id: string;
+  product_id: string;
+  expires_at: Date;
+  created_at: Date;
+}
+
 // ── API Request/Response Types ───────────────────────────────────
 
 export interface CreateOrderRequest {
@@ -80,6 +89,8 @@ export interface VerifyPaymentRequest {
 export interface VerifyPaymentResponse {
   success: boolean;
   message: string;
+  /** Secure short-lived token to authorise the download. */
+  downloadToken?: string;
 }
 
 export interface ProductResponse {

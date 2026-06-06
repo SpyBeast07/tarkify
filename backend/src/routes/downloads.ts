@@ -1,11 +1,16 @@
 /**
  * Download Routes
  *
- * GET /api/downloads/:productSlug — Serve product downloads to entitled users
+ * GET /api/downloads/:productSlug?token=<download_token>
  *
- * Generic endpoint — works for any product with a download_key.
- * Downloads are served from private versioned storage.
- * The URL never exposes the actual file path.
+ * Serves product downloads to customers who hold a valid download token.
+ * The token was issued by POST /api/payments/verify after successful payment.
+ *
+ * Security:
+ * - No email parameter. Ownership is proved by the token.
+ * - Token is validated server-side: existence + expiry + product match.
+ * - Filesystem paths are never exposed.
+ * - Files are version-sorted using semantic versioning (v10 > v2).
  */
 
 import { Hono } from 'hono';
@@ -19,9 +24,22 @@ import { config } from '../config.js';
 const downloads = new Hono();
 
 /**
+ * Parse a semver-like filename (e.g. "v1.10.2.zip") into numeric parts
+ * for correct version comparison.
+ * Files that do not match the pattern sort to the bottom.
+ */
+function parseSemver(filename: string): [number, number, number] {
+  const match = filename.match(/v?(\d+)\.(\d+)\.(\d+)/);
+  if (!match) return [0, 0, 0];
+  return [parseInt(match[1], 10), parseInt(match[2], 10), parseInt(match[3], 10)];
+}
+
+/**
  * Resolve the latest version file from the product's storage directory.
  * Files are expected to follow semver naming: v1.0.0.zip, v1.0.1.zip, etc.
- * Returns the path to the latest version, or null if no files exist.
+ * Returns the absolute path to the latest version, or null if no files exist.
+ *
+ * FIXED: uses numeric semver comparison so v10.0.0 > v2.0.0.
  */
 function resolveLatestDownload(downloadKey: string): string | null {
   const productDir = join(config.storagePath, 'products', downloadKey);
@@ -32,8 +50,13 @@ function resolveLatestDownload(downloadKey: string): string | null {
 
   const files = readdirSync(productDir)
     .filter((f) => f.endsWith('.zip'))
-    .sort()
-    .reverse();
+    .sort((a, b) => {
+      const [aMaj, aMin, aPatch] = parseSemver(a);
+      const [bMaj, bMin, bPatch] = parseSemver(b);
+      if (bMaj !== aMaj) return bMaj - aMaj;
+      if (bMin !== aMin) return bMin - aMin;
+      return bPatch - aPatch;
+    });
 
   if (files.length === 0) return null;
 
@@ -42,22 +65,40 @@ function resolveLatestDownload(downloadKey: string): string | null {
 
 downloads.get('/:productSlug', async (c) => {
   const productSlug = c.req.param('productSlug');
-  const email = c.req.query('email');
+  const token = c.req.query('token');
 
-  // Validate email is provided
-  if (!email) {
+  // Token is required — no email fallback.
+  if (!token) {
     return c.json(
-      { error: 'UNAUTHORIZED', message: 'Email is required to verify ownership' },
+      { error: 'UNAUTHORIZED', message: 'A valid download token is required.' },
       401
     );
   }
 
-  // Get the product's download key from ProductService
+  // Validate token: existence + expiry check (single DB query).
+  const tokenRecord = await purchaseService.validateDownloadToken(token);
+  if (!tokenRecord) {
+    return c.json(
+      { error: 'UNAUTHORIZED', message: 'Download token is invalid or has expired.' },
+      401
+    );
+  }
+
+  // Get the product by slug to resolve the download_key.
   const product = await productService.getActiveProduct(productSlug);
   if (!product) {
     return c.json(
       { error: 'NOT_FOUND', message: 'Product not found' },
       404
+    );
+  }
+
+  // Cross-check: the token must belong to this product.
+  // This prevents a token issued for product A from downloading product B.
+  if (tokenRecord.product_id !== product.id) {
+    return c.json(
+      { error: 'FORBIDDEN', message: 'This token is not valid for the requested product.' },
+      403
     );
   }
 
@@ -68,19 +109,12 @@ downloads.get('/:productSlug', async (c) => {
     );
   }
 
-  // Verify ownership via entitlement
-  const hasAccess = await purchaseService.hasEntitlement(email, product.id);
-  if (!hasAccess) {
-    return c.json(
-      { error: 'FORBIDDEN', message: 'You do not own this product. Please purchase it first.' },
-      403
-    );
-  }
-
-  // Resolve the latest download file from versioned storage
+  // Resolve the latest download file using semver-correct ordering.
   const filePath = resolveLatestDownload(product.download_key);
   if (!filePath) {
-    console.error(`No download files found for product: ${productSlug} (key: ${product.download_key})`);
+    console.error(
+      `No download files found for product slug=${productSlug} download_key=${product.download_key}`
+    );
     return c.json(
       { error: 'FILE_NOT_FOUND', message: 'Download file is not available. Please contact support.' },
       500

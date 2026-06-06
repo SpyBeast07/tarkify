@@ -17,25 +17,30 @@ const payments = new Hono();
  * Create a Razorpay order for a product purchase.
  *
  * Flow:
- * 1. Validate product exists and is active (via ProductService)
- * 2. Get authoritative price from database (never trust frontend)
- * 3. Create Razorpay order
- * 4. Record purchase in database with guest_email
- * 5. Return order details + public key to frontend
+ * 1. Normalise email
+ * 2. Validate product exists and is active (via ProductService)
+ * 3. Check: does the customer already own this product?  If so, reject early.
+ * 4. Get authoritative price from database (never trust frontend)
+ * 5. Create Razorpay order with a safe receipt ID (≤40 chars)
+ * 6. Record purchase in database with normalised guest_email
+ * 7. Return order details + public key to frontend
  */
 payments.post('/create-order', async (c) => {
   const body = await c.req.json<CreateOrderRequest>();
-  const { productSlug, email } = body;
+  const { productSlug, email: rawEmail } = body;
 
   // Validate required fields
-  if (!productSlug || !email) {
+  if (!productSlug || !rawEmail) {
     return c.json(
       { error: 'VALIDATION_ERROR', message: 'productSlug and email are required' },
       400
     );
   }
 
-  // Validate email format
+  // Normalise email before any use
+  const email = purchaseService.normaliseEmail(rawEmail);
+
+  // Validate email format (after normalisation)
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return c.json(
@@ -53,16 +58,30 @@ payments.post('/create-order', async (c) => {
     );
   }
 
+  // Guard: prevent duplicate purchases.
+  // If this email already holds an active entitlement for this product, do
+  // not create another Razorpay order — return a clear error instead.
+  const alreadyOwns = await purchaseService.hasEntitlement(email, product.id);
+  if (alreadyOwns) {
+    return c.json(
+      {
+        error: 'ALREADY_PURCHASED',
+        message: 'You already own this product. Download it from your confirmation email.',
+      },
+      409
+    );
+  }
+
   try {
-    // Create Razorpay order with the authoritative price from DB
-    const receipt = `receipt_${product.slug}_${Date.now()}`;
+    // Create Razorpay order with a safe receipt ID (guaranteed ≤40 chars).
+    const receipt = razorpayService.generateReceipt(product.slug);
     const order = await razorpayService.createOrder(
       product.price,
       product.currency,
       receipt
     );
 
-    // Record purchase attempt with guest_email (user_id is null for guests)
+    // Record purchase attempt with normalised guest_email (user_id is null for guests)
     await purchaseService.createPurchase(
       email,
       product.id,
@@ -93,8 +112,9 @@ payments.post('/create-order', async (c) => {
  * Flow:
  * 1. Verify the HMAC signature (proves payment is genuine)
  * 2. Verify the order exists in our database
- * 3. Update purchase status to 'paid'
- * 4. Grant product entitlement to guest_email
+ * 3. Atomically update purchase to 'paid' AND grant entitlement
+ * 4. Issue a secure download token
+ * 5. Return success + downloadToken to frontend
  */
 payments.post('/verify', async (c) => {
   const body = await c.req.json<VerifyPaymentRequest>();
@@ -108,7 +128,8 @@ payments.post('/verify', async (c) => {
     );
   }
 
-  // Verify signature — this proves the payment came from Razorpay
+  // Verify signature — this proves the payment came from Razorpay.
+  // verifyPaymentSignature now safely returns false on malformed input.
   const isValid = razorpayService.verifyPaymentSignature(
     razorpay_order_id,
     razorpay_payment_id,
@@ -116,14 +137,14 @@ payments.post('/verify', async (c) => {
   );
 
   if (!isValid) {
-    console.error('Payment signature verification failed:', { razorpay_order_id });
+    console.error('Payment signature verification failed for order:', razorpay_order_id);
     return c.json(
       { error: 'VERIFICATION_FAILED', message: 'Payment verification failed. Contact support if payment was deducted.' },
       400
     );
   }
 
-  // Find the purchase record
+  // Find the purchase record first to get product context.
   const purchase = await purchaseService.getPurchaseByOrderId(razorpay_order_id);
   if (!purchase) {
     return c.json(
@@ -132,33 +153,43 @@ payments.post('/verify', async (c) => {
     );
   }
 
-  // Complete the purchase (idempotent — safe for duplicate calls)
-  const updatedPurchase = await purchaseService.completePurchase(
-    razorpay_order_id,
-    razorpay_payment_id,
-    razorpay_signature
-  );
+  try {
+    // Atomically complete purchase + grant entitlement in one transaction.
+    const updatedPurchase = await purchaseService.completePurchaseAndGrantEntitlement(
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature
+    );
 
-  if (!updatedPurchase) {
+    if (!updatedPurchase) {
+      return c.json(
+        { error: 'COMPLETION_FAILED', message: 'Failed to complete purchase' },
+        500
+      );
+    }
+
+    // Issue a secure download token scoped to this purchase + product.
+    const downloadTokenRecord = await purchaseService.generateDownloadToken(
+      updatedPurchase.id,
+      updatedPurchase.product_id
+    );
+
+    console.info(
+      `Payment verified: purchase=${updatedPurchase.id} order=${razorpay_order_id} payment=${razorpay_payment_id}`
+    );
+
+    return c.json({
+      success: true,
+      message: 'Payment verified and purchase completed successfully',
+      downloadToken: downloadTokenRecord.token,
+    });
+  } catch (error) {
+    console.error('Failed to complete purchase for order:', razorpay_order_id, error);
     return c.json(
-      { error: 'COMPLETION_FAILED', message: 'Failed to complete purchase' },
+      { error: 'COMPLETION_FAILED', message: 'Failed to complete purchase. Please contact support.' },
       500
     );
   }
-
-  // Grant product ownership via guest_email (idempotent via ON CONFLICT)
-  if (purchase.guest_email) {
-    await purchaseService.grantEntitlement(
-      purchase.guest_email,
-      purchase.product_id,
-      purchase.id
-    );
-  }
-
-  return c.json({
-    success: true,
-    message: 'Payment verified and purchase completed successfully',
-  });
 });
 
 export default payments;

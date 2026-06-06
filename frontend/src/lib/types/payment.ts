@@ -14,7 +14,10 @@ export interface CreateOrderResponse {
 export interface VerifyPaymentResponse {
   success: boolean;
   message: string;
+  /** Secure time-limited token to authorise the download. */
+  downloadToken?: string;
 }
+
 
 export interface PaymentError {
   error: string;
