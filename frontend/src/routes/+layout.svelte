@@ -4,7 +4,7 @@
 	import { createThemeState } from '$lib/context/theme.svelte';
 	import Navbar from '$lib/components/layout/Navbar.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/favicon.webp';
 	import InteractiveBackground from '$lib/components/InteractiveBackground.svelte';
 	import './layout.css';
 
@@ -26,7 +26,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" type="image/webp" href={favicon} />
 </svelte:head>
 
 <div class="app">

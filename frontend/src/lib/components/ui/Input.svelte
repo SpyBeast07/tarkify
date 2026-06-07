@@ -57,9 +57,19 @@
 				{required}
 				{rows}
 				bind:value
-				class={error ? 'input-error' : ''}></textarea>
+				class={error ? 'input-error' : ''}
+				aria-invalid={error ? 'true' : 'false'}
+				aria-describedby={error ? `${id}-error` : undefined}></textarea>
 		{:else if type === 'select'}
-			<select {id} {name} {required} bind:value class={error ? 'input-error' : ''}>
+			<select
+				{id}
+				{name}
+				{required}
+				bind:value
+				class={error ? 'input-error' : ''}
+				aria-invalid={error ? 'true' : 'false'}
+				aria-describedby={error ? `${id}-error` : undefined}
+			>
 				{#each options as option (typeof option === 'string' ? option : option.value)}
 					{#if typeof option === 'string'}
 						<option value={option}>{option}</option>
@@ -77,12 +87,14 @@
 				{required}
 				bind:value
 				class={error ? 'input-error' : ''}
+				aria-invalid={error ? 'true' : 'false'}
+				aria-describedby={error ? `${id}-error` : undefined}
 			/>
 		{/if}
 	</div>
 
 	{#if error}
-		<span class="error-text">{error}</span>
+		<span class="error-text" id="{id}-error">{error}</span>
 	{/if}
 </div>
 

@@ -1,5 +1,10 @@
 /**
  * Unified API Client for submitting forms to Tarkify endpoints.
+ *
+ * NOTE: Backend communication for Contact, Feedback, Careers, and Newsletter
+ * is not yet active. These handlers return a service unavailable rejection
+ * to allow frontends to display appropriate loading and error states cleanly
+ * until the backend endpoints are connected.
  */
 
 export interface FeedbackSubmission {
@@ -21,24 +26,62 @@ export interface ContactSubmission {
 	message: string;
 }
 
+export interface CareersSubmission {
+	name: string;
+	email: string;
+	phone: string;
+	role: string;
+	cvLink: string;
+	linkedin: string;
+	portfolio: string;
+	message: string;
+}
+
+export interface NewsletterSubmission {
+	email: string;
+}
+
+// Configured API BASE URL (reserved for future connection)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
 /**
- * Submits product feedback to the API.
+ * Helper to simulate network latency and return a service unavailable rejection.
  */
-export async function submitFeedback(data: FeedbackSubmission): Promise<Response> {
-	return fetch('/api/feedback', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(data)
-	});
+async function simulateServiceUnavailable(): Promise<never> {
+	// Simulate minor network latency so the user can verify loading states and spinners
+	await new Promise((resolve) => setTimeout(resolve, 800));
+	throw new Error('Service temporarily unavailable');
 }
 
 /**
- * Submits a contact inquiry to the API.
+ * Submits product feedback.
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function submitFeedback(data: FeedbackSubmission): Promise<Response> {
+	return simulateServiceUnavailable();
+}
+
+/**
+ * Submits a contact inquiry.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function submitContact(data: ContactSubmission): Promise<Response> {
-	return fetch('/api/contact', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(data)
-	});
+	return simulateServiceUnavailable();
+}
+
+/**
+ * Submits a job application.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function submitCareers(data: CareersSubmission): Promise<Response> {
+	return simulateServiceUnavailable();
+}
+
+/**
+ * Submits a newsletter subscription.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function submitNewsletter(email: string): Promise<Response> {
+	return simulateServiceUnavailable();
 }

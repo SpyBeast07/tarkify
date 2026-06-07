@@ -164,6 +164,12 @@
 	let cleanupFunctions: (() => void)[] = [];
 
 	onMount(() => {
+		// Check for reduced motion settings
+		const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		if (mediaQuery.matches) {
+			// Do not run canvas interactive loops if reduced motion is requested
+			return;
+		}
 		// Load stats
 		const savedScore = localStorage.getItem('tarkify_snake_score');
 		const savedDiscount = localStorage.getItem('tarkify_snake_discount');
@@ -858,7 +864,7 @@
 		left: 0;
 		width: 100vw;
 		height: 100vh;
-		z-index: 9990;
+		z-index: 0;
 		pointer-events: none;
 		overflow: hidden;
 		transition: background-color 0.4s ease;

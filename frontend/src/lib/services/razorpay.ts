@@ -9,10 +9,10 @@
  */
 
 import type {
-  RazorpayCheckoutOptions,
-  RazorpayPaymentResponse,
-  RazorpayInstance,
-  CreateOrderResponse
+	RazorpayCheckoutOptions,
+	RazorpayPaymentResponse,
+	RazorpayInstance,
+	CreateOrderResponse
 } from '$lib/types/payment';
 
 const RAZORPAY_SCRIPT_URL = 'https://checkout.razorpay.com/v1/checkout.js';
@@ -25,25 +25,25 @@ let scriptLoading: Promise<void> | null = null;
  * Only loads once — subsequent calls return immediately.
  */
 export function loadRazorpayScript(): Promise<void> {
-  if (scriptLoaded) return Promise.resolve();
-  if (scriptLoading) return scriptLoading;
+	if (scriptLoaded) return Promise.resolve();
+	if (scriptLoading) return scriptLoading;
 
-  scriptLoading = new Promise<void>((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = RAZORPAY_SCRIPT_URL;
-    script.async = true;
-    script.onload = () => {
-      scriptLoaded = true;
-      resolve();
-    };
-    script.onerror = () => {
-      scriptLoading = null;
-      reject(new Error('Failed to load Razorpay checkout script'));
-    };
-    document.head.appendChild(script);
-  });
+	scriptLoading = new Promise<void>((resolve, reject) => {
+		const script = document.createElement('script');
+		script.src = RAZORPAY_SCRIPT_URL;
+		script.async = true;
+		script.onload = () => {
+			scriptLoaded = true;
+			resolve();
+		};
+		script.onerror = () => {
+			scriptLoading = null;
+			reject(new Error('Failed to load Razorpay checkout script'));
+		};
+		document.head.appendChild(script);
+	});
 
-  return scriptLoading;
+	return scriptLoading;
 }
 
 /**
@@ -55,37 +55,37 @@ export function loadRazorpayScript(): Promise<void> {
  * @param onDismiss - Called when user closes the modal without paying
  */
 export async function openCheckout(
-  order: CreateOrderResponse,
-  email: string,
-  onSuccess: (response: RazorpayPaymentResponse) => void,
-  onDismiss: () => void
+	order: CreateOrderResponse,
+	email: string,
+	onSuccess: (response: RazorpayPaymentResponse) => void,
+	onDismiss: () => void
 ): Promise<RazorpayInstance> {
-  await loadRazorpayScript();
+	await loadRazorpayScript();
 
-  if (!window.Razorpay) {
-    throw new Error('Razorpay SDK not available');
-  }
+	if (!window.Razorpay) {
+		throw new Error('Razorpay SDK not available');
+	}
 
-  const options: RazorpayCheckoutOptions = {
-    key: order.key,
-    amount: order.amount,
-    currency: order.currency,
-    name: 'Tarkify',
-    description: `Purchase ${order.productName}`,
-    order_id: order.orderId,
-    prefill: {
-      email,
-    },
-    theme: {
-      color: '#273b09',
-    },
-    handler: onSuccess,
-    modal: {
-      ondismiss: onDismiss,
-    },
-  };
+	const options: RazorpayCheckoutOptions = {
+		key: order.key,
+		amount: order.amount,
+		currency: order.currency,
+		name: 'Tarkify',
+		description: `Purchase ${order.productName}`,
+		order_id: order.orderId,
+		prefill: {
+			email
+		},
+		theme: {
+			color: '#273b09'
+		},
+		handler: onSuccess,
+		modal: {
+			ondismiss: onDismiss
+		}
+	};
 
-  const razorpay = new window.Razorpay(options);
-  razorpay.open();
-  return razorpay;
+	const razorpay = new window.Razorpay(options);
+	razorpay.open();
+	return razorpay;
 }

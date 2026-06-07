@@ -24,8 +24,8 @@
 			</div>
 			<h2>Coming Soon</h2>
 			<p>
-				We're building a full customer portal where you'll be able to manage your downloads,
-				view purchase history, and handle billing.
+				We're building a full customer portal where you'll be able to manage your downloads, view
+				purchase history, and handle billing.
 			</p>
 
 			<div class="account-features-preview">

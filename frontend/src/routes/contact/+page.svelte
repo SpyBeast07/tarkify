@@ -82,7 +82,6 @@
 					service: 'DevBeast',
 					message: ''
 				};
-				setTimeout(() => (status = 'idle'), 5000);
 			} else {
 				status = 'error';
 			}
@@ -259,7 +258,7 @@
 					{#if status === 'error'}
 						<div transition:fly={{ y: 10, duration: 200 }} class="form-message error">
 							<AlertCircle size={18} />
-							Something went wrong. Please try again.
+							Contact service is temporarily unavailable. Please try again later.
 						</div>
 					{/if}
 
@@ -283,7 +282,15 @@
 			<div class="team-grid">
 				<div transition:fly={{ y: 20, duration: 400, delay: 100 }} class="team-card glass">
 					<div class="team-avatar-wrapper">
-						<img src={kushagraImg} alt="Kushagra" class="team-avatar-image" />
+						<img
+							src={kushagraImg}
+							alt="Kushagra"
+							class="team-avatar-image"
+							width="84"
+							height="84"
+							loading="lazy"
+							decoding="async"
+						/>
 					</div>
 					<h3>Kushagra</h3>
 					<p class="team-role">Founder</p>
@@ -346,7 +353,15 @@
 
 				<div transition:fly={{ y: 20, duration: 400, delay: 150 }} class="team-card glass">
 					<div class="team-avatar-wrapper">
-						<img src={ishitaImg} alt="Ishita" class="team-avatar-image" />
+						<img
+							src={ishitaImg}
+							alt="Ishita"
+							class="team-avatar-image"
+							width="84"
+							height="84"
+							loading="lazy"
+							decoding="async"
+						/>
 					</div>
 					<h3>Ishita</h3>
 					<p class="team-role">Founder</p>

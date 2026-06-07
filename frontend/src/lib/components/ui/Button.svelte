@@ -10,6 +10,8 @@
 		onclick?: (event: MouseEvent) => void;
 		class?: string;
 		children?: Snippet;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		[key: string]: any;
 	}
 
 	let {
@@ -20,7 +22,8 @@
 		href,
 		onclick,
 		class: className = '',
-		children
+		children,
+		...rest
 	}: Props = $props();
 </script>
 
@@ -39,6 +42,7 @@
 			}
 			onclick?.(e);
 		}}
+		{...rest}
 	>
 		{#if children}
 			{@render children()}
@@ -52,6 +56,7 @@
 			: ''} {className}"
 		{disabled}
 		{onclick}
+		{...rest}
 	>
 		{#if children}
 			{@render children()}

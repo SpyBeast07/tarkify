@@ -15,6 +15,7 @@
 		ChevronDown
 	} from '@lucide/svelte';
 	import Newsletter from '$lib/components/Newsletter.svelte';
+	import { submitCareers } from '$lib/api/client';
 
 	const OPEN_ROLES = ['Full Stack Developer'];
 
@@ -56,7 +57,7 @@
 		return errors;
 	};
 
-	function handleSubmit(e: SubmitEvent) {
+	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
 		const errors = validate();
 		if (errors.length > 0) {
@@ -65,20 +66,27 @@
 		}
 		status = 'loading';
 		formErrors = [];
-		setTimeout(() => {
-			status = 'success';
-			formData = {
-				name: '',
-				email: '',
-				phone: '',
-				role: '',
-				cvLink: '',
-				linkedin: '',
-				portfolio: '',
-				message: ''
-			};
-			setTimeout(() => (status = 'idle'), 5000);
-		}, 1500);
+		try {
+			const response = await submitCareers(formData);
+			if (response.ok) {
+				status = 'success';
+				formData = {
+					name: '',
+					email: '',
+					phone: '',
+					role: '',
+					cvLink: '',
+					linkedin: '',
+					portfolio: '',
+					message: ''
+				};
+			} else {
+				status = 'error';
+			}
+		} catch (err) {
+			console.error('Careers submission error:', err);
+			status = 'error';
+		}
 	}
 </script>
 
@@ -342,6 +350,15 @@
 								class="form-message success flex items-center justify-center gap-2"
 							>
 								<CheckCircle size={15} /> Application submitted successfully!
+							</div>
+						{/if}
+						{#if status === 'error'}
+							<div
+								transition:fly={{ y: 8, duration: 200 }}
+								class="form-message error flex items-center justify-center gap-2"
+							>
+								<AlertCircle size={15} /> Job application service is temporarily unavailable. Please try
+								again later.
 							</div>
 						{/if}
 					</form>

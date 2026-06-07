@@ -56,11 +56,13 @@
 			open = false;
 		}
 	}}
+	aria-labelledby="dialog-title"
+	aria-describedby={message ? 'dialog-message' : undefined}
 >
 	<div class="dialog-content">
-		<h3 class="dialog-title">{title}</h3>
+		<h3 class="dialog-title" id="dialog-title">{title}</h3>
 		{#if message}
-			<p class="dialog-message">{message}</p>
+			<p class="dialog-message" id="dialog-message">{message}</p>
 		{/if}
 		{#if children}
 			<div class="dialog-custom-content">

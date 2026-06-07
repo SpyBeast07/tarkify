@@ -152,7 +152,11 @@
 
 					<div class="hero-buttons">
 						{#if isPurchasable}
-							<button onclick={handleGetStarted} class="btn btn-primary btn-with-icon" id="buy-now-hero">
+							<button
+								onclick={handleGetStarted}
+								class="btn btn-primary btn-with-icon"
+								id="buy-now-hero"
+							>
 								Buy Now <ShoppingCart size={18} />
 							</button>
 						{:else}
@@ -193,6 +197,7 @@
 								{/if}
 							</span>
 						</div>
+
 						{#if solution.id === 'devbeast'}
 							<div style="position: relative; overflow: hidden;">
 								{#key slideIndex}
@@ -201,12 +206,24 @@
 										alt="DevBeast Interface Slide"
 										class="mockup-image"
 										style="aspect-ratio: 2940 / 1602; object-fit: cover;"
+										width="1200"
+										height="654"
+										loading="lazy"
+										decoding="async"
 										in:fade={{ duration: 150 }}
 									/>
 								{/key}
 							</div>
 						{:else}
-							<img src={mockupImage} alt="{solution.title} Dashboard Mockup" class="mockup-image" />
+							<img
+								src={mockupImage}
+								alt="{solution.title} Dashboard Mockup"
+								class="mockup-image"
+								width="1200"
+								height="1125"
+								loading="lazy"
+								decoding="async"
+							/>
 						{/if}
 					</div>
 				{/if}
@@ -353,7 +370,11 @@
 
 					<div class="final-cta-buttons">
 						{#if isPurchasable}
-							<button onclick={handleGetStarted} class="btn btn-primary btn-with-icon" id="buy-now-cta">
+							<button
+								onclick={handleGetStarted}
+								class="btn btn-primary btn-with-icon"
+								id="buy-now-cta"
+							>
 								Buy Now <ShoppingCart size={18} />
 							</button>
 						{:else}

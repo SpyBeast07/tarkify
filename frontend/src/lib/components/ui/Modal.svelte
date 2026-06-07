@@ -43,6 +43,14 @@
 	});
 </script>
 
+<svelte:window
+	onkeydown={(e) => {
+		if (show && e.key === 'Escape') {
+			close();
+		}
+	}}
+/>
+
 {#if show}
 	<!-- Backdrop -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->

@@ -81,6 +81,12 @@
 		animation: float-orb infinite ease-in-out;
 	}
 
+	@media (prefers-reduced-motion: reduce) {
+		.bg-orb {
+			animation: none !important;
+		}
+	}
+
 	:global([data-theme='dark']) .bg-orb {
 		mix-blend-mode: screen;
 		opacity: 0.15;

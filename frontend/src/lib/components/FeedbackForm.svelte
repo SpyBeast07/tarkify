@@ -77,9 +77,6 @@
 					rating: 5,
 					message: ''
 				};
-
-				// Reset form state to idle after 6 seconds
-				setTimeout(() => (status = 'idle'), 6000);
 			} else {
 				status = 'error';
 			}
@@ -241,7 +238,7 @@
 								transition:slide
 							>
 								<AlertCircle size={20} />
-								<span>Failed to submit feedback. Please try again.</span>
+								<span>Feedback submission is temporarily unavailable. Please try again later.</span>
 							</div>
 						{/if}
 					</form>

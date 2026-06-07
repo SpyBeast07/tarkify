@@ -1,11 +1,11 @@
 <script lang="ts">
 	const integrations = [
-		{ name: 'Slack', icon: 'https://cdn-icons-png.flaticon.com/512/3800/3800024.png' },
-		{ name: 'HubSpot', icon: 'https://cdn.worldvectorlogo.com/logos/hubspot.svg' },
-		{ name: 'Gmail', icon: 'https://cdn.worldvectorlogo.com/logos/gmail-icon.svg' },
-		{ name: 'Discord', icon: 'https://cdn.worldvectorlogo.com/logos/discord-6.svg' },
-		{ name: 'Notion', icon: 'https://cdn.worldvectorlogo.com/logos/notion-2.svg' },
-		{ name: 'Salesforce', icon: 'https://cdn.worldvectorlogo.com/logos/salesforce-2.svg' }
+		{ name: 'Slack', icon: '/assets/logos/slack.png' },
+		{ name: 'HubSpot', icon: '/assets/logos/hubspot.svg' },
+		{ name: 'Gmail', icon: '/assets/logos/gmail.svg' },
+		{ name: 'Discord', icon: '/assets/logos/discord.svg' },
+		{ name: 'Notion', icon: '/assets/logos/notion.svg' },
+		{ name: 'Salesforce', icon: '/assets/logos/salesforce.svg' }
 	];
 
 	const loopedIntegrations = [...integrations, ...integrations, ...integrations];
@@ -22,7 +22,14 @@
 			<div class="integration-track">
 				{#each loopedIntegrations as item, i (`${item.name}-${i}`)}
 					<div class="integration-item glass">
-						<img src={item.icon} alt={item.name} />
+						<img
+							src={item.icon}
+							alt={`${item.name} logo`}
+							width="24"
+							height="24"
+							loading="lazy"
+							decoding="async"
+						/>
 						<span>{item.name}</span>
 					</div>
 				{/each}
@@ -45,6 +52,15 @@
 		}
 		100% {
 			transform: translateX(calc(-100% / 3));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.integration-track {
+			animation: none !important;
+			flex-wrap: wrap;
+			justify-content: center;
+			width: 100%;
 		}
 	}
 </style>

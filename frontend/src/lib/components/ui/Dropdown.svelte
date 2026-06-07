@@ -45,17 +45,38 @@
 	}
 </script>
 
-<svelte:window onclick={handleWindowClick} />
+<svelte:window
+	onclick={handleWindowClick}
+	onkeydown={(e) => {
+		if (isOpen && e.key === 'Escape') {
+			close();
+		}
+	}}
+/>
 
 <div bind:this={dropdownContainer} class="dropdown-wrapper {className}">
 	{#if trigger}
-		<!-- svelte-ignore a11y_click_events_have_key_events -->
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div onclick={toggle} style="cursor: pointer;">
+		<button
+			onclick={toggle}
+			onkeydown={(e) => {
+				if (e.key === 'Enter' || e.key === ' ') {
+					e.preventDefault();
+					toggle();
+				}
+			}}
+			aria-haspopup="true"
+			aria-expanded={isOpen}
+			style="background: none; border: none; padding: 0; margin: 0; cursor: pointer; text-align: left; display: block; font: inherit; color: inherit;"
+		>
 			{@render trigger()}
-		</div>
+		</button>
 	{:else}
-		<button class="dropdown-trigger-btn btn btn-secondary btn-sm" onclick={toggle}>
+		<button
+			class="dropdown-trigger-btn btn btn-secondary btn-sm"
+			onclick={toggle}
+			aria-haspopup="true"
+			aria-expanded={isOpen}
+		>
 			<span>{label}</span>
 			<ChevronDown size={16} class="chevron {isOpen ? 'rotated' : ''}" />
 		</button>

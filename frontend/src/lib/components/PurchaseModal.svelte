@@ -76,12 +76,7 @@
 			flowState = 'checkout_open';
 
 			// Step 2: Open Razorpay Checkout
-			await openCheckout(
-				order,
-				email,
-				handlePaymentSuccess,
-				handlePaymentDismiss
-			);
+			await openCheckout(order, email, handlePaymentSuccess, handlePaymentDismiss);
 		} catch (error) {
 			flowState = 'error';
 			errorMessage = error instanceof Error ? error.message : 'Failed to start checkout';
@@ -104,9 +99,10 @@
 			flowState = 'success';
 		} catch (error) {
 			flowState = 'error';
-			errorMessage = error instanceof Error
-				? error.message
-				: 'Payment verification failed. If your payment was deducted, please contact support.';
+			errorMessage =
+				error instanceof Error
+					? error.message
+					: 'Payment verification failed. If your payment was deducted, please contact support.';
 		}
 	}
 
@@ -233,7 +229,10 @@
 						Download Now
 					</a>
 				{/if}
-				<button class="btn {downloadToken ? 'btn-outline' : 'btn-primary'} purchase-submit-btn" onclick={handleClose}>
+				<button
+					class="btn {downloadToken ? 'btn-outline' : 'btn-primary'} purchase-submit-btn"
+					onclick={handleClose}
+				>
 					Done
 				</button>
 			</div>
@@ -248,12 +247,8 @@
 				<h3 class="purchase-title">Something went wrong</h3>
 				<p class="purchase-subtitle">{errorMessage}</p>
 				<div class="purchase-error-actions">
-					<button class="btn btn-primary" onclick={handleRetry}>
-						Try Again
-					</button>
-					<button class="btn btn-outline" onclick={handleClose}>
-						Close
-					</button>
+					<button class="btn btn-primary" onclick={handleRetry}> Try Again </button>
+					<button class="btn btn-outline" onclick={handleClose}> Close </button>
 				</div>
 			</div>
 		{/if}
@@ -269,12 +264,8 @@
 					No worries — no payment was charged. You can try again when you're ready.
 				</p>
 				<div class="purchase-error-actions">
-					<button class="btn btn-primary" onclick={handleRetry}>
-						Try Again
-					</button>
-					<button class="btn btn-outline" onclick={handleClose}>
-						Close
-					</button>
+					<button class="btn btn-primary" onclick={handleRetry}> Try Again </button>
+					<button class="btn btn-outline" onclick={handleClose}> Close </button>
 				</div>
 			</div>
 		{/if}
@@ -449,8 +440,12 @@
 	}
 
 	@keyframes purchase-spin {
-		from { transform: rotate(0deg); }
-		to { transform: rotate(360deg); }
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
 	}
 
 	.purchase-error-actions {
