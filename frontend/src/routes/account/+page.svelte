@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { fly } from 'svelte/transition';
 	import { User, Download, Receipt, CreditCard } from '@lucide/svelte';
+	import Seo from '$lib/components/Seo.svelte';
 </script>
 
-<svelte:head>
-	<title>Account | Tarkify</title>
-	<meta name="description" content="Manage your Tarkify account, downloads, and purchases." />
-</svelte:head>
+<Seo
+	title="Account | Tarkify"
+	description="Manage your Tarkify account, downloads, and purchases."
+	ogImage="/og-image.svg"
+	ogType="website"
+/>
 
 <div class="account-page pt-32 pb-20">
 	<div class="container">

@@ -6,15 +6,14 @@
 	import HowItWorks from '$lib/components/home/HowItWorks.svelte';
 	import WhyTarkify from '$lib/components/home/WhyTarkify.svelte';
 	import Testimonials from '$lib/components/home/Testimonials.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 </script>
 
-<svelte:head>
-	<title>Tarkify - AI-Powered Automation</title>
-	<meta
-		name="description"
-		content="We build AI agents that automate work and make life easier. Reclaim hours of manual work and scale your team."
-	/>
-</svelte:head>
+<Seo
+	title="Tarkify - AI-Powered Automation"
+	description="We build AI agents that automate work and make life easier. Reclaim hours of manual work and scale your team."
+	ogImage="/og-image.svg"
+/>
 
 <Hero />
 <IntegrationGallery />

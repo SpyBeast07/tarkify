@@ -23,10 +23,51 @@
 			window.scrollTo(0, 0);
 		}
 	});
+
+	let origin = $derived($page.url.origin);
+
+	let organizationJsonLd = $derived({
+		'@context': 'https://schema.org',
+		'@type': 'Organization',
+		name: 'Tarkify',
+		url: origin,
+		logo: `${origin}/favicon.webp`,
+		description:
+			'We build AI agents that automate work and make life easier. Reclaim hours of manual work and scale your team.',
+		email: 'tarkify.ai@gmail.com',
+		foundingDate: '2025',
+		founder: [
+			{
+				'@type': 'Person',
+				name: 'Kushagra'
+			},
+			{
+				'@type': 'Person',
+				name: 'Ishita'
+			}
+		]
+	});
+
+	let websiteJsonLd = $derived({
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: 'Tarkify',
+		url: origin,
+		description: 'AI-Powered Automation — Build, deploy, and scale intelligent AI agents.'
+	});
 </script>
 
 <svelte:head>
 	<link rel="icon" type="image/webp" href={favicon} />
+	<link rel="apple-touch-icon" href={favicon} />
+	<link rel="mask-icon" href="/favicon.svg" color="#002400" />
+
+	<script type="application/ld+json" data-seo="organization">
+		{JSON.stringify(organizationJsonLd)}
+	</script>
+	<script type="application/ld+json" data-seo="website">
+		{JSON.stringify(websiteJsonLd)}
+	</script>
 </svelte:head>
 
 <div class="app">

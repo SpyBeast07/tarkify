@@ -4,15 +4,14 @@
 	import Card from '$lib/components/ui/Card.svelte';
 	import { solutionsData } from '$lib/data/solutions';
 	import FeedbackForm from '$lib/components/FeedbackForm.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 </script>
 
-<svelte:head>
-	<title>Tarkify - Next-Gen Automation Tools</title>
-	<meta
-		name="description"
-		content="Powerful AI agents designed to scale your business operations effortlessly."
-	/>
-</svelte:head>
+<Seo
+	title="Tarkify - Next-Gen Automation Tools"
+	description="Powerful AI agents designed to scale your business operations effortlessly."
+	ogImage="/og-image.svg"
+/>
 
 <div class="solutions-page pt-32 pb-20">
 	<div class="container">

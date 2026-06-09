@@ -16,6 +16,7 @@
 	} from '@lucide/svelte';
 	import Newsletter from '$lib/components/Newsletter.svelte';
 	import { submitCareers } from '$lib/api/client';
+	import Seo from '$lib/components/Seo.svelte';
 
 	const OPEN_ROLES = ['Full Stack Developer'];
 
@@ -90,13 +91,11 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Careers | Join the Automation Revolution</title>
-	<meta
-		name="description"
-		content="Build the future of AI automation with Tarkify. We are hiring passionate engineers and innovators."
-	/>
-</svelte:head>
+<Seo
+	title="Careers | Join the Automation Revolution"
+	description="Build the future of AI automation with Tarkify. We are hiring passionate engineers and innovators."
+	ogImage="/og-image.svg"
+/>
 
 <div class="careers-page pt-32 pb-20">
 	<div class="container">

@@ -4,6 +4,7 @@
 	import { discoverData } from '$lib/data/discover';
 	import type { DiscoverArticle } from '$lib/data/discover';
 	import Newsletter from '$lib/components/Newsletter.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 
 	const CATEGORIES = [
 		'All',
@@ -36,13 +37,11 @@
 	);
 </script>
 
-<svelte:head>
-	<title>Discover | Insights & Automation Knowledge</title>
-	<meta
-		name="description"
-		content="Explore the latest insights, product updates, and knowledge on AI automation from the Tarkify team."
-	/>
-</svelte:head>
+<Seo
+	title="Discover | Insights & Automation Knowledge"
+	description="Explore the latest insights, product updates, and knowledge on AI automation from the Tarkify team."
+	ogImage="/og-image.svg"
+/>
 
 <div class="discover-page pt-32 pb-20">
 	<div class="container">

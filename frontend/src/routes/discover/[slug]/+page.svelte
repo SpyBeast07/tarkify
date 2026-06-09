@@ -5,9 +5,51 @@
 	import { discoverData } from '$lib/data/discover';
 	import { parseMarkdown } from '$lib/utils/markdown';
 	import Newsletter from '$lib/components/Newsletter.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 
 	let slug = $derived($page.params.slug);
 	let article = $derived(discoverData.find((a) => a.slug === slug));
+	let origin = $derived($page.url.origin);
+
+	let articleJsonLd = $derived(
+		article
+			? {
+					'@context': 'https://schema.org',
+					'@type': 'Article',
+					headline: article.title,
+					description: article.excerpt,
+					datePublished: article.date,
+					author: {
+						'@type': 'Organization',
+						name: 'Tarkify'
+					},
+					publisher: {
+						'@type': 'Organization',
+						name: 'Tarkify'
+					}
+				}
+			: undefined
+	);
+
+	let breadcrumbLd = $derived(
+		article
+			? {
+					'@context': 'https://schema.org',
+					'@type': 'BreadcrumbList',
+					itemListElement: [
+						{ '@type': 'ListItem', position: 1, name: 'Home', item: origin + '/' },
+						{ '@type': 'ListItem', position: 2, name: 'Discover', item: origin + '/discover' },
+						{ '@type': 'ListItem', position: 3, name: article.title, item: origin + $page.url.pathname }
+					]
+				}
+			: undefined
+	);
+
+	let jsonLd = $derived(
+		article
+			? [articleJsonLd, breadcrumbLd].filter(Boolean) as Record<string, unknown>[]
+			: undefined
+	);
 
 	function handleShare() {
 		if (typeof window !== 'undefined') {
@@ -18,14 +60,17 @@
 	}
 </script>
 
-<svelte:head>
-	{#if article}
-		<title>{article.title} | Tarkify</title>
-		<meta name="description" content={article.excerpt} />
-	{:else}
-		<title>Article Not Found | Tarkify</title>
-	{/if}
-</svelte:head>
+{#if article}
+	<Seo
+		title="{article.title} | Tarkify"
+		description={article.excerpt}
+		ogImage="/og-image.svg"
+		ogType="article"
+		jsonLd={jsonLd}
+	/>
+{:else}
+	<Seo title="Article Not Found | Tarkify" description="The requested article does not exist." ogImage="/og-image.svg" />
+{/if}
 
 {#if !article}
 	<div class="pt-32 pb-20 text-center">

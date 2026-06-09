@@ -30,6 +30,7 @@
 	import type { Component } from 'svelte';
 	import { solutionsData } from '$lib/data/solutions';
 	import PurchaseModal from '$lib/components/PurchaseModal.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 
 	const mockups: Record<string, string> = {
 		devbeast: '/assets/devbeast_mockup.webp',
@@ -80,10 +81,57 @@
 	let solution = $derived(solutionsData.find((s) => s.id === id));
 	let mockupImage = $derived(solution ? mockups[solution.id] : undefined);
 
-	// Products with a price are purchasable — they get "Buy Now" instead of "Get Started"
 	let isPurchasable = $derived(!!solution?.price);
+	let origin = $derived($page.url.origin);
 
-	// Slideshow interval timer
+	let breadcrumbLd = $derived(
+		solution
+			? {
+					'@context': 'https://schema.org',
+					'@type': 'BreadcrumbList',
+					itemListElement: [
+						{ '@type': 'ListItem', position: 1, name: 'Home', item: origin + '/' },
+						{ '@type': 'ListItem', position: 2, name: 'Solutions', item: origin + '/solutions' },
+						{ '@type': 'ListItem', position: 3, name: solution.title, item: origin + $page.url.pathname }
+					]
+				}
+			: undefined
+	);
+
+	let seoJsonLd = $derived.by<Record<string, unknown>[] | undefined>(() => {
+		if (!solution) return undefined;
+		const items: Record<string, unknown>[] = [breadcrumbLd].filter(Boolean) as Record<string, unknown>[];
+
+		if (solution.price && solution.id === 'devbeast') {
+			items.push({
+				'@context': 'https://schema.org',
+				'@type': 'SoftwareApplication',
+				name: solution.title,
+				operatingSystem: 'Linux, macOS, Windows',
+				applicationCategory: 'DeveloperApplication',
+				description: solution.description,
+				offers: {
+					'@type': 'Offer',
+					price: solution.price.replace(/[^0-9.]/g, ''),
+					priceCurrency: 'INR'
+				}
+			});
+			items.push({
+				'@context': 'https://schema.org',
+				'@type': 'Product',
+				name: solution.title,
+				description: solution.description,
+				offers: {
+					'@type': 'Offer',
+					price: solution.price.replace(/[^0-9.]/g, ''),
+					priceCurrency: 'INR',
+					availability: 'https://schema.org/InStock'
+				}
+			});
+		}
+		return items;
+	});
+
 	$effect(() => {
 		if (id !== 'devbeast') return;
 		slideIndex = 0;
@@ -106,14 +154,17 @@
 	}
 </script>
 
-<svelte:head>
-	{#if solution}
-		<title>{solution.title} | Tarkify</title>
-		<meta name="description" content={solution.description} />
-	{:else}
-		<title>Solution Not Found | Tarkify</title>
-	{/if}
-</svelte:head>
+{#if solution}
+	<Seo
+		title="{solution.title} | Tarkify"
+		description={solution.description}
+		ogImage="/og-image.svg"
+		ogType="website"
+		jsonLd={seoJsonLd}
+	/>
+{:else}
+	<Seo title="Solution Not Found | Tarkify" description="The requested solution does not exist." ogImage="/og-image.svg" />
+{/if}
 
 {#if !solution || solution.comingSoon}
 	<div class="solutions-page pt-32 pb-20 text-center">

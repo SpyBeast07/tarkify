@@ -14,6 +14,7 @@
 		Mail
 	} from '@lucide/svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 
 	let activeSection = $state('collection');
 
@@ -74,13 +75,11 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Privacy Policy | Tarkify</title>
-	<meta
-		name="description"
-		content="Review the Privacy Policy of Tarkify. Learn how we collect, use, store, and protect your data when using our AI automation solutions."
-	/>
-</svelte:head>
+<Seo
+	title="Privacy Policy | Tarkify"
+	description="Review the Privacy Policy of Tarkify. Learn how we collect, use, store, and protect your data when using our AI automation solutions."
+	ogImage="/og-image.svg"
+/>
 
 <div class="legal-page">
 	<div class="container">

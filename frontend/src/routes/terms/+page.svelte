@@ -13,6 +13,7 @@
 		Mail
 	} from '@lucide/svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
+	import Seo from '$lib/components/Seo.svelte';
 
 	let activeSection = $state('intro');
 
@@ -72,13 +73,11 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Terms of Service | Tarkify</title>
-	<meta
-		name="description"
-		content="Review the terms of service, conditions, and legal agreement governing the use of Tarkify's AI automation services."
-	/>
-</svelte:head>
+<Seo
+	title="Terms of Service | Tarkify"
+	description="Review the terms of service, conditions, and legal agreement governing the use of Tarkify's AI automation services."
+	ogImage="/og-image.svg"
+/>
 
 <div class="legal-page">
 	<div class="container">

@@ -14,6 +14,7 @@
 	} from '@lucide/svelte';
 	import Newsletter from '$lib/components/Newsletter.svelte';
 	import { submitContact } from '$lib/api/client';
+	import Seo from '$lib/components/Seo.svelte';
 
 	const kushagraImg = '/assets/kushagra.webp';
 	const ishitaImg = '/assets/ishita.webp';
@@ -92,13 +93,11 @@
 	}
 </script>
 
-<svelte:head>
-	<title>Contact Us | Tarkify</title>
-	<meta
-		name="description"
-		content="Let's build the future together. Reach out and our team of AI experts will help you find the perfect solution."
-	/>
-</svelte:head>
+<Seo
+	title="Contact Us | Tarkify"
+	description="Let's build the future together. Reach out and our team of AI experts will help you find the perfect solution."
+	ogImage="/og-image.svg"
+/>
 
 <div class="contact-page pt-32 pb-20">
 	<div class="container">
