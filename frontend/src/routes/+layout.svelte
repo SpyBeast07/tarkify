@@ -4,7 +4,7 @@
 	import { createThemeState } from '$lib/context/theme.svelte';
 	import Navbar from '$lib/components/layout/Navbar.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
-	import favicon from '$lib/assets/favicon.webp';
+	import favicon from '$lib/assets/tarkify_logo.svg';
 	import InteractiveBackground from '$lib/components/InteractiveBackground.svelte';
 	import './layout.css';
 
@@ -31,7 +31,7 @@
 		'@type': 'Organization',
 		name: 'Tarkify',
 		url: origin,
-		logo: `${origin}/favicon.webp`,
+		logo: `${origin}/tarkify_logo.svg`,
 		description:
 			'We build AI agents that automate work and make life easier. Reclaim hours of manual work and scale your team.',
 		email: 'tarkify.ai@gmail.com',
@@ -58,9 +58,8 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" type="image/webp" href={favicon} />
+	<link rel="icon" type="image/svg+xml" href={favicon} />
 	<link rel="apple-touch-icon" href={favicon} />
-	<link rel="mask-icon" href="/favicon.svg" color="#002400" />
 
 	<script type="application/ld+json" data-seo="organization">
 		{JSON.stringify(organizationJsonLd)}
