@@ -1,23 +1,28 @@
 <script lang="ts">
-	import { setContext } from 'svelte';
+	import { setContext, onMount, type Component } from 'svelte';
 	import { page } from '$app/stores';
 	import { createThemeState } from '$lib/context/theme.svelte';
 	import Navbar from '$lib/components/layout/Navbar.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
 	import favicon from '$lib/assets/tarkify_logo.svg';
-	import InteractiveBackground from '$lib/components/InteractiveBackground.svelte';
 	import './layout.css';
 
 	let { children } = $props();
 
-	// Initialize theme state and register under context
+	let InteractiveBg = $state<Component | null>(null);
+
+	onMount(async () => {
+		try {
+			InteractiveBg = (await import('$lib/components/InteractiveBackground.svelte')).default;
+		} catch {
+			// background is non-critical — skip silently
+		}
+	});
+
 	const themeState = createThemeState();
 	setContext('theme', themeState);
 
-	// Page route transition scroll-reset (equivalent to React's App.tsx scrollTo)
 	$effect(() => {
-		// Read page store to track pathname changes
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const pathname = $page.url.pathname;
 		if (typeof window !== 'undefined') {
 			window.scrollTo(0, 0);
@@ -70,7 +75,9 @@
 </svelte:head>
 
 <div class="app">
-	<InteractiveBackground />
+	{#if InteractiveBg}
+		<InteractiveBg />
+	{/if}
 	<Navbar />
 	<main>
 		{@render children()}

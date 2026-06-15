@@ -9,10 +9,10 @@
 <div class="error-page pt-32">
 	<div class="container">
 		<div class="error-card">
-			<img src={logo} alt="Tarkify" class="error-logo" />
+			<img src={logo} alt="Tarkify" class="error-logo" loading="lazy" decoding="async" />
 
 			{#if status === 404}
-				<div class="illustration">
+				<div class="illustration" role="img" aria-label="Compass illustration indicating page not found">
 					<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<circle cx="100" cy="100" r="88" stroke="var(--color-primary-green)" stroke-width="2" opacity="0.15" fill="none" />
 						<circle cx="100" cy="100" r="78" stroke="var(--color-accent-green)" stroke-width="1.5" opacity="0.2" fill="none" />
@@ -50,7 +50,7 @@
 					<Button href="/contact" variant="outline">Contact Us</Button>
 				</div>
 			{:else}
-				<div class="illustration">
+				<div class="illustration" role="img" aria-label="Broken gear illustration indicating server error">
 					<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<!-- Gear teeth -->
 						<g fill="var(--color-accent-green)" opacity="0.85">

@@ -39,7 +39,6 @@
 	},
 	"dependencies": {
 		"@lucide/svelte": "^1.21.0",
-		"lucide-svelte": "^1.0.1",
 		"matter-js": "^0.20.0"
 	}
 }

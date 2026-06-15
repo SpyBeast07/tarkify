@@ -261,6 +261,7 @@
 										height="654"
 										loading="lazy"
 										decoding="async"
+										onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
 										in:fade={{ duration: 150 }}
 									/>
 								{/key}
@@ -274,6 +275,7 @@
 								height="1125"
 								loading="lazy"
 								decoding="async"
+								onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
 							/>
 						{/if}
 					</div>
