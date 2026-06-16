@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
 	import type { Component } from 'svelte';
 
 	interface Props {
@@ -17,6 +17,9 @@
 		icon?: Component<{ size?: number; class?: string }>;
 		iconSnippet?: Snippet;
 		rows?: number;
+		maxlength?: number;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		[key: string]: any;
 	}
 
 	let {
@@ -32,7 +35,9 @@
 		class: className = '',
 		icon,
 		iconSnippet,
-		rows = 4
+		rows = 4,
+		maxlength,
+		...rest
 	}: Props = $props();
 </script>
 
@@ -56,10 +61,12 @@
 				{placeholder}
 				{required}
 				{rows}
+				{maxlength}
 				bind:value
 				class={error ? 'input-error' : ''}
 				aria-invalid={error ? 'true' : 'false'}
-				aria-describedby={error ? `${id}-error` : undefined}></textarea>
+				aria-describedby={error ? `${id}-error` : undefined}
+				{...rest}></textarea>
 		{:else if type === 'select'}
 			<select
 				{id}
@@ -69,6 +76,7 @@
 				class={error ? 'input-error' : ''}
 				aria-invalid={error ? 'true' : 'false'}
 				aria-describedby={error ? `${id}-error` : undefined}
+				{...rest}
 			>
 				{#each options as option (typeof option === 'string' ? option : option.value)}
 					{#if typeof option === 'string'}
@@ -85,10 +93,12 @@
 				{name}
 				{placeholder}
 				{required}
+				{maxlength}
 				bind:value
 				class={error ? 'input-error' : ''}
 				aria-invalid={error ? 'true' : 'false'}
 				aria-describedby={error ? `${id}-error` : undefined}
+				{...rest}
 			/>
 		{/if}
 	</div>

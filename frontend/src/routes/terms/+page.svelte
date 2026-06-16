@@ -122,16 +122,17 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							Welcome to Tarkify ("Company," "we," "us," or "our"). By accessing or using our website
-							located at <a href="/">tarkify.com</a>, our software, API, and custom AI agents
-							(collectively, the "Services"), you agree to be bound by these Terms of Service ("Terms").
-							If you do not agree to these Terms, please do not access or use our Services.
+							Welcome to Tarkify ("Company," "we," "us," or "our"). By accessing or using our
+							website located at <a href="/">tarkify.com</a>, our software, API, and custom AI
+							agents (collectively, the "Services"), you agree to be bound by these Terms of Service
+							("Terms"). If you do not agree to these Terms, please do not access or use our
+							Services.
 						</p>
 						<p>
-							These Terms constitute a legally binding agreement between you and Tarkify. If you are entering
-							into these Terms on behalf of a company or other legal entity, you represent that you have the
-							authority to bind such entity and its affiliates to these Terms, in which case the terms "you" or
-							"your" shall refer to such entity.
+							These Terms constitute a legally binding agreement between you and Tarkify. If you are
+							entering into these Terms on behalf of a company or other legal entity, you represent
+							that you have the authority to bind such entity and its affiliates to these Terms, in
+							which case the terms "you" or "your" shall refer to such entity.
 						</p>
 					</div>
 				</section>
@@ -146,15 +147,15 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							Tarkify designs, builds, and deploys custom artificial intelligence (AI) agents and automated
-							workflows (e.g., our DevBeast platform) to automate business operations, coding tasks, research,
-							and legal operations.
+							Tarkify designs, builds, and deploys custom artificial intelligence (AI) agents and
+							automated workflows (e.g., our DevBeast platform) to automate business operations,
+							coding tasks, research, and legal operations.
 						</p>
 						<p>
-							We constantly modify and improve our Services. We reserve the right to add, modify, or discontinue
-							features or functionalities of the Services at any time without prior notice. We shall not be
-							liable to you or any third party for any modification, price change, suspension, or discontinuance
-							of the Services.
+							We constantly modify and improve our Services. We reserve the right to add, modify, or
+							discontinue features or functionalities of the Services at any time without prior
+							notice. We shall not be liable to you or any third party for any modification, price
+							change, suspension, or discontinuance of the Services.
 						</p>
 					</div>
 				</section>
@@ -169,15 +170,17 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							To access certain features of our Services, you may be required to register for an account.
-							You agree to provide accurate, current, and complete information during the registration
-							process and to update such information to keep it accurate, current, and complete.
+							To access certain features of our Services, you may be required to register for an
+							account. You agree to provide accurate, current, and complete information during the
+							registration process and to update such information to keep it accurate, current, and
+							complete.
 						</p>
 						<p>
-							You are solely responsible for safeguarding your password and for all activities that occur
-							under your account. You agree to notify us immediately of any unauthorized use of your account or
-							any other breach of security. Tarkify cannot and will not be liable for any loss or damage arising
-							from your failure to comply with these security requirements.
+							You are solely responsible for safeguarding your password and for all activities that
+							occur under your account. You agree to notify us immediately of any unauthorized use
+							of your account or any other breach of security. Tarkify cannot and will not be liable
+							for any loss or damage arising from your failure to comply with these security
+							requirements.
 						</p>
 					</div>
 				</section>
@@ -192,20 +195,23 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							All right, title, and interest in and to the Services (excluding User Content) are and will remain
-							the exclusive property of Tarkify and its licensors. The Services are protected by copyright,
-							trademark, and other laws of both the United States and foreign countries.
+							All right, title, and interest in and to the Services (excluding User Content) are and
+							will remain the exclusive property of Tarkify and its licensors. The Services are
+							protected by copyright, trademark, and other laws of both the United States and
+							foreign countries.
 						</p>
 						<p>
-							<strong>User Content:</strong> You retain all rights to any data, text, files, or other material
-							that you submit, post, or display on or through the Services ("User Content"). By submitting User Content,
-							you grant us a worldwide, non-exclusive, royalty-free license to use, copy, process, adapt, modify,
-							publish, transmit, and distribute such content solely for the purpose of providing and improving the Services.
+							<strong>User Content:</strong> You retain all rights to any data, text, files, or other
+							material that you submit, post, or display on or through the Services ("User Content").
+							By submitting User Content, you grant us a worldwide, non-exclusive, royalty-free license
+							to use, copy, process, adapt, modify, publish, transmit, and distribute such content solely
+							for the purpose of providing and improving the Services.
 						</p>
 						<p>
-							<strong>AI-Generated Outputs:</strong> Unless otherwise specified in a custom Enterprise Agreement,
-							all code, documents, and automation scripts generated by Tarkify's AI agents specifically for your organization
-							are owned by you, subject to your full payment of all applicable fees.
+							<strong>AI-Generated Outputs:</strong> Unless otherwise specified in a custom Enterprise
+							Agreement, all code, documents, and automation scripts generated by Tarkify's AI agents
+							specifically for your organization are owned by you, subject to your full payment of all
+							applicable fees.
 						</p>
 					</div>
 				</section>
@@ -219,16 +225,22 @@
 						<h2>5. Acceptable Use Policy</h2>
 					</div>
 					<div class="legal-card-body">
-						<p>
-							You agree not to use the Services to:
-						</p>
+						<p>You agree not to use the Services to:</p>
 						<ul>
 							<li>Violate any local, state, national, or international law or regulation.</li>
-							<li>Infringe upon or violate our intellectual property rights or the rights of others.</li>
+							<li>
+								Infringe upon or violate our intellectual property rights or the rights of others.
+							</li>
 							<li>Transmit any viruses, worms, malware, or other malicious code.</li>
 							<li>Interfere with or disrupt the integrity or performance of the Services.</li>
-							<li>Attempt to gain unauthorized access to the Services or their related systems or networks.</li>
-							<li>Reverse engineer, decompile, or disassemble any aspect of the software or AI architectures.</li>
+							<li>
+								Attempt to gain unauthorized access to the Services or their related systems or
+								networks.
+							</li>
+							<li>
+								Reverse engineer, decompile, or disassemble any aspect of the software or AI
+								architectures.
+							</li>
 							<li>Use the AI agents to generate illegal, fraudulent, or harmful materials.</li>
 						</ul>
 					</div>
@@ -244,14 +256,16 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							Certain features of the Services are provided on a paid subscription basis or as custom enterprise contracts.
-							You agree to pay all fees specified in your service tier or custom contract. All payments are non-refundable
-							except as required by law or as explicitly stated in a service level agreement (SLA).
+							Certain features of the Services are provided on a paid subscription basis or as
+							custom enterprise contracts. You agree to pay all fees specified in your service tier
+							or custom contract. All payments are non-refundable except as required by law or as
+							explicitly stated in a service level agreement (SLA).
 						</p>
 						<p>
-							We reserve the right to change our subscription rates at any time. We will provide you with reasonable
-							prior notice of any changes to fees. Your continued use of the Services after the fee change becomes
-							effective constitutes your agreement to pay the modified amount.
+							We reserve the right to change our subscription rates at any time. We will provide you
+							with reasonable prior notice of any changes to fees. Your continued use of the
+							Services after the fee change becomes effective constitutes your agreement to pay the
+							modified amount.
 						</p>
 					</div>
 				</section>
@@ -266,15 +280,16 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, TARKIFY AND ITS OFFICERS, EMPLOYEES, AND AGENTS
-							SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES,
-							OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA,
-							USE, GOODWILL, OR OTHER INTANGIBLE LOSSES.
+							TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, TARKIFY AND ITS OFFICERS,
+							EMPLOYEES, AND AGENTS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
+							CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER
+							INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER
+							INTANGIBLE LOSSES.
 						</p>
 						<p>
-							IN NO EVENT SHALL THE AGGREGATE LIABILITY OF TARKIFY EXCEED THE GREATER OF ONE HUNDRED U.S. DOLLARS
-							($100.00) OR THE TOTAL AMOUNT PAID BY YOU TO TARKIFY IN THE PAST SIX (6) MONTHS FOR THE SERVICES
-							GIVING RISE TO THE CLAIM.
+							IN NO EVENT SHALL THE AGGREGATE LIABILITY OF TARKIFY EXCEED THE GREATER OF ONE HUNDRED
+							U.S. DOLLARS ($100.00) OR THE TOTAL AMOUNT PAID BY YOU TO TARKIFY IN THE PAST SIX (6)
+							MONTHS FOR THE SERVICES GIVING RISE TO THE CLAIM.
 						</p>
 					</div>
 				</section>
@@ -289,10 +304,11 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							These Terms and any action related thereto will be governed by the laws of the State of California
-							without regard to or application of its conflict of law provisions or your state or country of
-							residence. All claims, legal proceedings, or litigation arising in connection with the Services
-							will be brought solely in the federal or state courts located in San Francisco County, California.
+							These Terms and any action related thereto will be governed by the laws of the State
+							of California without regard to or application of its conflict of law provisions or
+							your state or country of residence. All claims, legal proceedings, or litigation
+							arising in connection with the Services will be brought solely in the federal or state
+							courts located in San Francisco County, California.
 						</p>
 					</div>
 				</section>
@@ -307,13 +323,15 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							We reserve the right, at our sole discretion, to modify or replace these Terms at any time.
-							If a revision is material, we will provide at least 30 days' notice prior to any new terms taking
-							effect. What constitutes a material change will be determined at our sole discretion.
+							We reserve the right, at our sole discretion, to modify or replace these Terms at any
+							time. If a revision is material, we will provide at least 30 days' notice prior to any
+							new terms taking effect. What constitutes a material change will be determined at our
+							sole discretion.
 						</p>
 						<p>
-							By continuing to access or use our Services after those revisions become effective, you agree to
-							be bound by the revised terms. If you do not agree to the new terms, please stop using the Services.
+							By continuing to access or use our Services after those revisions become effective,
+							you agree to be bound by the revised terms. If you do not agree to the new terms,
+							please stop using the Services.
 						</p>
 					</div>
 				</section>
@@ -327,9 +345,7 @@
 						<h2>10. Contact Information</h2>
 					</div>
 					<div class="legal-card-body">
-						<p>
-							If you have any questions about these Terms, please contact the Tarkify team:
-						</p>
+						<p>If you have any questions about these Terms, please contact the Tarkify team:</p>
 						<ul>
 							<li>Email: <a href="mailto:tarkify.ai@gmail.com">tarkify.ai@gmail.com</a></li>
 							<li>Website Contact Form: <a href="/contact">tarkify.com/contact</a></li>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Play, Sparkles, AlertCircle, Info } from '@lucide/svelte';
+	import { getContext } from 'svelte';
 
-	// Import components
 	import Button from '$lib/components/ui/Button.svelte';
 	import Input from '$lib/components/ui/Input.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
@@ -13,21 +13,20 @@
 	import Newsletter from '$lib/components/Newsletter.svelte';
 	import FeedbackForm from '$lib/components/FeedbackForm.svelte';
 
-	// Import utils and data
 	import { parseMarkdown } from '$lib/utils/markdown';
 	import { calculateROI } from '$lib/utils/roi';
 	import { validateEmail } from '$lib/utils/validation';
 	import { solutionsData } from '$lib/data/solutions';
 	import { discoverData } from '$lib/data/discover';
 
-	// Component states
+	const toastState = getContext<{ addToast: (msg: string, type: string) => void }>('toast');
+
 	let isModalOpen = $state(false);
 	let isDialogOpen = $state(false);
 	let testInputValue = $state('');
 	let testTextareaValue = $state('');
 	let testSelectValue = $state('Option A');
 
-	// Util states for testing
 	let markdownText = $state(
 		'## Markdown Heading\nThis is **bold** text and a [link to Tarkify](https://tarkify.com).\n* List item one\n* List item two'
 	);
@@ -40,7 +39,6 @@
 	let testEmailValue = $state('test@example.com');
 	let isEmailValid = $derived(validateEmail(testEmailValue));
 
-	// Card info
 	const cardFeatures = [
 		'Real-time simulation engine',
 		'Auto-scaling resources',
@@ -48,13 +46,17 @@
 	];
 
 	function handleConfirm() {
-		alert('Dialog Confirmed!');
+		toastState?.addToast('Action confirmed!', 'success');
 	}
 
 	function handleCancel() {
-		alert('Dialog Cancelled.');
+		toastState?.addToast('Action cancelled.', 'info');
 	}
 </script>
+
+<svelte:head>
+	<meta name="robots" content="noindex,nofollow" />
+</svelte:head>
 
 <div class="test-page-wrapper">
 	<div class="container pt-24 pb-24">
@@ -66,7 +68,6 @@
 			</p>
 		</div>
 
-		<!-- 1. Buttons section -->
 		<section class="test-section mb-12">
 			<h2 class="test-sec-title">1. Button Variants & Sizes</h2>
 			<div class="test-flex flex-wrap gap-4 items-center">
@@ -92,7 +93,6 @@
 			</div>
 		</section>
 
-		<!-- 2. Badges section -->
 		<section class="test-section mb-12">
 			<h2 class="test-sec-title">2. Badges / Pills</h2>
 			<div class="test-flex flex-wrap gap-3">
@@ -106,7 +106,6 @@
 			</div>
 		</section>
 
-		<!-- 3. Form Input elements -->
 		<section class="test-section mb-12">
 			<h2 class="test-sec-title">3. Inputs & Forms</h2>
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
@@ -162,7 +161,6 @@
 			</div>
 		</section>
 
-		<!-- 4. Loading States -->
 		<section class="test-section mb-12">
 			<h2 class="test-sec-title">4. Loading states</h2>
 			<div class="test-flex gap-6 items-center">
@@ -176,7 +174,6 @@
 			</div>
 		</section>
 
-		<!-- 5. Overlays (Modal, Dialog, Dropdown) -->
 		<section class="test-section mb-12">
 			<h2 class="test-sec-title">5. Modals, Dialogs & Dropdowns</h2>
 			<div class="test-flex flex-wrap gap-4">
@@ -188,14 +185,19 @@
 				<Dropdown
 					label="Settings Dropdown"
 					items={[
-						{ label: 'View Profile', onclick: () => alert('Profile clicked') },
-						{ label: 'System Settings', onclick: () => alert('Settings clicked') },
-						{ label: 'Log Out', onclick: () => alert('Logout clicked') }
+						{
+							label: 'View Profile',
+							onclick: () => toastState?.addToast('Profile clicked', 'info')
+						},
+						{
+							label: 'System Settings',
+							onclick: () => toastState?.addToast('Settings clicked', 'info')
+						},
+						{ label: 'Log Out', onclick: () => toastState?.addToast('Logged out', 'info') }
 					]}
 				/>
 			</div>
 
-			<!-- Modal Instance -->
 			<Modal show={isModalOpen} title="Tarkify Custom Modal">
 				<p class="opacity-85 mb-4">
 					This is a modular glassmorphic modal component. It supports responsive animations, custom
@@ -208,7 +210,6 @@
 				{/snippet}
 			</Modal>
 
-			<!-- Dialog Instance -->
 			<Dialog
 				bind:open={isDialogOpen}
 				title="Confirm Deletion"
@@ -220,7 +221,6 @@
 			/>
 		</section>
 
-		<!-- 6. Card Showcase -->
 		<section class="test-section mb-16">
 			<h2 class="test-sec-title">6. Product Cards (from React)</h2>
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
@@ -230,7 +230,7 @@
 					features={cardFeatures}
 					icon={Sparkles}
 					buttonText="Launch Sandbox"
-					onButtonClick={() => alert('Launching sandbox simulator!')}
+					onButtonClick={() => toastState?.addToast('Launching sandbox simulator!', 'info')}
 				/>
 
 				<Card
@@ -246,7 +246,6 @@
 			</div>
 		</section>
 
-		<!-- 7. Shared Section Components -->
 		<section class="test-section mb-12">
 			<h2 class="test-sec-title">7. Layout-Level Components (Newsletter & Feedback)</h2>
 			<div class="mb-12 border border-dashed border-gray-400 rounded-3xl p-4">
@@ -260,12 +259,10 @@
 			</div>
 		</section>
 
-		<!-- 8. Utility Functions & Mock Data Constants -->
 		<section class="test-section mb-12">
 			<h2 class="test-sec-title">8. Utilities, Validators & Datasets</h2>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-				<!-- Markdown and Email Validator -->
 				<div>
 					<h3 class="font-bold mb-3 text-lg">Markdown Parser & Email Validator</h3>
 					<div class="mb-4">
@@ -279,7 +276,6 @@
 					<div class="mb-6 p-4 rounded-xl bg-white/20 border border-black/10 dark:border-white/10">
 						<h4 class="text-xs uppercase tracking-wider opacity-60 mb-2">Parsed Output Preview</h4>
 						<div>
-							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 							{@html parsedHtml}
 						</div>
 					</div>
@@ -304,7 +300,6 @@
 					</div>
 				</div>
 
-				<!-- ROI computation and Constants counts -->
 				<div>
 					<h3 class="font-bold mb-3 text-lg">ROI Calculations & Constant Datasets</h3>
 					<div class="mb-4">

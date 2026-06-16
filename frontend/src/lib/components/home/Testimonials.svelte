@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { Quote } from '@lucide/svelte';
 
 	const testimonialsData = [
@@ -44,14 +45,26 @@
 
 	let trackEl: HTMLDivElement | undefined = $state();
 
+	let prefersReducedMotion = $state(false);
+
+	onMount(() => {
+		const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		prefersReducedMotion = mediaQuery.matches;
+		const handler = (e: MediaQueryListEvent) => {
+			prefersReducedMotion = e.matches;
+		};
+		mediaQuery.addEventListener('change', handler);
+		return () => mediaQuery.removeEventListener('change', handler);
+	});
+
 	function handleMouseEnter() {
-		if (trackEl) {
+		if (trackEl && !prefersReducedMotion) {
 			trackEl.style.animationPlayState = 'paused';
 		}
 	}
 
 	function handleMouseLeave() {
-		if (trackEl) {
+		if (trackEl && !prefersReducedMotion) {
 			trackEl.style.animationPlayState = 'running';
 		}
 	}

@@ -1164,7 +1164,8 @@
 	margin-bottom: 0;
 }
 
-.legal-card-body ul, .legal-card-body ol {
+.legal-card-body ul,
+.legal-card-body ol {
 	margin-bottom: 1.25rem;
 	padding-left: 1.25rem;
 }
@@ -1190,4 +1191,3 @@
 	color: var(--color-accent-green);
 	font-weight: bold;
 }
-

@@ -8,6 +8,8 @@
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { corsMiddleware } from './middleware/cors.js';
+import { requestId } from './middleware/request-id.js';
+import { securityHeaders, bodySizeLimit, rateLimit } from './middleware/security.js';
 import { testConnection } from './db.js';
 import { config } from './config.js';
 import products from './routes/products.js';
@@ -15,21 +17,38 @@ import payments from './routes/payments.js';
 import webhooks from './routes/webhooks.js';
 import downloads from './routes/downloads.js';
 
-const app = new Hono();
+const app = new Hono<{ Variables: { requestId: string } }>();
 
-// ── Global Middleware ────────────────────────────────────────────
+// ── Global Middleware (order matters: outermost first) ───────────
+app.use('*', requestId);
 app.use('*', corsMiddleware);
+app.use('*', securityHeaders);
+app.use('*', bodySizeLimit);
 app.use('*', logger());
 
 // ── Health Check ─────────────────────────────────────────────────
 app.get('/api/health', (c) => {
-  return c.json({ status: 'ok', timestamp: new Date().toISOString() });
+  return c.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
 });
 
 // ── Root / Welcome ───────────────────────────────────────────────
 app.get('/', (c) => {
   return c.json({ name: 'Tarkify API', status: 'active', version: '1.0.0' });
 });
+
+// ── Mount payment routes with rate limiting ──────────────────────
+const paymentLimit = rateLimit({ windowMs: 60_000, max: 30 });
+payments.use('*', paymentLimit);
+
+const downloadLimit = rateLimit({ windowMs: 60_000, max: 60 });
+downloads.use('*', downloadLimit);
+
+const webhookLimit = rateLimit({ windowMs: 60_000, max: 20 });
+webhooks.use('*', webhookLimit);
 
 // ── Route Groups ─────────────────────────────────────────────────
 app.route('/api/products', products);
@@ -44,9 +63,11 @@ app.notFound((c) => {
 
 // ── Global Error Handler ─────────────────────────────────────────
 app.onError((err, c) => {
-  console.error('Unhandled error:', err);
+  const rid = c.get('requestId') as string | undefined;
+  // Log the full error server-side; never leak internals to the client.
+  console.error(`request=${rid ?? 'none'} unhandled_error=${err.message}`);
   return c.json(
-    { error: 'INTERNAL_ERROR', message: 'An unexpected error occurred' },
+    { error: 'INTERNAL_ERROR', message: 'An unexpected error occurred', requestId: rid },
     500
   );
 });

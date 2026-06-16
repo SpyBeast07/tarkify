@@ -16,7 +16,7 @@
 import crypto from 'crypto';
 import { query, withTransaction } from '../db.js';
 import { config } from '../config.js';
-import type { Purchase, Entitlement, DownloadToken } from '../types/index.js';
+import type { Purchase, DownloadToken } from '../types/index.js';
 import type pg from 'pg';
 
 // ── Email normalisation ───────────────────────────────────────────
@@ -285,6 +285,23 @@ export async function validateDownloadToken(
      WHERE token = $1 AND expires_at > NOW()
      LIMIT 1`,
     [token]
+  );
+  return result.rows[0] ?? null;
+}
+
+/**
+ * Find the latest non-expired download token for a purchase.
+ * Used in the idempotent /verify path to avoid issuing multiple tokens.
+ */
+export async function validateActiveTokenByPurchase(
+  purchaseId: string
+): Promise<DownloadToken | null> {
+  const result = await query<DownloadToken>(
+    `SELECT * FROM download_tokens
+     WHERE purchase_id = $1 AND expires_at > NOW()
+     ORDER BY created_at DESC
+     LIMIT 1`,
+    [purchaseId]
   );
   return result.rows[0] ?? null;
 }

@@ -15,27 +15,37 @@
 		{ name: 'Discover', href: '/discover' },
 		{ name: 'Careers', href: '/careers' }
 	];
+
+	function closeMobileMenu() {
+		isMobileMenuOpen = false;
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Escape' && isMobileMenuOpen) {
+			closeMobileMenu();
+		}
+	}
 </script>
 
-<svelte:window bind:scrollY={y} />
+<svelte:window bind:scrollY={y} onkeydown={handleKeydown} />
 
-<nav class="navbar" class:is-scrolled={y > 20}>
+<nav class="navbar" class:is-scrolled={y > 20} aria-label="Main navigation">
 	<div class="container nav-container">
-		<a href="/" class="logo">
+		<a href="/" class="logo" aria-label="Tarkify home">
 			<span class="logo-text">Tarkify</span>
 		</a>
 
 		<div class="nav-desktop">
-			<ul class="nav-links">
+			<ul class="nav-links" role="list">
 				{#each navLinks as link (link.href)}
 					<li>
-						{#if link.href.startsWith('/#')}
-							<a href={link.href}>{link.name}</a>
-						{:else}
-							<a href={link.href} class:active-link={$page.url.pathname === link.href}>
-								{link.name}
-							</a>
-						{/if}
+						<a
+							href={link.href}
+							class:active-link={$page.url.pathname === link.href}
+							aria-current={$page.url.pathname === link.href ? 'page' : undefined}
+						>
+							{link.name}
+						</a>
 					</li>
 				{/each}
 			</ul>
@@ -43,7 +53,10 @@
 				<button
 					class="theme-toggle"
 					onclick={() => themeState?.toggleTheme()}
-					aria-label="Toggle Theme"
+					aria-label={themeState?.theme === 'light'
+						? 'Switch to dark mode'
+						: 'Switch to light mode'}
+					aria-pressed={themeState?.theme === 'dark'}
 				>
 					{#if themeState?.theme === 'light'}
 						<Moon size={20} />
@@ -58,7 +71,8 @@
 		<button
 			class="nav-mobile-toggle"
 			onclick={() => (isMobileMenuOpen = !isMobileMenuOpen)}
-			aria-label="Toggle mobile menu"
+			aria-label={isMobileMenuOpen ? 'Close mobile menu' : 'Open mobile menu'}
+			aria-expanded={isMobileMenuOpen}
 			style="background: none; border: none;"
 		>
 			{#if isMobileMenuOpen}
@@ -70,31 +84,24 @@
 	</div>
 
 	{#if isMobileMenuOpen}
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div class="nav-mobile-menu glass" transition:fly={{ y: -20, duration: 300 }}>
-			<ul class="nav-links-mobile">
+			<ul class="nav-links-mobile" role="list">
 				{#each navLinks as link (link.href)}
 					<li>
-						{#if link.href.startsWith('/#')}
-							<a href={link.href} onclick={() => (isMobileMenuOpen = false)}>
-								{link.name}
-							</a>
-						{:else}
-							<a
-								href={link.href}
-								onclick={() => (isMobileMenuOpen = false)}
-								class:active-link={$page.url.pathname === link.href}
-							>
-								{link.name}
-							</a>
-						{/if}
+						<a
+							href={link.href}
+							onclick={closeMobileMenu}
+							class:active-link={$page.url.pathname === link.href}
+							aria-current={$page.url.pathname === link.href ? 'page' : undefined}
+						>
+							{link.name}
+						</a>
 					</li>
 				{/each}
 				<li>
-					<a
-						href="/contact"
-						class="btn btn-primary btn-full"
-						onclick={() => (isMobileMenuOpen = false)}
-					>
+					<a href="/contact" class="btn btn-primary btn-full" onclick={closeMobileMenu}>
 						Contact Us
 					</a>
 				</li>

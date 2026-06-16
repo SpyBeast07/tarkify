@@ -124,7 +124,11 @@ downloads.get('/:productSlug', async (c) => {
   try {
     const fileStat = await stat(filePath);
     const file = Bun.file(filePath);
-    const fileName = `${productSlug}-latest.zip`;
+    // Sanitize the slug before using it in Content-Disposition to prevent
+    // header injection attacks (CWE-93). Strip all non-alphanumeric chars
+    // except hyphen and underscore.
+    const safeSlug = productSlug.replace(/[^a-zA-Z0-9_-]/g, '');
+    const fileName = `${safeSlug}-latest.zip`;
 
     c.header('Content-Type', 'application/octet-stream');
     c.header('Content-Disposition', `attachment; filename="${fileName}"`);

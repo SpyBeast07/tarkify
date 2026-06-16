@@ -4,21 +4,14 @@
 	import { slide } from 'svelte/transition';
 
 	let email = $state('');
-	let status = $state<'idle' | 'loading' | 'success' | 'error'>('idle');
+	let status = $state<'idle' | 'loading' | 'error'>('idle');
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault();
 		status = 'loading';
 		try {
-			const response = await submitNewsletter(email);
-			if (response.ok) {
-				status = 'success';
-				email = '';
-			} else {
-				status = 'error';
-			}
-		} catch (err) {
-			console.error('Newsletter subscription error:', err);
+			await submitNewsletter(email);
+		} catch {
 			status = 'error';
 		}
 	}
@@ -42,8 +35,10 @@
 						placeholder="Enter your work email"
 						required
 						bind:value={email}
-						disabled={status === 'loading' || status === 'success'}
+						disabled={status === 'loading'}
 						aria-label="Work email address for newsletter"
+						autocomplete="email"
+						maxlength={100}
 					/>
 					<button
 						type="submit"
@@ -51,7 +46,7 @@
 						disabled={status === 'loading'}
 					>
 						<span>
-							{status === 'success' ? 'Joined!' : status === 'loading' ? 'Joining...' : 'Subscribe'}
+							{status === 'loading' ? 'Joining...' : 'Subscribe'}
 						</span>
 						<Send size={15} />
 					</button>
@@ -62,9 +57,13 @@
 						transition:slide
 						class="newsletter-error-message mt-2 flex items-center justify-center gap-1 text-xs font-semibold"
 						style="color: #ef4444;"
+						role="alert"
+						aria-live="polite"
 					>
 						<AlertCircle size={14} />
-						<span>Newsletter service is temporarily unavailable. Please try again later.</span>
+						<span
+							>Subscriptions are temporarily unavailable. This feature is currently being upgraded.</span
+						>
 					</div>
 				{/if}
 

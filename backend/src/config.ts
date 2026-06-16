@@ -1,6 +1,6 @@
 /**
  * Centralized configuration — reads and validates environment variables at startup.
- * Fails fast if any required variable is missing.
+ * Fails fast if any required variable is missing or invalid.
  */
 
 function requireEnv(name: string): string {
@@ -15,8 +15,24 @@ function optionalEnv(name: string, fallback: string): string {
   return process.env[name] || fallback;
 }
 
+function parsePort(raw: string): number {
+  const port = parseInt(raw, 10);
+  if (isNaN(port) || port < 1024 || port > 65535) {
+    throw new Error(`Invalid PORT: ${raw}. Must be between 1024 and 65535.`);
+  }
+  return port;
+}
+
+function parsePositiveInt(raw: string, name: string, max: number): number {
+  const val = parseInt(raw, 10);
+  if (isNaN(val) || val <= 0 || val > max) {
+    throw new Error(`Invalid ${name}: ${raw}. Must be between 1 and ${max}.`);
+  }
+  return val;
+}
+
 export const config = {
-  port: parseInt(optionalEnv('PORT', '3001'), 10),
+  port: parsePort(optionalEnv('PORT', '3001')),
 
   database: {
     url: requireEnv('DATABASE_URL'),
@@ -32,10 +48,11 @@ export const config = {
 
   storagePath: optionalEnv('STORAGE_PATH', './storage'),
 
-  /** Download token TTL in seconds (default: 10 minutes). */
-  downloadTokenTtlSeconds: parseInt(
+  /** Download token TTL in seconds (min: 60, max: 86400, default: 600 = 10 minutes). */
+  downloadTokenTtlSeconds: parsePositiveInt(
     optionalEnv('DOWNLOAD_TOKEN_TTL_SECONDS', '600'),
-    10
+    'DOWNLOAD_TOKEN_TTL_SECONDS',
+    86400
   ),
-} as const;
+};
 

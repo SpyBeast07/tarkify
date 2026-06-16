@@ -74,12 +74,15 @@ webhooks.post('/razorpay', async (c) => {
     }
 
     try {
-      // Atomically complete purchase + grant entitlement.
-      // The signature stored here is the real Razorpay payment signature.
+      // Compute the genuine payment signature ourselves. The webhook HMAC
+      // is computed over the raw body using the webhook secret, which is
+      // different from the payment signature (orderId|paymentId with key_secret).
+      const paymentSignature = razorpayService.computePaymentSignature(orderId, paymentId);
+
       const updated = await purchaseService.completePurchaseAndGrantEntitlement(
         orderId,
         paymentId,
-        signature  // actual HMAC signature — not a truncated sentinel value
+        paymentSignature
       );
 
       if (!updated) {

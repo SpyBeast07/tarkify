@@ -110,6 +110,22 @@ export function verifyWebhookSignature(
 }
 
 /**
+ * Compute the payment signature expected from Razorpay Checkout.
+ *
+ * The signature is: HMAC_SHA256(orderId|paymentId, keySecret)
+ * This is the same computation used in verifyPaymentSignature, exported
+ * separately so webhook handlers can store the correct payment signature
+ * without relying on the webhook HMAC (which is different).
+ */
+export function computePaymentSignature(orderId: string, paymentId: string): string {
+  const body = `${orderId}|${paymentId}`;
+  return crypto
+    .createHmac('sha256', config.razorpay.keySecret)
+    .update(body)
+    .digest('hex');
+}
+
+/**
  * Get the Razorpay public key (safe to send to the frontend).
  */
 export function getPublicKey(): string {

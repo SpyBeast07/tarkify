@@ -27,7 +27,7 @@
 		{ id: 'rights', label: '6. Your Privacy Rights', icon: UserCheck },
 		{ id: 'thirdparty', label: '7. Third-Party Integrations', icon: Layers },
 		{ id: 'cookies', label: '8. Cookies & Tracking', icon: Cookie },
-		{ id: 'children', label: '9. Children\'s Privacy', icon: Users },
+		{ id: 'children', label: "9. Children's Privacy", icon: Users },
 		{ id: 'changes', label: '10. Changes to Policy', icon: RefreshCw },
 		{ id: 'contact', label: '11. Contact Details', icon: Mail }
 	];
@@ -124,17 +124,25 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							We collect information that you provide directly to us, information that is automatically
-							collected when you use our Services, and information processed on your behalf by our custom
-							AI agents.
+							We collect information that you provide directly to us, information that is
+							automatically collected when you use our Services, and information processed on your
+							behalf by our custom AI agents.
 						</p>
-						<p><strong>Personal Data:</strong> This includes your name, email address, phone number, billing information,
-							company name, and credentials provided when creating an account or contacting support.</p>
-						<p><strong>System & Integration Data:</strong> To allow our AI agents (like DevBeast) to execute tasks, we
-							may collect API keys, database credentials, repository access, and log files that you explicitly authorize
-							and configure within the platform.</p>
-						<p><strong>Usage Information:</strong> We collect details about your interactions with the Services, such as
-							IP address, browser type, operating system, page views, query inputs, and performance metrics.</p>
+						<p>
+							<strong>Personal Data:</strong> This includes your name, email address, phone number, billing
+							information, company name, and credentials provided when creating an account or contacting
+							support.
+						</p>
+						<p>
+							<strong>System & Integration Data:</strong> To allow our AI agents (like DevBeast) to execute
+							tasks, we may collect API keys, database credentials, repository access, and log files that
+							you explicitly authorize and configure within the platform.
+						</p>
+						<p>
+							<strong>Usage Information:</strong> We collect details about your interactions with the
+							Services, such as IP address, browser type, operating system, page views, query inputs,
+							and performance metrics.
+						</p>
 					</div>
 				</section>
 
@@ -148,19 +156,24 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							We use the information we collect to provide, maintain, and improve our Services, including:
+							We use the information we collect to provide, maintain, and improve our Services,
+							including:
 						</p>
 						<ul>
 							<li>Operating the AI agents, code executors, and automation pipelines.</li>
 							<li>Processing transactions and sending billing notifications.</li>
 							<li>Responding to customer support requests and communication inquiries.</li>
-							<li>Detecting, preventing, and addressing technical issues or security vulnerabilities.</li>
-							<li>Analyzing usage trends to improve user interface design and software performance.</li>
+							<li>
+								Detecting, preventing, and addressing technical issues or security vulnerabilities.
+							</li>
+							<li>
+								Analyzing usage trends to improve user interface design and software performance.
+							</li>
 						</ul>
 						<p>
-							<strong>Important note on AI training:</strong> Tarkify does NOT use your proprietary source code, database contents,
-							or private company documents to train public or shared AI models. Your workspace data remains segregated and
-							private.
+							<strong>Important note on AI training:</strong> Tarkify does NOT use your proprietary source
+							code, database contents, or private company documents to train public or shared AI models.
+							Your workspace data remains segregated and private.
 						</p>
 					</div>
 				</section>
@@ -175,12 +188,25 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							We do not sell, rent, or trade your personal data. We only share information in the following circumstances:
+							We do not sell, rent, or trade your personal data. We only share information in the
+							following circumstances:
 						</p>
 						<ul>
-							<li><strong>With Subprocessors:</strong> We utilize third-party cloud hosting providers (e.g., AWS, GCP) and leading AI model provider APIs (e.g., OpenAI, Anthropic, Google Gemini) to run backend workloads. These subprocessors are contractually bound to comply with strict data protection guidelines.</li>
-							<li><strong>For Legal Compliance:</strong> We may disclose information if we believe in good faith that disclosure is necessary to comply with applicable laws, regulations, legal processes, or government requests.</li>
-							<li><strong>Business Transfers:</strong> If we are involved in a merger, acquisition, financing, or sale of assets, your information may be transferred as part of that business transaction.</li>
+							<li>
+								<strong>With Subprocessors:</strong> We utilize third-party cloud hosting providers (e.g.,
+								AWS, GCP) and leading AI model provider APIs (e.g., OpenAI, Anthropic, Google Gemini)
+								to run backend workloads. These subprocessors are contractually bound to comply with strict
+								data protection guidelines.
+							</li>
+							<li>
+								<strong>For Legal Compliance:</strong> We may disclose information if we believe in good
+								faith that disclosure is necessary to comply with applicable laws, regulations, legal
+								processes, or government requests.
+							</li>
+							<li>
+								<strong>Business Transfers:</strong> If we are involved in a merger, acquisition, financing,
+								or sale of assets, your information may be transferred as part of that business transaction.
+							</li>
 						</ul>
 					</div>
 				</section>
@@ -195,14 +221,20 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							Tarkify takes data security extremely seriously. We implement robust technical and organizational measures
-							to protect your information, including:
+							Tarkify takes data security extremely seriously. We implement robust technical and
+							organizational measures to protect your information, including:
 						</p>
 						<ul>
-							<li>Encryption of data at rest and in transit using industry-standard TLS 1.3 and AES-256 protocols.</li>
+							<li>
+								Encryption of data at rest and in transit using industry-standard TLS 1.3 and
+								AES-256 protocols.
+							</li>
 							<li>Secure credential vaulting with restricted, role-based access control.</li>
 							<li>Regular automated dependency audits and third-party security assessments.</li>
-							<li>Containerized sandboxing of AI code executions to prevent unauthorized network access or privilege escalation.</li>
+							<li>
+								Containerized sandboxing of AI code executions to prevent unauthorized network
+								access or privilege escalation.
+							</li>
 						</ul>
 					</div>
 				</section>
@@ -217,13 +249,15 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							We store your personal data only as long as necessary to fulfill the purposes outlined in this Privacy Policy,
-							provide our services, resolve disputes, and comply with legal requirements.
+							We store your personal data only as long as necessary to fulfill the purposes outlined
+							in this Privacy Policy, provide our services, resolve disputes, and comply with legal
+							requirements.
 						</p>
 						<p>
-							For AI task executions, detailed transaction logs and inputs/outputs are kept for 30 days to facilitate
-							debugging and reporting, after which they are automatically anonymized or purged, unless custom retention terms
-							are set in your organization's configuration.
+							For AI task executions, detailed transaction logs and inputs/outputs are kept for 30
+							days to facilitate debugging and reporting, after which they are automatically
+							anonymized or purged, unless custom retention terms are set in your organization's
+							configuration.
 						</p>
 					</div>
 				</section>
@@ -238,16 +272,33 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							Depending on your location, you may have specific rights regarding your personal information, including the rights under
-							the General Data Protection Regulation (GDPR) or California Consumer Privacy Act (CCPA):
+							Depending on your location, you may have specific rights regarding your personal
+							information, including the rights under the General Data Protection Regulation (GDPR)
+							or California Consumer Privacy Act (CCPA):
 						</p>
 						<ul>
-							<li><strong>Access & Portability:</strong> The right to request copies of your personal information in a structured, machine-readable format.</li>
-							<li><strong>Rectification:</strong> The right to request correction of inaccurate or incomplete personal data.</li>
-							<li><strong>Deletion ("Right to be Forgotten"):</strong> The right to request that we erase your personal data, subject to certain exceptions.</li>
-							<li><strong>Objection & Restriction:</strong> The right to object to or request restriction of our processing of your personal data.</li>
+							<li>
+								<strong>Access & Portability:</strong> The right to request copies of your personal information
+								in a structured, machine-readable format.
+							</li>
+							<li>
+								<strong>Rectification:</strong> The right to request correction of inaccurate or incomplete
+								personal data.
+							</li>
+							<li>
+								<strong>Deletion ("Right to be Forgotten"):</strong> The right to request that we erase
+								your personal data, subject to certain exceptions.
+							</li>
+							<li>
+								<strong>Objection & Restriction:</strong> The right to object to or request restriction
+								of our processing of your personal data.
+							</li>
 						</ul>
-						<p>To exercise any of these rights, please contact our support team at <a href="mailto:tarkify.ai@gmail.com">tarkify.ai@gmail.com</a>.</p>
+						<p>
+							To exercise any of these rights, please contact our support team at <a
+								href="mailto:tarkify.ai@gmail.com">tarkify.ai@gmail.com</a
+							>.
+						</p>
 					</div>
 				</section>
 
@@ -261,9 +312,11 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							Our Services allow you to connect third-party platforms (such as GitHub, Slack, Jira, or database hosting providers).
-							This Privacy Policy only applies to our platform. We do not control and are not responsible for the privacy practices,
-							security, or contents of third-party platforms. We recommend checking their individual privacy policies.
+							Our Services allow you to connect third-party platforms (such as GitHub, Slack, Jira,
+							or database hosting providers). This Privacy Policy only applies to our platform. We
+							do not control and are not responsible for the privacy practices, security, or
+							contents of third-party platforms. We recommend checking their individual privacy
+							policies.
 						</p>
 					</div>
 				</section>
@@ -278,10 +331,10 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							We use cookies and similar tracking technologies to enhance user experiences, keep you logged in,
-							and analyze traffic. You can adjust your browser settings to refuse cookies or alert you when cookies are
-							being sent. However, please note that disabling cookies may cause some parts of the Services to function
-							incorrectly.
+							We use cookies and similar tracking technologies to enhance user experiences, keep you
+							logged in, and analyze traffic. You can adjust your browser settings to refuse cookies
+							or alert you when cookies are being sent. However, please note that disabling cookies
+							may cause some parts of the Services to function incorrectly.
 						</p>
 					</div>
 				</section>
@@ -296,9 +349,10 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							Our Services are not designed for or directed at children under the age of 16. We do not knowingly collect
-							personal information from children under 16. If we become aware that we have collected information from
-							a child under 16, we will take immediate steps to delete that data from our servers.
+							Our Services are not designed for or directed at children under the age of 16. We do
+							not knowingly collect personal information from children under 16. If we become aware
+							that we have collected information from a child under 16, we will take immediate steps
+							to delete that data from our servers.
 						</p>
 					</div>
 				</section>
@@ -313,9 +367,10 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							We may update this Privacy Policy from time to time to reflect changes in our practices or compliance
-							requirements. When changes are made, we will update the "Last updated" date at the top of the policy
-							and, if the changes are significant, we will notify you by email or through a platform alert.
+							We may update this Privacy Policy from time to time to reflect changes in our
+							practices or compliance requirements. When changes are made, we will update the "Last
+							updated" date at the top of the policy and, if the changes are significant, we will
+							notify you by email or through a platform alert.
 						</p>
 					</div>
 				</section>
@@ -330,7 +385,8 @@
 					</div>
 					<div class="legal-card-body">
 						<p>
-							If you have any questions or concerns regarding our privacy practices, please contact us:
+							If you have any questions or concerns regarding our privacy practices, please contact
+							us:
 						</p>
 						<ul>
 							<li>Email: <a href="mailto:tarkify.ai@gmail.com">tarkify.ai@gmail.com</a></li>

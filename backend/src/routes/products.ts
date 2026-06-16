@@ -28,7 +28,6 @@ products.get('/', async (c) => {
     type: p.type,
     price: p.price,
     currency: p.currency,
-    active: p.active,
   }));
 
   return c.json({ products: response });
@@ -55,7 +54,6 @@ products.get('/:slug', async (c) => {
     type: product.type,
     price: product.price,
     currency: product.currency,
-    active: product.active,
   };
 
   return c.json({ product: response });

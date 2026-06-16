@@ -6,7 +6,6 @@
 		Clock,
 		Send,
 		Loader2,
-		CheckCircle,
 		AlertCircle,
 		Link as LinkIcon,
 		User,
@@ -32,7 +31,7 @@
 		portfolio: '',
 		message: ''
 	});
-	let status = $state<'idle' | 'loading' | 'success' | 'error'>('idle');
+	let status = $state<'idle' | 'loading' | 'error'>('idle');
 	let formErrors = $state<string[]>([]);
 
 	function handleChange(
@@ -68,38 +67,21 @@
 		status = 'loading';
 		formErrors = [];
 		try {
-			const response = await submitCareers(formData);
-			if (response.ok) {
-				status = 'success';
-				formData = {
-					name: '',
-					email: '',
-					phone: '',
-					role: '',
-					cvLink: '',
-					linkedin: '',
-					portfolio: '',
-					message: ''
-				};
-			} else {
-				status = 'error';
-			}
-		} catch (err) {
-			console.error('Careers submission error:', err);
+			await submitCareers(formData);
+		} catch {
 			status = 'error';
 		}
 	}
 </script>
 
 <Seo
-	title="Careers | Join the Automation Revolution"
+	title="Careers | Tarkify"
 	description="Build the future of AI automation with Tarkify. We are hiring passionate engineers and innovators."
 	ogImage="/og-image.svg"
 />
 
 <div class="careers-page pt-32 pb-20">
 	<div class="container">
-		<!-- Hero -->
 		<div transition:fly={{ y: 20, duration: 400 }} class="careers-hero mb-16">
 			<span class="section-badge">Join the Team</span>
 			<h1>Build the future of <span class="text-accent-green">automation</span>.</h1>
@@ -109,9 +91,7 @@
 			</p>
 		</div>
 
-		<!-- Two-column: Open Roles + Apply Form -->
 		<div class="careers-layout">
-			<!-- LEFT: Open Positions -->
 			<div transition:fly={{ x: -20, duration: 400, delay: 100 }}>
 				<h2 class="text-2xl font-bold mb-6 font-heading">Open Positions</h2>
 
@@ -183,12 +163,10 @@
 				</div>
 			</div>
 
-			<!-- RIGHT: Application Form -->
 			<div transition:fly={{ x: 20, duration: 400, delay: 150 }} class="careers-form-sticky">
 				<div class="careers-form-card">
 					<h3>Apply for a Role</h3>
 					<form onsubmit={handleSubmit} novalidate class="careers-form">
-						<!-- Role Dropdown -->
 						<div class="form-group">
 							<label for="car-role" class="form-label">Select Role *</label>
 							<div class="careers-select-wrap">
@@ -221,6 +199,8 @@
 										value={formData.name}
 										oninput={handleChange}
 										class="careers-input"
+										maxlength={100}
+										autocomplete="name"
 									/>
 								</div>
 							</div>
@@ -236,6 +216,8 @@
 										value={formData.email}
 										oninput={handleChange}
 										class="careers-input"
+										maxlength={100}
+										autocomplete="email"
 									/>
 								</div>
 							</div>
@@ -254,6 +236,8 @@
 										value={formData.phone}
 										oninput={handleChange}
 										class="careers-input"
+										maxlength={20}
+										autocomplete="tel"
 									/>
 								</div>
 							</div>
@@ -269,6 +253,8 @@
 										value={formData.cvLink}
 										oninput={handleChange}
 										class="careers-input"
+										maxlength={500}
+										autocomplete="url"
 									/>
 								</div>
 							</div>
@@ -287,6 +273,8 @@
 										value={formData.linkedin}
 										oninput={handleChange}
 										class="careers-input"
+										maxlength={500}
+										autocomplete="url"
 									/>
 								</div>
 							</div>
@@ -302,6 +290,8 @@
 										value={formData.portfolio}
 										oninput={handleChange}
 										class="careers-input"
+										maxlength={500}
+										autocomplete="url"
 									/>
 								</div>
 							</div>
@@ -315,7 +305,9 @@
 								placeholder="Why are you a great fit for Tarkify?"
 								class="careers-textarea"
 								value={formData.message}
-								oninput={handleChange}></textarea>
+								oninput={handleChange}
+								maxlength={2000}></textarea>
+							<div class="char-count">{formData.message.length}/2000</div>
 						</div>
 
 						<button
@@ -332,9 +324,13 @@
 							{/if}
 						</button>
 
-						<!-- Errors shown below submit -->
 						{#if formErrors.length > 0}
-							<div transition:fly={{ y: 6, duration: 200 }} class="careers-errors">
+							<div
+								transition:fly={{ y: 6, duration: 200 }}
+								class="careers-errors"
+								role="alert"
+								aria-live="polite"
+							>
 								{#each formErrors as err, i (`err-${i}`)}
 									<p class="careers-error-item flex items-center gap-1">
 										<AlertCircle size={13} />
@@ -343,21 +339,15 @@
 								{/each}
 							</div>
 						{/if}
-						{#if status === 'success'}
-							<div
-								transition:fly={{ y: 8, duration: 200 }}
-								class="form-message success flex items-center justify-center gap-2"
-							>
-								<CheckCircle size={15} /> Application submitted successfully!
-							</div>
-						{/if}
 						{#if status === 'error'}
 							<div
 								transition:fly={{ y: 8, duration: 200 }}
 								class="form-message error flex items-center justify-center gap-2"
+								role="alert"
+								aria-live="polite"
 							>
-								<AlertCircle size={15} /> Job application service is temporarily unavailable. Please try
-								again later.
+								<AlertCircle size={15} /> Submissions are temporarily unavailable. This feature is currently
+								being upgraded.
 							</div>
 						{/if}
 					</form>
@@ -368,3 +358,12 @@
 		<Newsletter />
 	</div>
 </div>
+
+<style>
+	.char-count {
+		text-align: right;
+		font-size: 0.75rem;
+		opacity: 0.5;
+		margin-top: 0.25rem;
+	}
+</style>

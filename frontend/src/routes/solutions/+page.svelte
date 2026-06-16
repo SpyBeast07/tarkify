@@ -8,7 +8,7 @@
 </script>
 
 <Seo
-	title="Tarkify - Next-Gen Automation Tools"
+	title="Solutions | Tarkify"
 	description="Powerful AI agents designed to scale your business operations effortlessly."
 	ogImage="/og-image.svg"
 />

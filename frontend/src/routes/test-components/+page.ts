@@ -6,3 +6,5 @@ export function load() {
 		error(404, 'Not Found');
 	}
 }
+
+export const prerender = false;

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import Button from '$lib/components/ui/Button.svelte';
-	import logo from '$lib/assets/tarkify_logo.svg';
+	import logo from '$lib/assets/tarkify_logo.webp';
 
 	let status = $derived($page.status);
 </script>
@@ -12,11 +12,40 @@
 			<img src={logo} alt="Tarkify" class="error-logo" loading="lazy" decoding="async" />
 
 			{#if status === 404}
-				<div class="illustration" role="img" aria-label="Compass illustration indicating page not found">
+				<div
+					class="illustration"
+					role="img"
+					aria-label="Compass illustration indicating page not found"
+				>
 					<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<circle cx="100" cy="100" r="88" stroke="var(--color-primary-green)" stroke-width="2" opacity="0.15" fill="none" />
-						<circle cx="100" cy="100" r="78" stroke="var(--color-accent-green)" stroke-width="1.5" opacity="0.2" fill="none" />
-						<circle cx="100" cy="100" r="68" stroke="var(--color-primary-green)" stroke-width="1" opacity="0.1" fill="none" stroke-dasharray="4 4" />
+						<circle
+							cx="100"
+							cy="100"
+							r="88"
+							stroke="var(--color-primary-green)"
+							stroke-width="2"
+							opacity="0.15"
+							fill="none"
+						/>
+						<circle
+							cx="100"
+							cy="100"
+							r="78"
+							stroke="var(--color-accent-green)"
+							stroke-width="1.5"
+							opacity="0.2"
+							fill="none"
+						/>
+						<circle
+							cx="100"
+							cy="100"
+							r="68"
+							stroke="var(--color-primary-green)"
+							stroke-width="1"
+							opacity="0.1"
+							fill="none"
+							stroke-dasharray="4 4"
+						/>
 						<!-- Tick marks -->
 						<g stroke="var(--color-primary-green)" stroke-width="2" opacity="0.3">
 							<line x1="100" y1="14" x2="100" y2="24" />
@@ -29,14 +58,57 @@
 							<line x1="160.8" y1="39.2" x2="153.8" y2="46.2" />
 						</g>
 						<!-- Direction letters -->
-						<text x="100" y="34" text-anchor="middle" fill="var(--color-accent-green)" font-family="var(--font-accent)" font-size="10" font-weight="700">N</text>
-						<text x="100" y="178" text-anchor="middle" fill="var(--color-primary-green)" font-family="var(--font-accent)" font-size="10" font-weight="600" opacity="0.5">S</text>
-						<text x="32" y="104" text-anchor="middle" fill="var(--color-primary-green)" font-family="var(--font-accent)" font-size="10" font-weight="600" opacity="0.5">W</text>
-						<text x="168" y="104" text-anchor="middle" fill="var(--color-primary-green)" font-family="var(--font-accent)" font-size="10" font-weight="600" opacity="0.5">E</text>
+						<text
+							x="100"
+							y="34"
+							text-anchor="middle"
+							fill="var(--color-accent-green)"
+							font-family="var(--font-accent)"
+							font-size="10"
+							font-weight="700">N</text
+						>
+						<text
+							x="100"
+							y="178"
+							text-anchor="middle"
+							fill="var(--color-primary-green)"
+							font-family="var(--font-accent)"
+							font-size="10"
+							font-weight="600"
+							opacity="0.5">S</text
+						>
+						<text
+							x="32"
+							y="104"
+							text-anchor="middle"
+							fill="var(--color-primary-green)"
+							font-family="var(--font-accent)"
+							font-size="10"
+							font-weight="600"
+							opacity="0.5">W</text
+						>
+						<text
+							x="168"
+							y="104"
+							text-anchor="middle"
+							fill="var(--color-primary-green)"
+							font-family="var(--font-accent)"
+							font-size="10"
+							font-weight="600"
+							opacity="0.5">E</text
+						>
 						<!-- Needle -->
 						<g transform="rotate(-35 100 100)">
-							<polygon points="100,32 94,100 100,168 106,100" fill="var(--color-accent-green)" opacity="0.9" />
-							<polygon points="100,168 94,100 100,108 106,100" fill="var(--color-accent-green)" opacity="0.4" />
+							<polygon
+								points="100,32 94,100 100,168 106,100"
+								fill="var(--color-accent-green)"
+								opacity="0.9"
+							/>
+							<polygon
+								points="100,168 94,100 100,108 106,100"
+								fill="var(--color-accent-green)"
+								opacity="0.4"
+							/>
 							<circle cx="100" cy="100" r="6" fill="var(--color-primary-green)" />
 						</g>
 					</svg>
@@ -50,7 +122,11 @@
 					<Button href="/contact" variant="outline">Contact Us</Button>
 				</div>
 			{:else}
-				<div class="illustration" role="img" aria-label="Broken gear illustration indicating server error">
+				<div
+					class="illustration"
+					role="img"
+					aria-label="Broken gear illustration indicating server error"
+				>
 					<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
 						<!-- Gear teeth -->
 						<g fill="var(--color-accent-green)" opacity="0.85">
@@ -67,8 +143,24 @@
 							<rect x="92" y="12" width="16" height="28" rx="3" transform="rotate(330 100 100)" />
 						</g>
 						<!-- Missing/broken tooth -->
-						<rect x="92" y="12" width="16" height="20" rx="3" transform="rotate(90 100 100)" fill="var(--color-light-bg)" />
-						<path d="M96 88 L100 84 L104 88 L108 82 L104 78" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" transform="rotate(90 100 100)" />
+						<rect
+							x="92"
+							y="12"
+							width="16"
+							height="20"
+							rx="3"
+							transform="rotate(90 100 100)"
+							fill="var(--color-light-bg)"
+						/>
+						<path
+							d="M96 88 L100 84 L104 88 L108 82 L104 78"
+							stroke="#ef4444"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							fill="none"
+							transform="rotate(90 100 100)"
+						/>
 						<!-- Gear inner body -->
 						<circle cx="100" cy="100" r="42" fill="var(--color-accent-green)" opacity="0.95" />
 						<circle cx="100" cy="100" r="30" fill="var(--color-light-bg)" />
@@ -76,8 +168,24 @@
 						<!-- Center hole -->
 						<circle cx="100" cy="100" r="10" fill="var(--color-light-bg)" />
 						<!-- Crack -->
-						<path d="M100 90 L102 72 L98 60 L106 44" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.8" />
-						<path d="M102 72 L112 68" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.6" />
+						<path
+							d="M100 90 L102 72 L98 60 L106 44"
+							stroke="#ef4444"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							fill="none"
+							opacity="0.8"
+						/>
+						<path
+							d="M102 72 L112 68"
+							stroke="#ef4444"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							fill="none"
+							opacity="0.6"
+						/>
 						<!-- Small debris -->
 						<circle cx="108" cy="44" r="2" fill="var(--color-accent-green)" opacity="0.6" />
 						<circle cx="114" cy="52" r="1.5" fill="var(--color-accent-green)" opacity="0.4" />

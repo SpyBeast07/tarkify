@@ -8,13 +8,15 @@
 		Briefcase,
 		MessageSquare,
 		Loader2,
-		CheckCircle,
 		AlertCircle,
 		Send
 	} from '@lucide/svelte';
 	import Newsletter from '$lib/components/Newsletter.svelte';
 	import { submitContact } from '$lib/api/client';
 	import Seo from '$lib/components/Seo.svelte';
+	import { getContext } from 'svelte';
+
+	const toastState = getContext<{ addToast: (msg: string, type: string) => void }>('toast');
 
 	const kushagraImg = '/assets/kushagra.webp';
 	const ishitaImg = '/assets/ishita.webp';
@@ -28,10 +30,9 @@
 		message: ''
 	});
 
-	let status = $state<'idle' | 'loading' | 'success' | 'error'>('idle');
+	let status = $state<'idle' | 'loading' | 'error'>('idle');
 	let errors = $state<Record<string, string>>({});
 
-	// Prefill service from search parameter if present
 	$effect(() => {
 		const serviceParam = $page.url.searchParams.get('service');
 		if (serviceParam) {
@@ -71,23 +72,8 @@
 		status = 'loading';
 
 		try {
-			const response = await submitContact(formData);
-
-			if (response.ok) {
-				status = 'success';
-				formData = {
-					firstName: '',
-					lastName: '',
-					email: '',
-					company: '',
-					service: 'DevBeast',
-					message: ''
-				};
-			} else {
-				status = 'error';
-			}
-		} catch (err) {
-			console.error('Contact submission error:', err);
+			await submitContact(formData);
+		} catch {
 			status = 'error';
 		}
 	}
@@ -102,7 +88,6 @@
 <div class="contact-page pt-32 pb-20">
 	<div class="container">
 		<div class="contact-grid">
-			<!-- Left column: heading + contact info -->
 			<div class="contact-left" transition:fly={{ x: -40, duration: 600 }}>
 				<span class="section-badge">Get in Touch</span>
 				<h1 class="contact-heading">
@@ -126,7 +111,6 @@
 				</div>
 			</div>
 
-			<!-- Right column: form card -->
 			<div
 				transition:fly={{ x: 40, duration: 600, delay: 200 }}
 				class="contact-form-card"
@@ -146,6 +130,8 @@
 									value={formData.firstName}
 									oninput={handleChange}
 									class={errors.firstName ? 'input-error' : ''}
+									maxlength={50}
+									autocomplete="given-name"
 								/>
 							</div>
 							{#if errors.firstName}
@@ -164,6 +150,8 @@
 									value={formData.lastName}
 									oninput={handleChange}
 									class={errors.lastName ? 'input-error' : ''}
+									maxlength={50}
+									autocomplete="family-name"
 								/>
 							</div>
 							{#if errors.lastName}
@@ -185,6 +173,8 @@
 									value={formData.email}
 									oninput={handleChange}
 									class={errors.email ? 'input-error' : ''}
+									maxlength={100}
+									autocomplete="email"
 								/>
 							</div>
 							{#if errors.email}
@@ -202,6 +192,8 @@
 									placeholder="Acme Corp"
 									value={formData.company}
 									oninput={handleChange}
+									maxlength={100}
+									autocomplete="organization"
 								/>
 							</div>
 						</div>
@@ -231,8 +223,10 @@
 								placeholder="Tell us about your automation needs..."
 								style="min-height: 140px;"
 								value={formData.message}
-								oninput={handleChange}></textarea>
+								oninput={handleChange}
+								maxlength={2000}></textarea>
 						</div>
+						<div class="char-count">{formData.message.length}/2000</div>
 						{#if errors.message}
 							<span class="error-text">{errors.message}</span>
 						{/if}
@@ -248,16 +242,15 @@
 						{/if}
 					</button>
 
-					{#if status === 'success'}
-						<div transition:fly={{ y: 10, duration: 200 }} class="form-message success">
-							<CheckCircle size={18} />
-							Message sent successfully! We'll be in touch soon.
-						</div>
-					{/if}
 					{#if status === 'error'}
-						<div transition:fly={{ y: 10, duration: 200 }} class="form-message error">
+						<div
+							transition:fly={{ y: 10, duration: 200 }}
+							class="form-message error"
+							role="alert"
+							aria-live="polite"
+						>
 							<AlertCircle size={18} />
-							Contact service is temporarily unavailable. Please try again later.
+							Submissions are temporarily unavailable. This feature is currently being upgraded.
 						</div>
 					{/if}
 
@@ -266,7 +259,6 @@
 			</div>
 		</div>
 
-		<!-- Tarkify Team Section -->
 		<div class="team-section" style="margin-top: 8rem; margin-bottom: 5rem;">
 			<div
 				transition:fly={{ y: 20, duration: 400 }}
@@ -430,7 +422,6 @@
 </div>
 
 <style>
-	/* ── Contact page scoped styles ── */
 	.contact-heading {
 		margin-bottom: 2rem;
 		line-height: 1.1;
@@ -499,8 +490,14 @@
 		margin-top: 1.5rem;
 	}
 
-	/* Accent color for the info-icon Mail icon */
 	.contact-info-item :global(svg) {
 		color: var(--color-accent-green);
+	}
+
+	.char-count {
+		text-align: right;
+		font-size: 0.75rem;
+		opacity: 0.5;
+		margin-top: 0.25rem;
 	}
 </style>

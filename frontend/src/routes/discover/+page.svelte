@@ -38,7 +38,7 @@
 </script>
 
 <Seo
-	title="Discover | Insights & Automation Knowledge"
+	title="Discover | Tarkify"
 	description="Explore the latest insights, product updates, and knowledge on AI automation from the Tarkify team."
 	ogImage="/og-image.svg"
 />
@@ -60,6 +60,7 @@
 						onclick={() => (activeCategory = category)}
 						class="filter-btn"
 						class:active={activeCategory === category}
+						aria-pressed={activeCategory === category}
 					>
 						{category}
 					</button>

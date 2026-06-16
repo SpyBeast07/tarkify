@@ -21,7 +21,9 @@
 
 	let origin = $derived($page.url.origin);
 	let canonicalUrl = $derived(canonical || $page.url.href);
-	let ogImageUrl = $derived(ogImage ? (ogImage.startsWith('http') ? ogImage : `${origin}${ogImage}`) : undefined);
+	let ogImageUrl = $derived(
+		ogImage ? (ogImage.startsWith('http') ? ogImage : `${origin}${ogImage}`) : undefined
+	);
 </script>
 
 <svelte:head>
@@ -48,9 +50,7 @@
 	{#if jsonLd}
 		{@const ld = Array.isArray(jsonLd) ? jsonLd : [jsonLd]}
 		{#each ld as item, i}
-			<script type="application/ld+json" data-seo={i}>
-				{JSON.stringify(item)}
-			</script>
+			{@html `<script type="application/ld+json" data-seo="${i}">${JSON.stringify(item)}</script>`}
 		{/each}
 	{/if}
 </svelte:head>

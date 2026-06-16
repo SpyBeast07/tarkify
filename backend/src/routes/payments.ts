@@ -168,11 +168,29 @@ payments.post('/verify', async (c) => {
       );
     }
 
-    // Issue a secure download token scoped to this purchase + product.
-    const downloadTokenRecord = await purchaseService.generateDownloadToken(
-      updatedPurchase.id,
-      updatedPurchase.product_id
-    );
+    // If the purchase was already paid (idempotent case), do NOT generate
+    // a second download token — the existing one from the first /verify
+    // call remains valid.
+    let downloadTokenRecord;
+    if (updatedPurchase.status === 'paid' && updatedPurchase.razorpay_payment_id !== null) {
+      // This was already completed — look up the existing token.
+      const existingToken = await purchaseService.validateActiveTokenByPurchase(
+        updatedPurchase.id
+      );
+      if (!existingToken) {
+        return c.json(
+          { error: 'COMPLETION_FAILED', message: 'No active token found for this purchase' },
+          500
+        );
+      }
+      downloadTokenRecord = existingToken;
+    } else {
+      // First-time completion — issue a fresh download token.
+      downloadTokenRecord = await purchaseService.generateDownloadToken(
+        updatedPurchase.id,
+        updatedPurchase.product_id
+      );
+    }
 
     console.info(
       `Payment verified: purchase=${updatedPurchase.id} order=${razorpay_order_id} payment=${razorpay_payment_id}`

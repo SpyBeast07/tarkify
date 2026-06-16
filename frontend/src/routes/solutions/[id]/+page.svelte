@@ -32,11 +32,19 @@
 	import PurchaseModal from '$lib/components/PurchaseModal.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 
-	const mockups: Record<string, string> = {
-		devbeast: '/assets/devbeast_mockup.webp',
-		'autoscrape-engine': '/assets/autoscrape_mockup.webp',
-		'workflow-orchestrator': '/assets/workflow_mockup.webp'
-	};
+	const DEVBEASST_MOCKUP = '/assets/devbeast_mockup.webp';
+	const WORKFLOW_MOCKUP = '/assets/workflow_mockup.webp';
+
+	function getMockup(id: string): string | undefined {
+		switch (id) {
+			case 'devbeast':
+				return DEVBEASST_MOCKUP;
+			case 'workflow-orchestrator':
+				return WORKFLOW_MOCKUP;
+			default:
+				return undefined;
+		}
+	}
 
 	const DEVBEAST_SLIDES = [
 		{ src: '/assets/devbeast/dashboard.png', path: 'dashboard' },
@@ -79,7 +87,7 @@
 
 	let id = $derived($page.params.id);
 	let solution = $derived(solutionsData.find((s) => s.id === id));
-	let mockupImage = $derived(solution ? mockups[solution.id] : undefined);
+	let mockupImage = $derived(solution ? getMockup(solution.id) : undefined);
 
 	let isPurchasable = $derived(!!solution?.price);
 	let origin = $derived($page.url.origin);
@@ -92,7 +100,12 @@
 					itemListElement: [
 						{ '@type': 'ListItem', position: 1, name: 'Home', item: origin + '/' },
 						{ '@type': 'ListItem', position: 2, name: 'Solutions', item: origin + '/solutions' },
-						{ '@type': 'ListItem', position: 3, name: solution.title, item: origin + $page.url.pathname }
+						{
+							'@type': 'ListItem',
+							position: 3,
+							name: solution.title,
+							item: origin + $page.url.pathname
+						}
 					]
 				}
 			: undefined
@@ -100,7 +113,10 @@
 
 	let seoJsonLd = $derived.by<Record<string, unknown>[] | undefined>(() => {
 		if (!solution) return undefined;
-		const items: Record<string, unknown>[] = [breadcrumbLd].filter(Boolean) as Record<string, unknown>[];
+		const items: Record<string, unknown>[] = [breadcrumbLd].filter(Boolean) as Record<
+			string,
+			unknown
+		>[];
 
 		if (solution.price && solution.id === 'devbeast') {
 			items.push({
@@ -163,7 +179,11 @@
 		jsonLd={seoJsonLd}
 	/>
 {:else}
-	<Seo title="Solution Not Found | Tarkify" description="The requested solution does not exist." ogImage="/og-image.svg" />
+	<Seo
+		title="Solution Not Found | Tarkify"
+		description="The requested solution does not exist."
+		ogImage="/og-image.svg"
+	/>
 {/if}
 
 {#if !solution || solution.comingSoon}
@@ -261,7 +281,9 @@
 										height="654"
 										loading="lazy"
 										decoding="async"
-										onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+										onerror={(e) => {
+											(e.target as HTMLImageElement).style.display = 'none';
+										}}
 										in:fade={{ duration: 150 }}
 									/>
 								{/key}
@@ -275,7 +297,9 @@
 								height="1125"
 								loading="lazy"
 								decoding="async"
-								onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+								onerror={(e) => {
+									(e.target as HTMLImageElement).style.display = 'none';
+								}}
 							/>
 						{/if}
 					</div>

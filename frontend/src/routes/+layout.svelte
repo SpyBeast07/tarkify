@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { setContext, onMount, type Component } from 'svelte';
 	import { page } from '$app/stores';
+	import { navigating } from '$app/stores';
 	import { createThemeState } from '$lib/context/theme.svelte';
+	import { createToastState } from '$lib/context/toast.svelte';
 	import Navbar from '$lib/components/layout/Navbar.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
-	import favicon from '$lib/assets/tarkify_logo.svg';
+	import Toast from '$lib/components/ui/Toast.svelte';
 	import './layout.css';
 
 	let { children } = $props();
 
 	let InteractiveBg = $state<Component | null>(null);
+	let isNavigating = $state(false);
 
 	onMount(async () => {
 		try {
@@ -21,6 +24,20 @@
 
 	const themeState = createThemeState();
 	setContext('theme', themeState);
+
+	const toastState = createToastState();
+	setContext('toast', toastState);
+
+	$effect(() => {
+		const unsub = navigating.subscribe((nav) => {
+			if (nav) {
+				isNavigating = true;
+			} else {
+				isNavigating = false;
+			}
+		});
+		return () => unsub();
+	});
 
 	$effect(() => {
 		const pathname = $page.url.pathname;
@@ -36,7 +53,7 @@
 		'@type': 'Organization',
 		name: 'Tarkify',
 		url: origin,
-		logo: `${origin}/tarkify_logo.svg`,
+		logo: `${origin}/favicon.webp`,
 		description:
 			'We build AI agents that automate work and make life easier. Reclaim hours of manual work and scale your team.',
 		email: 'tarkify.ai@gmail.com',
@@ -63,24 +80,27 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" type="image/svg+xml" href={favicon} />
-	<link rel="apple-touch-icon" href={favicon} />
-
-	<script type="application/ld+json" data-seo="organization">
-		{JSON.stringify(organizationJsonLd)}
-	</script>
-	<script type="application/ld+json" data-seo="website">
-		{JSON.stringify(websiteJsonLd)}
-	</script>
+	{@html `<script type="application/ld+json" data-seo="organization">${JSON.stringify(organizationJsonLd)}</script>`}
+	{@html `<script type="application/ld+json" data-seo="website">${JSON.stringify(websiteJsonLd)}</script>`}
 </svelte:head>
+
+<!-- Skip to content link -->
+<a href="#main-content" class="skip-link"> Skip to content </a>
+
+<!-- Navigation progress bar -->
+{#if isNavigating}
+	<div class="progress-bar"></div>
+{/if}
 
 <div class="app">
 	{#if InteractiveBg}
 		<InteractiveBg />
 	{/if}
 	<Navbar />
-	<main>
+	<main id="main-content" tabindex="-1">
 		{@render children()}
 	</main>
 	<Footer />
 </div>
+
+<Toast />

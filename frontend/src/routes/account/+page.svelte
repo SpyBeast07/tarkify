@@ -4,6 +4,10 @@
 	import Seo from '$lib/components/Seo.svelte';
 </script>
 
+<svelte:head>
+	<meta name="robots" content="noindex,nofollow" />
+</svelte:head>
+
 <Seo
 	title="Account | Tarkify"
 	description="Manage your Tarkify account, downloads, and purchases."

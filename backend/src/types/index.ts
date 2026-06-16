@@ -100,7 +100,6 @@ export interface ProductResponse {
   type: ProductType;
   price: number;
   currency: string;
-  active: boolean;
 }
 
 export interface ApiError {
