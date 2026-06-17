@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import Button from '$lib/components/ui/Button.svelte';
-	import logo from '$lib/assets/tarkify_logo.webp';
 
 	let status = $derived($page.status);
+	let logo = '/apple-touch-icon.png';
 </script>
 
 <div class="error-page pt-32">

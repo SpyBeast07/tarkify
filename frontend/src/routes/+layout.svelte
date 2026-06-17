@@ -53,7 +53,7 @@
 		'@type': 'Organization',
 		name: 'Tarkify',
 		url: origin,
-		logo: `${origin}/favicon.webp`,
+		logo: `${origin}/apple-touch-icon.png`,
 		description:
 			'We build AI agents that automate work and make life easier. Reclaim hours of manual work and scale your team.',
 		email: 'tarkify.ai@gmail.com',
