@@ -34,6 +34,8 @@ function parsePositiveInt(raw: string, name: string, max: number): number {
 export const config = {
   port: parsePort(optionalEnv('PORT', '3001')),
 
+  nodeEnv: optionalEnv('NODE_ENV', 'development'),
+
   database: {
     url: requireEnv('DATABASE_URL'),
   },
@@ -55,4 +57,13 @@ export const config = {
     86400
   ),
 };
+
+// Warn if live Razorpay keys are used outside production
+const isLiveKey = config.razorpay.keyId.startsWith('rzp_live_');
+if (isLiveKey && config.nodeEnv !== 'production') {
+  console.warn(
+    '⚠️  WARNING: Live Razorpay keys detected in non-production environment! ' +
+    'Set NODE_ENV=production if this is intentional, or switch to test keys (rzp_test_*).'
+  );
+}
 

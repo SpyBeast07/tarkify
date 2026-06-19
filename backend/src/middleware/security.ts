@@ -20,7 +20,23 @@ export async function bodySizeLimit(c: Context, next: Next) {
     if (!isNaN(bytes) && bytes > MAX_BODY_BYTES) {
       return c.json({ error: 'PAYLOAD_TOO_LARGE', message: 'Request body exceeds maximum allowed size' }, 413);
     }
+    // If Content-Length is within limits, let it through without buffering.
+    await next();
+    return;
   }
+
+  // Chunked transfer encoding — no Content-Length header.
+  // Read the raw body ourselves so we can enforce the limit.
+  try {
+    const body = await c.req.raw.clone().arrayBuffer();
+    if (body.byteLength > MAX_BODY_BYTES) {
+      return c.json({ error: 'PAYLOAD_TOO_LARGE', message: 'Request body exceeds maximum allowed size' }, 413);
+    }
+  } catch {
+    // If we cannot read the body (e.g. streaming), pass through.
+    // The downstream handler will enforce its own limits.
+  }
+
   await next();
 }
 
@@ -33,6 +49,17 @@ const SECURITY_HEADERS: Record<string, string> = {
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'Content-Security-Policy': "default-src 'self'; "
+    + "script-src 'self' https://checkout.razorpay.com https://*.razorpay.com; "
+    + "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+    + "frame-src https://checkout.razorpay.com https://*.razorpay.com; "
+    + "connect-src 'self' https://checkout.razorpay.com https://*.razorpay.com; "
+    + "img-src 'self' data: https:; "
+    + "font-src 'self' https://fonts.gstatic.com data:; "
+    + "object-src 'none'; "
+    + "base-uri 'self'; "
+    + "form-action 'self'; "
+    + "frame-ancestors 'none';",
 };
 
 export async function securityHeaders(c: Context, next: Next) {

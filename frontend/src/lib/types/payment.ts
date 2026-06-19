@@ -16,6 +16,10 @@ export interface VerifyPaymentResponse {
 	message: string;
 	/** Secure time-limited token to authorise the download. */
 	downloadToken?: string;
+	/** ISO date string of when the token expires. */
+	downloadTokenExpiresAt?: string;
+	/** Token TTL in seconds (configured server-side). */
+	downloadTokenTtlSeconds?: number;
 }
 
 export interface PaymentError {

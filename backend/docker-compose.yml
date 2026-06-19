@@ -28,11 +28,13 @@ services:
     environment:
       PORT: 3001
       DATABASE_URL: postgresql://tarkify_user:tarkifyPassword@postgres:5432/tarkifyDB
+      # Razorpay keys MUST be set via host environment (never hardcoded)
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
       RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
       FRONTEND_URL: ${FRONTEND_URL}
       STORAGE_PATH: /app/storage
+      DOWNLOAD_TOKEN_TTL_SECONDS: ${DOWNLOAD_TOKEN_TTL_SECONDS:-600}
     depends_on:
       postgres:
         condition: service_healthy

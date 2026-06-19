@@ -90,6 +90,25 @@ webhooks.post('/razorpay', async (c) => {
         return c.json({ error: 'Failed to process' }, 500);
       }
 
+      // Generate download token if one does not already exist for this purchase.
+      // This handles the case where the webhook fires before the frontend /verify:
+      //   - Webhook completes purchase + grants entitlement
+      //   - Webhook generates download token
+      //   - Frontend /verify finds purchase already 'paid', looks up existing token,
+      //     finds it, and returns it to the user
+      // Without this, if webhook fires first, /verify returns 500 COMPLETION_FAILED
+      // because no active token exists.
+      const existingToken = await purchaseService.validateActiveTokenByPurchase(updated.id);
+      if (!existingToken) {
+        await purchaseService.generateDownloadToken(
+          updated.id,
+          updated.product_id
+        );
+        console.info(
+          `Webhook: generated download token for purchase=${updated.id}`
+        );
+      }
+
       console.info(
         `Webhook payment.captured: purchase=${updated.id} order=${orderId} payment=${paymentId}`
       );

@@ -29,6 +29,7 @@
 	} from '@lucide/svelte';
 	import type { Component } from 'svelte';
 	import { solutionsData } from '$lib/data/solutions';
+	import { fetchProduct, type ProductFromApi } from '$lib/api/products';
 	import PurchaseModal from '$lib/components/PurchaseModal.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 
@@ -84,13 +85,31 @@
 
 	let slideIndex = $state(0);
 	let showPurchaseModal = $state(false);
+	let productFromApi = $state<ProductFromApi | null>(null);
 
 	let id = $derived($page.params.id);
 	let solution = $derived(solutionsData.find((s) => s.id === id));
 	let mockupImage = $derived(solution ? getMockup(solution.id) : undefined);
 
-	let isPurchasable = $derived(!!solution?.price);
+	let apiPrice = $derived(productFromApi?.price ?? null);
+	let isPurchasable = $derived(!!apiPrice);
 	let origin = $derived($page.url.origin);
+
+	// Fetch authoritative price from backend API as soon as the slug is known
+	$effect(() => {
+		if (id) {
+			fetchProduct(id).then((p) => {
+				productFromApi = p;
+			});
+		}
+	});
+
+	function formatPrice(paise: number): string {
+		const currency = productFromApi?.currency ?? 'INR';
+		const value = (paise / 100).toFixed(currency === 'INR' ? 0 : 2);
+		if (currency === 'INR') return `₹${value}`;
+		return `${currency} ${value}`;
+	}
 
 	let breadcrumbLd = $derived(
 		solution
@@ -118,7 +137,7 @@
 			unknown
 		>[];
 
-		if (solution.price && solution.id === 'devbeast') {
+		if (apiPrice && solution.id === 'devbeast') {
 			items.push({
 				'@context': 'https://schema.org',
 				'@type': 'SoftwareApplication',
@@ -128,8 +147,8 @@
 				description: solution.description,
 				offers: {
 					'@type': 'Offer',
-					price: solution.price.replace(/[^0-9.]/g, ''),
-					priceCurrency: 'INR'
+					price: String(apiPrice / 100),
+					priceCurrency: productFromApi?.currency ?? 'INR'
 				}
 			});
 			items.push({
@@ -139,8 +158,8 @@
 				description: solution.description,
 				offers: {
 					'@type': 'Offer',
-					price: solution.price.replace(/[^0-9.]/g, ''),
-					priceCurrency: 'INR',
+					price: String(apiPrice / 100),
+					priceCurrency: productFromApi?.currency ?? 'INR',
 					availability: 'https://schema.org/InStock'
 				}
 			});
@@ -214,9 +233,9 @@
 					<h1 class="solution-title">{solution.title}</h1>
 					<p class="solution-tagline">{solution.description}</p>
 
-					{#if solution.price}
+					{#if apiPrice}
 						<div class="hero-price-display">
-							<span class="hero-price-val">{solution.price}</span>
+							<span class="hero-price-val">{formatPrice(apiPrice)}</span>
 							<span class="hero-price-detail">{solution.priceDetail}</span>
 						</div>
 					{/if}
@@ -432,7 +451,7 @@
 			{/if}
 
 			<!-- Final CTA / Pricing at the Bottom -->
-			{#if solution.price}
+			{#if apiPrice}
 				<div transition:fly={{ y: 20, duration: 500 }} class="final-cta-section glass text-center">
 					<span class="section-badge">Ready to Start?</span>
 					<h2>Deploy {solution.title} for Your Team</h2>
@@ -441,7 +460,7 @@
 					</p>
 
 					<div class="final-price-display">
-						<span class="price-val">{solution.price}</span>
+						<span class="price-val">{formatPrice(apiPrice)}</span>
 						<span class="price-detail">{solution.priceDetail}</span>
 					</div>
 

@@ -44,14 +44,25 @@ export async function createPurchase(
   razorpayOrderId: string,
   amount: number,
   currency: string
-): Promise<Purchase> {
+): Promise<Purchase | null> {
+  // Use INSERT ... SELECT ... WHERE NOT EXISTS to atomically check for existing
+  // active purchases and prevent duplicates. This combined with the partial unique
+  // index (migration 006) closes the race between hasEntitlement() check and
+  // createPurchase() — even if two concurrent requests pass hasEntitlement(),
+  // only one INSERT will succeed. The other will return null.
   const result = await query<Purchase>(
     `INSERT INTO purchases (guest_email, product_id, razorpay_order_id, amount, currency, status)
-     VALUES ($1, $2, $3, $4, $5, 'created')
+     SELECT $1, $2, $3, $4, $5, 'created'
+     WHERE NOT EXISTS (
+       SELECT 1 FROM purchases p
+       WHERE p.guest_email = $1
+         AND p.product_id = $2
+         AND p.status IN ('created', 'paid')
+     )
      RETURNING *`,
     [normaliseEmail(guestEmail), productId, razorpayOrderId, amount, currency]
   );
-  return result.rows[0];
+  return result.rows[0] ?? null;
 }
 
 /**

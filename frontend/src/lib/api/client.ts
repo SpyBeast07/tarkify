@@ -1,11 +1,11 @@
 /**
  * Unified API Client for submitting forms to Tarkify endpoints.
  *
- * NOTE: Backend communication for Contact, Feedback, Careers, and Newsletter
- * is not yet active. These handlers return a service unavailable rejection
- * to allow frontends to display appropriate loading and error states cleanly
- * until the backend endpoints are connected.
+ * Sends form submissions (Contact, Feedback, Careers, Newsletter)
+ * to the backend API for storage and processing.
  */
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3009';
 
 export interface FeedbackSubmission {
 	firstName: string;
@@ -41,47 +41,62 @@ export interface NewsletterSubmission {
 	email: string;
 }
 
-// Configured API BASE URL (reserved for future connection)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-
 /**
- * Helper to simulate network latency and return a service unavailable rejection.
+ * General form submission helper with timeout.
  */
-async function simulateServiceUnavailable(): Promise<never> {
-	// Simulate minor network latency so the user can verify loading states and spinners
-	await new Promise((resolve) => setTimeout(resolve, 800));
-	throw new Error('Service temporarily unavailable');
+async function submitForm<T>(endpoint: string, data: T): Promise<{ success: boolean; message: string }> {
+	const controller = new AbortController();
+	const timeoutId = setTimeout(() => controller.abort(), 15_000); // 15s timeout
+
+	try {
+		const response = await fetch(`${API_BASE}/api/forms/${endpoint}`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(data),
+			signal: controller.signal,
+		});
+
+		const result = await response.json();
+
+		if (!response.ok) {
+			throw new Error(result.message || 'Request failed');
+		}
+
+		return result;
+	} catch (error) {
+		if (error instanceof DOMException && error.name === 'AbortError') {
+			throw new Error('Request timed out. Please try again.');
+		}
+		throw error;
+	} finally {
+		clearTimeout(timeoutId);
+	}
 }
 
 /**
  * Submits product feedback.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function submitFeedback(data: FeedbackSubmission): Promise<Response> {
-	return simulateServiceUnavailable();
+export async function submitFeedback(data: FeedbackSubmission): Promise<{ success: boolean; message: string }> {
+	return submitForm('feedback', data);
 }
 
 /**
  * Submits a contact inquiry.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function submitContact(data: ContactSubmission): Promise<Response> {
-	return simulateServiceUnavailable();
+export async function submitContact(data: ContactSubmission): Promise<{ success: boolean; message: string }> {
+	return submitForm('contact', data);
 }
 
 /**
  * Submits a job application.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function submitCareers(data: CareersSubmission): Promise<Response> {
-	return simulateServiceUnavailable();
+export async function submitCareers(data: CareersSubmission): Promise<{ success: boolean; message: string }> {
+	return submitForm('careers', data);
 }
 
 /**
  * Submits a newsletter subscription.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function submitNewsletter(email: string): Promise<Response> {
-	return simulateServiceUnavailable();
+export async function submitNewsletter(email: string): Promise<{ success: boolean; message: string }> {
+	return submitForm('newsletter', { email });
 }

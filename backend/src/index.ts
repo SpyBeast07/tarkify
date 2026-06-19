@@ -16,6 +16,7 @@ import products from './routes/products.js';
 import payments from './routes/payments.js';
 import webhooks from './routes/webhooks.js';
 import downloads from './routes/downloads.js';
+import forms from './routes/forms.js';
 
 const app = new Hono<{ Variables: { requestId: string } }>();
 
@@ -40,21 +41,24 @@ app.get('/', (c) => {
   return c.json({ name: 'Tarkify API', status: 'active', version: '1.0.0' });
 });
 
-// ── Mount payment routes with rate limiting ──────────────────────
+// ── Rate limiting on the main app with path-prefix matching ─────
+// Applied directly to the main app (not sub-apps) to ensure middleware
+// is always executed. Sub-app `.use()` middleware was not being triggered
+// in Hono, leaving payment/download/webhook endpoints unprotected.
 const paymentLimit = rateLimit({ windowMs: 60_000, max: 30 });
-payments.use('*', paymentLimit);
-
 const downloadLimit = rateLimit({ windowMs: 60_000, max: 60 });
-downloads.use('*', downloadLimit);
-
 const webhookLimit = rateLimit({ windowMs: 60_000, max: 20 });
-webhooks.use('*', webhookLimit);
+
+app.use('/api/payments/*', paymentLimit);
+app.use('/api/downloads/*', downloadLimit);
+app.use('/api/webhooks/*', webhookLimit);
 
 // ── Route Groups ─────────────────────────────────────────────────
 app.route('/api/products', products);
 app.route('/api/payments', payments);
 app.route('/api/webhooks', webhooks);
 app.route('/api/downloads', downloads);
+app.route('/api/forms', forms);
 
 // ── 404 Fallback ─────────────────────────────────────────────────
 app.notFound((c) => {
@@ -73,6 +77,38 @@ app.onError((err, c) => {
 });
 
 // ── Startup ──────────────────────────────────────────────────────
+// Graceful shutdown handler — hoisted so it's available inside start().
+async function shutdown(signal: string) {
+  console.info(`
+Received ${signal}. Starting graceful shutdown...`);
+
+  // Stop accepting new requests.
+  if (server) {
+    server.stop();
+    console.info('✓ HTTP server stopped');
+  }
+
+  // Close database pool — wait for active queries to finish (max 10s).
+  const { pool } = await import('./db.js');
+  try {
+    await Promise.race([
+      pool.end(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('pool.end timeout')), 10_000)),
+    ]);
+    console.info('✓ Database pool closed');
+  } catch (err) {
+    console.error('Failed to close database pool gracefully:', err);
+  }
+
+  console.info('✓ Shutdown complete');
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+
+let server: { stop: () => void } | null = null;
+
 async function start() {
   try {
     await testConnection();
@@ -82,13 +118,22 @@ async function start() {
     process.exit(1);
   }
 
-  console.info(`✓ Server starting on port ${config.port}`);
+  console.info(`✓ Starting server on port ${config.port}`);
   console.info(`✓ Frontend CORS origin: ${config.frontendUrl}`);
+
+  // We create the server explicitly via Bun.serve() so we have a
+  // reference to stop during graceful shutdown. The auto-export pattern
+  // (export default { fetch }) does not give us a server handle.
+  try {
+    server = Bun.serve({
+      port: config.port,
+      fetch: app.fetch,
+    });
+    console.info(`✓ Server listening on http://0.0.0.0:${config.port}`);
+  } catch (error) {
+    console.error('✗ Failed to start server:', error);
+    process.exit(1);
+  }
 }
 
 start();
-
-export default {
-  port: config.port,
-  fetch: app.fetch,
-};

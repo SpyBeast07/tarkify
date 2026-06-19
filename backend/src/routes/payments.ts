@@ -9,6 +9,7 @@ import { Hono } from 'hono';
 import * as productService from '../services/product.service.js';
 import * as razorpayService from '../services/razorpay.service.js';
 import * as purchaseService from '../services/purchase.service.js';
+import { config } from '../config.js';
 import type { CreateOrderRequest, VerifyPaymentRequest } from '../types/index.js';
 
 const payments = new Hono();
@@ -26,8 +27,16 @@ const payments = new Hono();
  * 7. Return order details + public key to frontend
  */
 payments.post('/create-order', async (c) => {
-  const body = await c.req.json<CreateOrderRequest>();
-  const { productSlug, email: rawEmail } = body;
+  let body: CreateOrderRequest | undefined;
+  try {
+    body = await c.req.json<CreateOrderRequest>();
+  } catch {
+    return c.json(
+      { error: 'BAD_REQUEST', message: 'Invalid JSON in request body' },
+      400
+    );
+  }
+  const { productSlug, email: rawEmail } = body!;
 
   // Validate required fields
   if (!productSlug || !rawEmail) {
@@ -81,14 +90,28 @@ payments.post('/create-order', async (c) => {
       receipt
     );
 
-    // Record purchase attempt with normalised guest_email (user_id is null for guests)
-    await purchaseService.createPurchase(
+    // Record purchase attempt with normalised guest_email (user_id is null for guests).
+    // createPurchase returns null if a concurrent request already created a purchase
+    // for this email + product (atomic WHERE NOT EXISTS guard). In that case, we still
+    // created a Razorpay order, but it will expire unpaid — that is harmless.
+    const purchase = await purchaseService.createPurchase(
       email,
       product.id,
       order.id,
       product.price,
       product.currency
     );
+
+    if (!purchase) {
+      console.warn(`Duplicate purchase attempt blocked: email=${email} product=${productSlug}`);
+      return c.json(
+        {
+          error: 'ALREADY_PURCHASED',
+          message: 'A purchase is already in progress for this email and product.',
+        },
+        409
+      );
+    }
 
     return c.json({
       orderId: order.id,
@@ -117,8 +140,16 @@ payments.post('/create-order', async (c) => {
  * 5. Return success + downloadToken to frontend
  */
 payments.post('/verify', async (c) => {
-  const body = await c.req.json<VerifyPaymentRequest>();
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
+  let body: VerifyPaymentRequest | undefined;
+  try {
+    body = await c.req.json<VerifyPaymentRequest>();
+  } catch {
+    return c.json(
+      { error: 'BAD_REQUEST', message: 'Invalid JSON in request body' },
+      400
+    );
+  }
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body!;
 
   // Validate required fields
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -200,6 +231,8 @@ payments.post('/verify', async (c) => {
       success: true,
       message: 'Payment verified and purchase completed successfully',
       downloadToken: downloadTokenRecord.token,
+      downloadTokenExpiresAt: downloadTokenRecord.expires_at,
+      downloadTokenTtlSeconds: config.downloadTokenTtlSeconds,
     });
   } catch (error) {
     console.error('Failed to complete purchase for order:', razorpay_order_id, error);

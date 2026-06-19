@@ -9,17 +9,27 @@ import { config } from '../config.js';
 
 export const corsMiddleware = cors({
   origin: (origin) => {
+    // Allow requests with no origin (server-to-server, curl, etc.)
+    if (!origin) return '*';
+
     const allowed = [
       'http://localhost:5173',
       'https://tarkify.qzz.io',
       'http://tarkify.qzz.io',
       config.frontendUrl,
     ];
-    if (allowed.includes(origin)) {
+
+    // Remove trailing slash from config URL for consistent matching
+    const normalizedOrigins = allowed.map((o) => o.replace(/\/+$/, ''));
+
+    if (normalizedOrigins.includes(origin.replace(/\/+$/, ''))) {
       return origin;
     }
-    // Return default origin for other cases
-    return config.frontendUrl;
+
+    // Reject unknown origins — do NOT return a fallback origin.
+    // Returning a fallback tells the browser to accept the response,
+    // which defeats the purpose of CORS.
+    return null;
   },
   allowMethods: ['GET', 'POST', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization'],

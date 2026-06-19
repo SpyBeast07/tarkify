@@ -222,7 +222,7 @@
 				</p>
 				{#if downloadToken}
 					<a
-						href="/api/downloads/{productSlug}?token={downloadToken}"
+						href={`${import.meta.env.VITE_API_URL || 'http://localhost:3009'}/api/downloads/${productSlug}?token=${downloadToken}`}
 						class="btn btn-primary purchase-submit-btn"
 						download
 					>
