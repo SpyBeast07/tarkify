@@ -16,7 +16,10 @@ import products from './routes/products.js';
 import payments from './routes/payments.js';
 import webhooks from './routes/webhooks.js';
 import downloads from './routes/downloads.js';
-import forms from './routes/forms.js';
+import contact from './communication/contact/routes.js';
+import feedback from './communication/feedback/routes.js';
+import newsletter from './communication/newsletter/routes.js';
+import careers from './communication/careers/routes.js';
 
 const app = new Hono<{ Variables: { requestId: string } }>();
 
@@ -48,17 +51,28 @@ app.get('/', (c) => {
 const paymentLimit = rateLimit({ windowMs: 60_000, max: 30 });
 const downloadLimit = rateLimit({ windowMs: 60_000, max: 60 });
 const webhookLimit = rateLimit({ windowMs: 60_000, max: 20 });
+const contactLimit = rateLimit({ windowMs: 60_000, max: 10 });
+const feedbackLimit = rateLimit({ windowMs: 60_000, max: 20 });
+const newsletterLimit = rateLimit({ windowMs: 60_000, max: 30 });
+const careersLimit = rateLimit({ windowMs: 60_000, max: 10 });
 
 app.use('/api/payments/*', paymentLimit);
 app.use('/api/downloads/*', downloadLimit);
 app.use('/api/webhooks/*', webhookLimit);
+app.use('/api/contact/*', contactLimit);
+app.use('/api/feedback/*', feedbackLimit);
+app.use('/api/newsletter/*', newsletterLimit);
+app.use('/api/careers/*', careersLimit);
 
 // ── Route Groups ─────────────────────────────────────────────────
 app.route('/api/products', products);
 app.route('/api/payments', payments);
 app.route('/api/webhooks', webhooks);
 app.route('/api/downloads', downloads);
-app.route('/api/forms', forms);
+app.route('/api/contact', contact);
+app.route('/api/feedback', feedback);
+app.route('/api/newsletter', newsletter);
+app.route('/api/careers', careers);
 
 // ── 404 Fallback ─────────────────────────────────────────────────
 app.notFound((c) => {
