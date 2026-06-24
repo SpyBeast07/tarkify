@@ -9,5 +9,5 @@ export function validateRequired(value: string): boolean {
  * Validates email format using the project's standard regex template.
  */
 export function validateEmail(email: string): boolean {
-	return /\S+@\S+\.\S+/.test(email);
+	return /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email);
 }

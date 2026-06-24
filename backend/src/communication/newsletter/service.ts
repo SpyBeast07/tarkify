@@ -1,6 +1,6 @@
 import { normalizeEmail } from '../shared/sanitizers.js';
 import { validateNewsletterForm, toNewsletterFormData } from './validation.js';
-import { findActiveSubscriber, insertSubscriber } from './repository.js';
+import { tryInsertSubscriber } from './repository.js';
 
 export interface NewsletterServiceResult {
   success: boolean;
@@ -21,12 +21,18 @@ export async function subscribeToNewsletter(
   const raw = toNewsletterFormData(body);
   const email = normalizeEmail(raw.email);
 
-  const existing = await findActiveSubscriber(email);
-  if (existing) {
-    return { success: true, alreadySubscribed: true };
+  try {
+    const subscriber = await tryInsertSubscriber(email, ip, userAgent);
+    if (!subscriber) {
+      return { success: true, alreadySubscribed: true };
+    }
+  } catch (err: unknown) {
+    const pgErr = err as { code?: string };
+    if (pgErr?.code === '23505') {
+      return { success: true, alreadySubscribed: true };
+    }
+    throw err;
   }
-
-  await insertSubscriber(email, ip, userAgent);
 
   return { success: true, alreadySubscribed: false };
 }

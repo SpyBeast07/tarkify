@@ -1,6 +1,6 @@
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 const URL_REGEX = /^https?:\/\/.+/;
-const PHONE_REGEX = /^[\d\s\-().+]{7,20}$/;
+const PHONE_REGEX = /^(?=.*\d)[\d \-().+]{7,20}$/;
 
 export const Limits = {
   name: { min: 1, max: 256 },
@@ -17,7 +17,9 @@ export const Limits = {
 
 export function validateEmail(email: string): boolean {
   if (email.length > Limits.email.max) return false;
-  return EMAIL_REGEX.test(email);
+  if (!EMAIL_REGEX.test(email)) return false;
+  if (email.includes('..')) return false;
+  return true;
 }
 
 export function validateUrl(url: string): boolean {
