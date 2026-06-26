@@ -10,7 +10,7 @@ import { logger } from 'hono/logger';
 import { corsMiddleware } from './middleware/cors.js';
 import { requestId } from './middleware/request-id.js';
 import { securityHeaders, bodySizeLimit, rateLimit } from './middleware/security.js';
-import { testConnection } from './db.js';
+import { testConnection, pool } from './db.js';
 import { config } from './config.js';
 import products from './routes/products.js';
 import payments from './routes/payments.js';
@@ -22,6 +22,7 @@ import newsletter from './communication/newsletter/routes.js';
 import careers from './communication/careers/routes.js';
 
 const app = new Hono<{ Variables: { requestId: string } }>();
+let migrationState: { applied: number; ok: boolean } = { applied: 0, ok: false };
 
 // ── Global Middleware (order matters: outermost first) ───────────
 app.use('*', requestId);
@@ -31,11 +32,31 @@ app.use('*', bodySizeLimit);
 app.use('*', logger());
 
 // ── Health Check ─────────────────────────────────────────────────
-app.get('/api/health', (c) => {
+app.get('/api/health', async (c) => {
+  let dbOk = false;
+  let dbError: string | null = null;
+
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query('SELECT 1');
+      dbOk = true;
+    } finally {
+      client.release();
+    }
+  } catch (err) {
+    dbError = err instanceof Error ? err.message : 'Unknown database error';
+  }
+
   return c.json({
-    status: 'ok',
+    status: dbOk ? 'ok' : 'degraded',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
+    database: dbOk ? 'connected' : 'disconnected',
+    migrations: migrationState.ok
+      ? `applied (${migrationState.applied})`
+      : 'pending',
+    dbError,
   });
 });
 
@@ -82,7 +103,6 @@ app.notFound((c) => {
 // ── Global Error Handler ─────────────────────────────────────────
 app.onError((err, c) => {
   const rid = c.get('requestId') as string | undefined;
-  // Log the full error server-side; never leak internals to the client.
   console.error(`request=${rid ?? 'none'} unhandled_error=${err.message}`);
   return c.json(
     { error: 'INTERNAL_ERROR', message: 'An unexpected error occurred', requestId: rid },
@@ -93,16 +113,13 @@ app.onError((err, c) => {
 // ── Startup ──────────────────────────────────────────────────────
 // Graceful shutdown handler — hoisted so it's available inside start().
 async function shutdown(signal: string) {
-  console.info(`
-Received ${signal}. Starting graceful shutdown...`);
+  console.info(`Received ${signal}. Starting graceful shutdown...`);
 
-  // Stop accepting new requests.
   if (server) {
     server.stop();
     console.info('✓ HTTP server stopped');
   }
 
-  // Close database pool — wait for active queries to finish (max 10s).
   const { pool } = await import('./db.js');
   try {
     await Promise.race([
@@ -124,6 +141,11 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 let server: { stop: () => void } | null = null;
 
 async function start() {
+  console.info('Starting Tarkify backend...');
+  console.info(`  NODE_ENV: ${config.nodeEnv}`);
+  console.info(`  Port:     ${config.port}`);
+  console.info(`  Frontend: ${config.frontendUrl}`);
+
   try {
     await testConnection();
     console.info('✓ Database connected');
@@ -132,12 +154,19 @@ async function start() {
     process.exit(1);
   }
 
-  console.info(`✓ Starting server on port ${config.port}`);
-  console.info(`✓ Frontend CORS origin: ${config.frontendUrl}`);
+  // Record migration state
+  try {
+    const result = await pool.query('SELECT COUNT(*) as count FROM _migrations');
+    const count = parseInt(result.rows[0]?.count ?? '0', 10);
+    migrationState = { applied: count, ok: true };
+    console.info(`✓ ${count} migration(s) applied`);
+  } catch {
+    migrationState = { applied: 0, ok: false };
+    console.warn('⚠ Could not query migration state (migrations may not have run)');
+  }
 
-  // We create the server explicitly via Bun.serve() so we have a
-  // reference to stop during graceful shutdown. The auto-export pattern
-  // (export default { fetch }) does not give us a server handle.
+  console.info(`✓ Starting server on port ${config.port}`);
+
   try {
     server = Bun.serve({
       port: config.port,

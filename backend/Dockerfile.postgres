@@ -1,7 +1,0 @@
-FROM postgres:15-alpine
-
-ENV POSTGRES_USER=tarkify_user
-ENV POSTGRES_PASSWORD=tarkifyPassword
-ENV POSTGRES_DB=tarkifyDB
-
-EXPOSE 5432

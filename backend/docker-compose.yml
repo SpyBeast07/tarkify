@@ -3,19 +3,25 @@ services:
     image: postgres:15-alpine
     container_name: tarkify-postgres
     restart: always
-    ports:
-      - "5439:5432"
+    expose:
+      - "5432"
     environment:
-      POSTGRES_USER: tarkify_user
-      POSTGRES_PASSWORD: tarkifyPassword
-      POSTGRES_DB: tarkifyDB
+      POSTGRES_USER: ${PG_USER:-tarkify_user}
+      POSTGRES_PASSWORD: ${PG_PASSWORD:-tarkifyPassword}
+      POSTGRES_DB: ${PG_DB:-tarkifyDB}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U tarkify_user -d tarkifyDB" ]
+      test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-tarkify_user} -d ${PG_DB:-tarkifyDB}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   api:
     build:
@@ -26,9 +32,9 @@ services:
     ports:
       - "3009:3001"
     environment:
+      NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: postgresql://tarkify_user:tarkifyPassword@postgres:5432/tarkifyDB
-      # Razorpay keys MUST be set via host environment (never hardcoded)
+      DATABASE_URL: postgresql://${PG_USER:-tarkify_user}:${PG_PASSWORD:-tarkifyPassword}@postgres:5432/${PG_DB:-tarkifyDB}
       RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
       RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
@@ -40,6 +46,19 @@ services:
         condition: service_healthy
     volumes:
       - ./storage:/app/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bun -e \"fetch('http://localhost:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    stop_grace_period: 30s
+    init: true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   pgdata:
