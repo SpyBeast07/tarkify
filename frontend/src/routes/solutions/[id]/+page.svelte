@@ -92,7 +92,9 @@
 	let mockupImage = $derived(solution ? getMockup(solution.id) : undefined);
 
 	let apiPrice = $derived(productFromApi?.price ?? null);
-	let isPurchasable = $derived(!!apiPrice);
+	let staticPrice = $derived(solution?.price ?? null);
+	let hasPricing = $derived(!!(apiPrice || staticPrice));
+	let isPurchasable = $derived(!!(apiPrice || staticPrice));
 	let origin = $derived($page.url.origin);
 
 	// Fetch authoritative price from backend API as soon as the slug is known
@@ -137,7 +139,11 @@
 			unknown
 		>[];
 
-		if (apiPrice && solution.id === 'devbeast') {
+		if (hasPricing && solution.id === 'devbeast') {
+			const jsonPrice = apiPrice
+				? String(apiPrice / 100)
+				: (solution.price ?? '0').replace(/[^0-9.]/g, '') || '0';
+			const jsonCurrency = productFromApi?.currency ?? 'INR';
 			items.push({
 				'@context': 'https://schema.org',
 				'@type': 'SoftwareApplication',
@@ -147,8 +153,8 @@
 				description: solution.description,
 				offers: {
 					'@type': 'Offer',
-					price: String(apiPrice / 100),
-					priceCurrency: productFromApi?.currency ?? 'INR'
+					price: jsonPrice,
+					priceCurrency: jsonCurrency
 				}
 			});
 			items.push({
@@ -158,8 +164,8 @@
 				description: solution.description,
 				offers: {
 					'@type': 'Offer',
-					price: String(apiPrice / 100),
-					priceCurrency: productFromApi?.currency ?? 'INR',
+					price: jsonPrice,
+					priceCurrency: jsonCurrency,
 					availability: 'https://schema.org/InStock'
 				}
 			});
@@ -233,9 +239,9 @@
 					<h1 class="solution-title">{solution.title}</h1>
 					<p class="solution-tagline">{solution.description}</p>
 
-					{#if apiPrice}
+					{#if hasPricing}
 						<div class="hero-price-display">
-							<span class="hero-price-val">{formatPrice(apiPrice)}</span>
+							<span class="hero-price-val">{apiPrice ? formatPrice(apiPrice) : solution.price}</span>
 							<span class="hero-price-detail">{solution.priceDetail}</span>
 						</div>
 					{/if}
@@ -451,7 +457,7 @@
 			{/if}
 
 			<!-- Final CTA / Pricing at the Bottom -->
-			{#if apiPrice}
+			{#if hasPricing}
 				<div transition:fly={{ y: 20, duration: 500 }} class="final-cta-section glass text-center">
 					<span class="section-badge">Ready to Start?</span>
 					<h2>Deploy {solution.title} for Your Team</h2>
@@ -460,7 +466,7 @@
 					</p>
 
 					<div class="final-price-display">
-						<span class="price-val">{formatPrice(apiPrice)}</span>
+						<span class="price-val">{apiPrice ? formatPrice(apiPrice) : solution.price}</span>
 						<span class="price-detail">{solution.priceDetail}</span>
 					</div>
 

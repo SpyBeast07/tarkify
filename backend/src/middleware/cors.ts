@@ -16,13 +16,21 @@ export const corsMiddleware = cors({
       'http://localhost:5173',
       'https://tarkify.qzz.io',
       'http://tarkify.qzz.io',
+      'https://tarkify.com',
+      'https://www.tarkify.com',
       config.frontendUrl,
     ];
 
     // Remove trailing slash from config URL for consistent matching
+    const normalizedOrigin = origin.replace(/\/+$/, '');
     const normalizedOrigins = allowed.map((o) => o.replace(/\/+$/, ''));
 
-    if (normalizedOrigins.includes(origin.replace(/\/+$/, ''))) {
+    if (normalizedOrigins.includes(normalizedOrigin)) {
+      return origin;
+    }
+
+    // Allow Vercel preview deployments
+    if (/^https:\/\/.+\.vercel\.app$/.test(normalizedOrigin)) {
       return origin;
     }
 
