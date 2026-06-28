@@ -34,7 +34,13 @@ export async function fetchProduct(slug: string): Promise<ProductFromApi | null>
 			throw new Error(`Failed to fetch product: ${response.status}`);
 		}
 
-		return response.json();
+		const body: { product: ProductFromApi } & Record<string, unknown> = await response.json();
+
+		if (!body.product) {
+			throw new Error('Invalid product response format');
+		}
+
+		return body.product;
 	} catch (error) {
 		if (error instanceof DOMException && error.name === 'AbortError') {
 			console.warn('Product fetch timed out');

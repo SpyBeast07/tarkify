@@ -3,8 +3,10 @@ services:
     image: postgres:15-alpine
     container_name: tarkify-postgres
     restart: always
-    expose:
-      - "5432"
+    # Expose Postgres port to host for local development.
+    # In production, comment out `ports` to keep the database isolated.
+    ports:
+      - "5439:5432"
     environment:
       POSTGRES_USER: ${PG_USER:-tarkify_user}
       POSTGRES_PASSWORD: ${PG_PASSWORD:-tarkifyPassword}
