@@ -16,8 +16,6 @@ export const corsMiddleware = cors({
       'http://localhost:5173',
       'https://tarkify.qzz.io',
       'http://tarkify.qzz.io',
-      'https://tarkify.com',
-      'https://www.tarkify.com',
       config.frontendUrl,
     ];
 
