@@ -107,7 +107,7 @@ payments.post('/create-order', async (c) => {
       return c.json(
         {
           error: 'ALREADY_PURCHASED',
-          message: 'A purchase is already in progress for this email and product.',
+          message: 'A recent purchase is already in progress for this email and product. If you abandoned a previous checkout, please wait 30 minutes and try again.',
         },
         409
       );

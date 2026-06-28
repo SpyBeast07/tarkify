@@ -45,6 +45,20 @@ export async function createPurchase(
   amount: number,
   currency: string
 ): Promise<Purchase | null> {
+  const email = normaliseEmail(guestEmail);
+
+  // First, expire any stale 'created' orders (> 15 min old) so abandoned
+  // checkouts don't permanently block the user from retrying.
+  await query(
+    `UPDATE purchases
+     SET status = 'failed', updated_at = NOW()
+     WHERE guest_email = $1
+       AND product_id = $2
+       AND status = 'created'
+       AND created_at < NOW() - INTERVAL '15 minutes'`,
+    [email, productId]
+  );
+
   // Use INSERT ... SELECT ... WHERE NOT EXISTS to atomically check for existing
   // active purchases and prevent duplicates. This combined with the partial unique
   // index (migration 006) closes the race between hasEntitlement() check and
@@ -60,7 +74,7 @@ export async function createPurchase(
          AND p.status IN ('created', 'paid')
      )
      RETURNING *`,
-    [normaliseEmail(guestEmail), productId, razorpayOrderId, amount, currency]
+    [email, productId, razorpayOrderId, amount, currency]
   );
   return result.rows[0] ?? null;
 }
