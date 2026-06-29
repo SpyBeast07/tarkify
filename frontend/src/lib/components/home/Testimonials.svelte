@@ -19,7 +19,7 @@
 			name: 'Marcus Rodriguez',
 			role: 'Engineering Manager',
 			company: 'ScaleTech',
-			text: "With EM SME, sprint planning takes half the time. The commit velocity tracking has transformed how we measure and improve our team's productivity."
+			text: "Integrate Business Operating System unified our entire workflow. The cross-system integration has transformed how we measure and improve our operational efficiency."
 		},
 		{
 			name: 'Elena Rostova',

@@ -95,7 +95,7 @@
       const serviceLabels: Record<string, string> = {
         'DevBeast': 'DevBeast Control Plane',
         'Legal Redline': 'Legal Redline AI',
-        'EM SME': 'EM SME AI Advisor',
+        'Integrate Business Operating System': 'Integrate Business Operating System',
         'Custom Solutions': 'Custom Solutions'
       };
 
@@ -275,7 +275,7 @@
                 <select id="service" name="service" value={formData.service} onchange={handleChange} disabled={status === 'submitting'}>
                   <option value="DevBeast">DevBeast Control Plane</option>
                   <option value="Legal Redline">Legal Redline AI (Coming Soon)</option>
-                  <option value="EM SME">EM SME AI Advisor (Coming Soon)</option>
+                  <option value="Integrate Business Operating System">Integrate Business Operating System (Coming Soon)</option>
                   <option value="Custom Solutions">Custom Solutions</option>
                 </select>
               </div>

@@ -24,7 +24,7 @@
   let errorMessage = $state('');
   let errorBanner: HTMLDivElement | undefined = $state(undefined);
 
-  const products = ['DevBeast', 'Legal Redline', 'EM SME', 'General Website / Other'];
+  const products = ['DevBeast', 'Legal Redline', 'Integrate Business Operating System', 'General Website / Other'];
 
   const ratingLabels: Record<number, string> = {
     1: 'Needs Improvement',

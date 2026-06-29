@@ -166,7 +166,7 @@
                     <p>
                       As a Full Stack Developer at Tarkify, you will build the interfaces and
                       backend systems that power our next-generation AI agents and developer tools
-                      like DevBeast and EM SME.
+                      like DevBeast and Integrate Business Operating System.
                     </p>
                   </div>
                   <div class="job-section">

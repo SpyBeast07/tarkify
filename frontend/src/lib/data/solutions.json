@@ -146,16 +146,16 @@
 		"comingSoon": true
 	},
 	{
-		"id": "em-sme",
-		"title": "EM SME",
-		"badge": "Engineering Management AI",
-		"description": "Your automated Engineering Management Subject Matter Expert. Streamline sprint planning, analyze commit velocity, and resolve blocks.",
+		"id": "integrate-business-operating-system",
+		"title": "Integrate Business Operating System",
+		"badge": "Business OS",
+		"description": "A unified platform that connects your entire business stack, automates cross-functional workflows, and provides real-time operational intelligence.",
 		"iconName": "Cpu",
 		"features": [
-			"Sprint commitment risk prediction metrics",
-			"Commit & PR velocity pattern matching",
-			"AI-guided blocker & dependency resolution recommendations",
-			"Automated daily standup summary generator"
+			"Cross-system workflow orchestration & automation",
+			"Real-time business process monitoring & analytics",
+			"AI-driven operational intelligence & insights",
+			"Unified dashboard for business-wide system integration"
 		],
 		"comingSoon": true
 	}

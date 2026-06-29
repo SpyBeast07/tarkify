@@ -46,7 +46,7 @@ Consider a mid-sized logistics firm. Before Tarkify, their team spent hours manu
 
 ## The Roadmap Ahead
 
-We are just getting started. In the coming quarters, we will be rolling out specialized vertical agents. For engineering teams, our upcoming [EM SME](/solutions/em-sme) platform will revolutionize sprint planning and commit velocity tracking. For legal departments, [Legal Redline](/solutions/legal-redline) is currently in closed beta, already saving firms hours of contract review time.
+We are just getting started. In the coming quarters, we will be rolling out specialized vertical agents. For engineering teams,         our upcoming [Integrate Business Operating System](/solutions/integrate-business-operating-system) platform will revolutionize business process integration and cross-functional workflow automation. For legal departments, [Legal Redline](/solutions/legal-redline) is currently in closed beta, already saving firms hours of contract review time.
 
 The future of work is automated, but it remains profoundly human. By letting AI handle the execution, we free humanity to focus on imagination. Join us on this journey.
         `
@@ -126,7 +126,7 @@ Currently, EMs rely on a mix of gut feeling, chaotic standups, and manually upda
 
 A Subject Matter Expert (SME) platform for engineering is a dedicated intelligence layer that sits between your project management tools and your version control system. It doesn't replace the EM; it augments them.
 
-This is the philosophy behind our upcoming product, [EM SME](/solutions/em-sme).
+This is the philosophy behind our upcoming product, [Integrate Business Operating System](/solutions/integrate-business-operating-system).
 
 ### AI-Assisted Engineering Leadership
 
@@ -141,49 +141,49 @@ An SME platform provides:
 
 Engineering teams cannot scale effectively if their leadership is bogged down in manual tracking. By adopting an SME platform, organizations transition from reactive firefighting to proactive engineering leadership. 
 
-The EM's role shifts from a status-tracker to a true coach and technical strategist. In our next post, we will dive deeper into how [EM SME](/solutions/em-sme) is making this a reality.
+The EM's role shifts from a status-tracker to a true coach and technical strategist. In our next post, we will dive deeper into how [Integrate Business Operating System](/solutions/integrate-business-operating-system) is making this a reality.
         `
 	},
 	{
-		slug: 'em-sme-future-of-engineering-management',
-		title: 'EM SME: The Future of Engineering Management',
-		excerpt:
-			'An inside look at our upcoming launch, the roadmap, and how EM SME will automate the tedious parts of engineering leadership.',
-		category: 'Product Updates',
-		readTime: '2 min read',
-		date: 'April 3, 2026',
-		content: `
-## Launching EM SME
+				slug: 'integrate-business-operating-system',
+				title: 'Integrate Business Operating System: The Future of Operational Intelligence',
+				excerpt:
+					'An inside look at our upcoming launch, the roadmap, and how Integrate Business Operating System will unify and automate your entire business ecosystem.',
+				category: 'Product Updates',
+				readTime: '2 min read',
+				date: 'April 3, 2026',
+				content: `
+## Launching Integrate Business Operating System
 
-Following our discussion on the need for dedicated engineering intelligence, we are thrilled to officially announce the upcoming launch of **EM SME** (Engineering Management Subject Matter Expert).
+Following our mission to simplify complex workflows, we are thrilled to officially announce the upcoming launch of **Integrate Business Operating System** — a unified platform designed to connect every layer of your business.
 
-Currently in closed alpha, EM SME is designed to be the ultimate copilot for technical leads and engineering managers.
+Currently in closed alpha, Integrate Business Operating System is designed to be the central nervous system for modern businesses, integrating tools, data, and teams into a single cohesive operation.
 
 ## Core Capabilities at Launch
 
-When EM SME enters public beta later this year, it will feature three foundational pillars designed to eliminate the most tedious aspects of team management.
+When Integrate Business Operating System enters public beta later this year, it will feature three foundational pillars designed to eliminate fragmentation and drive operational excellence.
 
-### 1. The Velocity Pattern Matching Engine
-Traditional velocity metrics (like story points per sprint) are deeply flawed because they treat all points as equal. EM SME connects to your version control and analyzes *commit velocity*. 
+### 1. The Integration Engine
+Traditional business tools operate in silos — CRMs don't talk to ERPs, and project management lives in its own world. Integrate Business Operating System connects to your entire stack and analyzes *cross-system workflows*.
 
-It identifies patterns: Does the team slow down dramatically when touching the payment gateway? Are PR reviews taking 48 hours on average? By highlighting these bottlenecks, EMs can surgically address technical debt and process flaws.
+It identifies patterns: Does your sales-to-fulfillment handoff take 48 hours? Are support tickets getting lost between departments? By highlighting these bottlenecks, leaders can surgically address process flaws.
 
-### 2. Automated Blocker Resolution
-During daily standups, developers often report blockers that someone else on the team has already solved months ago. EM SME utilizes a localized vector database of your company's PR comments, Slack history, and Jira tickets. 
+### 2. Automated Cross-Functional Resolution
+During daily operations, teams often encounter blockers that another department has already solved. Integrate Business Operating System utilizes a localized vector database of your company's internal documentation, communication history, and resolved tickets.
 
-When a developer notes they are blocked by a specific error or architecture decision, EM SME immediately suggests the internal documentation or the specific team member who previously solved a similar issue.
+When a team notes they are blocked by a specific process or data issue, Integrate Business Operating System immediately suggests the internal documentation or the specific team member who previously solved a similar issue.
 
-### 3. Sprint Risk Dashboards
-Say goodbye to Friday surprises. By analyzing the current state of open PRs, code churn, and historical completion rates, EM SME provides a real-time "Confidence Score" for the current sprint. If the score drops below a threshold, the EM is alerted with specific recommendations on which tickets to descale or reassign.
+### 3. Operational Risk Dashboards
+Say goodbye to Friday surprises. By analyzing the current state of open tasks, process completion rates, and historical throughput, Integrate Business Operating System provides a real-time "Health Score" for your business operations. If the score drops below a threshold, leaders are alerted with specific recommendations on which processes to descale or reassign.
 
 ## The Roadmap
 
-Our vision for EM SME extends far beyond tracking. In 2027, we plan to introduce:
-*   **1-on-1 Copilot:** Automatically generating talking points for 1-on-1s based on a developer's recent wins, struggles, and code reviews.
-*   **Resource Allocation Modeling:** "What-if" scenarios for moving engineers between squads.
-*   **Integration with DevBeast:** Combining the architectural visibility of [DevBeast](/solutions/devbeast) with the human metrics of EM SME.
+Our vision for Integrate Business Operating System extends far beyond integration. In 2027, we plan to introduce:
+*   **Executive Copilot:** Automatically generating strategic talking points based on recent company wins, operational struggles, and team performance.
+*   **Resource Allocation Modeling:** "What-if" scenarios for redistributing resources across departments.
+*   **Integration with DevBeast:** Combining the architectural visibility of [DevBeast](/solutions/devbeast) with the operational intelligence of Integrate Business Operating System.
 
-Join the waitlist today and be among the first to transform your engineering culture.
+Join the waitlist today and be among the first to transform your business operations.
         `
 	},
 	{
