@@ -26,7 +26,7 @@ export async function createOrder(
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ productSlug, email }),
-			signal: controller.signal,
+			signal: controller.signal
 		});
 
 		if (!response.ok) {
@@ -66,7 +66,7 @@ export async function verifyPayment(
 				razorpay_payment_id: razorpayPaymentId,
 				razorpay_signature: razorpaySignature
 			}),
-			signal: controller.signal,
+			signal: controller.signal
 		});
 
 		if (!response.ok) {

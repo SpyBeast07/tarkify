@@ -145,14 +145,14 @@ The EM's role shifts from a status-tracker to a true coach and technical strateg
         `
 	},
 	{
-				slug: 'integrate-business-operating-system',
-				title: 'Integrate Business Operating System: The Future of Operational Intelligence',
-				excerpt:
-					'An inside look at our upcoming launch, the roadmap, and how Integrate Business Operating System will unify and automate your entire business ecosystem.',
-				category: 'Product Updates',
-				readTime: '2 min read',
-				date: 'April 3, 2026',
-				content: `
+		slug: 'integrate-business-operating-system',
+		title: 'Integrate Business Operating System: The Future of Operational Intelligence',
+		excerpt:
+			'An inside look at our upcoming launch, the roadmap, and how Integrate Business Operating System will unify and automate your entire business ecosystem.',
+		category: 'Product Updates',
+		readTime: '2 min read',
+		date: 'April 3, 2026',
+		content: `
 ## Launching Integrate Business Operating System
 
 Following our mission to simplify complex workflows, we are thrilled to officially announce the upcoming launch of **Integrate Business Operating System** — a unified platform designed to connect every layer of your business.

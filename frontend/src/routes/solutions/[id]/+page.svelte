@@ -241,7 +241,8 @@
 
 					{#if hasPricing}
 						<div class="hero-price-display">
-							<span class="hero-price-val">{apiPrice ? formatPrice(apiPrice) : solution.price}</span>
+							<span class="hero-price-val">{apiPrice ? formatPrice(apiPrice) : solution.price}</span
+							>
 							<span class="hero-price-detail">{solution.priceDetail}</span>
 						</div>
 					{/if}

@@ -26,7 +26,7 @@ export async function fetchProduct(slug: string): Promise<ProductFromApi | null>
 
 	try {
 		const response = await fetch(`${API_BASE}/api/products/${slug}`, {
-			signal: controller.signal,
+			signal: controller.signal
 		});
 
 		if (!response.ok) {

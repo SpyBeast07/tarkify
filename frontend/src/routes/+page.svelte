@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Hero from '$lib/components/home/Hero.svelte';
+	import TrustedCompanies from '$lib/components/home/TrustedCompanies.svelte';
 	import IntegrationGallery from '$lib/components/home/IntegrationGallery.svelte';
 	import WhatWeDo from '$lib/components/home/WhatWeDo.svelte';
 	import ROICalculator from '$lib/components/home/ROICalculator.svelte';
@@ -16,6 +17,7 @@
 />
 
 <Hero />
+<TrustedCompanies />
 <IntegrationGallery />
 <WhatWeDo />
 <ROICalculator />
