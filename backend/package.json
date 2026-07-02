@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "db:start": "docker compose up --build -d",
     "db:stop": "docker compose down",
-    "db:migrate": "bun run scripts/migrate.ts"
+    "db:migrate": "bun run scripts/migrate.ts",
+    "test": "bun test"
   },
   "dependencies": {
     "hono": "^4.7.0",
