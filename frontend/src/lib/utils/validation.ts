@@ -6,8 +6,17 @@ export function validateRequired(value: string): boolean {
 }
 
 /**
- * Validates email format using the project's standard regex template.
+ * Validates email format using the project's standard rules:
+ * - Trims whitespace
+ * - Max length of 320 characters
+ * - Rejects empty inputs
+ * - Rejects consecutive dots (..)
+ * - Enforces an alphabetic TLD (min 2 chars)
  */
 export function validateEmail(email: string): boolean {
-	return /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email);
+	const trimmed = email.trim();
+	if (!trimmed) return false;
+	if (trimmed.length > 320) return false;
+	if (trimmed.includes('..')) return false;
+	return /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(trimmed.toLowerCase());
 }

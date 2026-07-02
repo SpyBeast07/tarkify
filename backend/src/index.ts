@@ -31,8 +31,17 @@ app.use('*', securityHeaders);
 app.use('*', bodySizeLimit);
 app.use('*', logger());
 
-// ── Health Check ─────────────────────────────────────────────────
-app.get('/api/health', async (c) => {
+// ── Liveness Check (Uptime) ───────────────────────────────────────
+app.get('/api/health', (c) => {
+  return c.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
+});
+
+// ── Readiness Check (Traffic routing & healthcheck) ───────────────
+app.get('/api/ready', async (c) => {
   let dbOk = false;
   let dbError: string | null = null;
 
@@ -48,16 +57,27 @@ app.get('/api/health', async (c) => {
     dbError = err instanceof Error ? err.message : 'Unknown database error';
   }
 
-  return c.json({
-    status: dbOk ? 'ok' : 'degraded',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    database: dbOk ? 'connected' : 'disconnected',
-    migrations: migrationState.ok
-      ? `applied (${migrationState.applied})`
-      : 'pending',
-    dbError,
-  });
+  const migrationsOk = migrationState.ok;
+
+  if (dbOk && migrationsOk) {
+    return c.json({
+      status: 'ready',
+      timestamp: new Date().toISOString(),
+      database: 'connected',
+      migrations: `applied (${migrationState.applied})`,
+    });
+  }
+
+  return c.json(
+    {
+      status: 'degraded',
+      timestamp: new Date().toISOString(),
+      database: dbOk ? 'connected' : 'disconnected',
+      migrations: migrationsOk ? `applied (${migrationState.applied})` : 'pending',
+      dbError,
+    },
+    503
+  );
 });
 
 // ── Root / Welcome ───────────────────────────────────────────────

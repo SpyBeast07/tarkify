@@ -16,14 +16,7 @@
 		<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png" />
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-		<script>
-			(function () {
-				var theme = localStorage.getItem('tarkify-theme');
-				if (theme === 'dark') {
-					document.documentElement.setAttribute('data-theme', 'dark');
-				}
-			})();
-		</script>
+		<script src="/js/theme.js"></script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

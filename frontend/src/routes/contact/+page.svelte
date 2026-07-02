@@ -16,6 +16,7 @@
 	import { submitContact, ApiResponseError, TimeoutError, NetworkError } from '$lib/api/client';
 	import Seo from '$lib/components/Seo.svelte';
 	import { tick, getContext } from 'svelte';
+	import { validateEmail } from '$lib/utils/validation';
 	import { fade } from 'svelte/transition';
 
 	const toastState = getContext<{ addToast: (msg: string, type: string) => void }>('toast');
@@ -60,7 +61,7 @@
 		if (!formData.lastName.trim()) newErrors.lastName = 'Required';
 		if (!formData.email.trim()) {
 			newErrors.email = 'Required';
-		} else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+		} else if (!validateEmail(formData.email)) {
 			newErrors.email = 'Invalid email';
 		}
 		if (!formData.message.trim()) newErrors.message = 'Required';

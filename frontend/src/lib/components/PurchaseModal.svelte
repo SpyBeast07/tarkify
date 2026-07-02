@@ -4,6 +4,7 @@
 	import { createOrder, verifyPayment } from '$lib/api/payments';
 	import { openCheckout } from '$lib/services/razorpay';
 	import type { PurchaseFlowState, RazorpayPaymentResponse } from '$lib/types/payment';
+	import { validateEmail } from '$lib/utils/validation';
 
 	interface Props {
 		open: boolean;
@@ -20,8 +21,7 @@
 	let errorMessage = $state('');
 	let downloadToken = $state<string | undefined>(undefined);
 
-	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-	let isEmailValid = $derived(emailRegex.test(email));
+	let isEmailValid = $derived(validateEmail(email));
 
 	let wasOpen = false;
 	$effect(() => {

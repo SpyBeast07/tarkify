@@ -49,7 +49,7 @@ services:
     volumes:
       - ./storage:/app/storage
     healthcheck:
-      test: ["CMD-SHELL", "bun -e \"fetch('http://localhost:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
+      test: ["CMD-SHELL", "bun -e \"fetch('http://localhost:3001/api/ready').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))\""]
       interval: 15s
       timeout: 5s
       retries: 3

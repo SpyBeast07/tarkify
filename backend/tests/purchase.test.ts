@@ -25,11 +25,19 @@ describe('Purchase Service', () => {
   });
 
   describe('email validation regex', () => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
 
     it('accepts valid email', () => {
       expect(emailRegex.test('user@example.com')).toBe(true);
       expect(emailRegex.test('user.name@example.co.in')).toBe(true);
+    });
+
+    it('rejects email with numeric TLD', () => {
+      expect(emailRegex.test('user@example.123')).toBe(false);
+    });
+
+    it('rejects email with single-character TLD', () => {
+      expect(emailRegex.test('user@example.c')).toBe(false);
     });
 
     it('rejects email without @', () => {

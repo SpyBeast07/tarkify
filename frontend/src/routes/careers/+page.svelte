@@ -18,6 +18,7 @@
 	import { submitCareers, ApiResponseError, TimeoutError, NetworkError } from '$lib/api/client';
 	import Seo from '$lib/components/Seo.svelte';
 	import { tick, getContext } from 'svelte';
+	import { validateEmail } from '$lib/utils/validation';
 	import { fade } from 'svelte/transition';
 
 	const toastState = getContext<{ addToast: (msg: string, type: string) => void }>('toast');
@@ -54,7 +55,7 @@
 		if (!formData.role) errors.push('Please select a role.');
 		if (!formData.name.trim()) errors.push('Full Name is required.');
 		if (!formData.email.trim()) errors.push('Email Address is required.');
-		else if (!/\S+@\S+\.\S+/.test(formData.email))
+		else if (!validateEmail(formData.email))
 			errors.push('Please enter a valid email address.');
 		if (!formData.phone.trim()) errors.push('Phone Number is required.');
 		if (!formData.cvLink.trim()) errors.push('Resume / CV link is required.');

@@ -16,10 +16,11 @@ export const Limits = {
 } as const;
 
 export function validateEmail(email: string): boolean {
-  if (email.length > Limits.email.max) return false;
-  if (!EMAIL_REGEX.test(email)) return false;
-  if (email.includes('..')) return false;
-  return true;
+  const trimmed = email.trim();
+  if (!trimmed) return false;
+  if (trimmed.length > Limits.email.max) return false;
+  if (trimmed.includes('..')) return false;
+  return EMAIL_REGEX.test(trimmed.toLowerCase());
 }
 
 export function validateUrl(url: string): boolean {

@@ -10,6 +10,7 @@ import * as productService from '../services/product.service.js';
 import * as razorpayService from '../services/razorpay.service.js';
 import * as purchaseService from '../services/purchase.service.js';
 import { config } from '../config.js';
+import { validateEmail } from '../communication/shared/validators.js';
 import type { CreateOrderRequest, VerifyPaymentRequest } from '../types/index.js';
 
 const payments = new Hono();
@@ -50,8 +51,7 @@ payments.post('/create-order', async (c) => {
   const email = purchaseService.normaliseEmail(rawEmail);
 
   // Validate email format (after normalisation)
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  if (!validateEmail(email)) {
     return c.json(
       { error: 'VALIDATION_ERROR', message: 'Invalid email address' },
       400
