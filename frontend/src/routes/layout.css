@@ -1474,6 +1474,17 @@ select:focus:not(:focus-visible) {
 	color: white;
 	border: none;
 	box-shadow: 0 10px 30px rgba(123, 144, 75, 0.3);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.75rem;
+}
+
+.btn-submit .input-icon,
+.btn-submit svg {
+	position: static;
+	opacity: 1;
+	color: currentColor;
 }
 
 .btn-submit:hover {
