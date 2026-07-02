@@ -29,8 +29,14 @@
 					title={product.title}
 					description={product.description}
 					features={product.features}
-					buttonText="Learn More"
-					onButtonClick={() => goto(`/solutions/${product.id}`)}
+					buttonText={product.externalUrl ? 'Visit Website' : 'Learn More'}
+					onButtonClick={() => {
+						if (product.externalUrl) {
+							window.open(product.externalUrl, '_blank', 'noopener,noreferrer');
+						} else {
+							goto(`/solutions/${product.id}`);
+						}
+					}}
 					delay={index * 0.15}
 					comingSoon={product.comingSoon || false}
 				/>

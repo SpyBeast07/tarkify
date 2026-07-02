@@ -27,7 +27,7 @@
 	const products = [
 		'DevBeast',
 		'Legal Redline',
-		'Integrate Business Operating System',
+		'BizOps',
 		'General Website / Other'
 	];
 

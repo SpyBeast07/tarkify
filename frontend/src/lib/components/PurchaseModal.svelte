@@ -118,7 +118,7 @@
 
 <dialog
 	bind:this={dialogEl}
-	class="purchase-dialog glass"
+	class="purchase-dialog"
 	onclose={handleClose}
 	onclick={handleBackdropClick}
 	oncancel={(e) => {
@@ -288,8 +288,9 @@
 		box-shadow:
 			0 25px 50px -12px rgba(0, 0, 0, 0.15),
 			0 0 0 1px rgba(255, 255, 255, 0.05);
-		background: var(--color-glass-bg);
-		backdrop-filter: var(--glass-blur);
+		background: var(--color-light-bg);
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
 		overflow: hidden;
 	}
 

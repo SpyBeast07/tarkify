@@ -58,7 +58,7 @@
 	<div class="modal-backdrop" transition:fade={{ duration: 200 }} onclick={handleBackdropClick}>
 		<!-- Modal Content Sheet -->
 		<div
-			class="modal-card glass {className}"
+			class="modal-card {className}"
 			transition:fly={{ y: 30, duration: 300 }}
 			role="dialog"
 			aria-modal="true"
@@ -117,6 +117,8 @@
 		max-height: 90vh;
 		box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
 		overflow: hidden;
+		background: var(--color-light-bg);
+		border: 1px solid var(--color-glass-border);
 	}
 
 	.modal-header {

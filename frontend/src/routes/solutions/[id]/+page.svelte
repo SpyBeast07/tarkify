@@ -35,6 +35,7 @@
 
 	const DEVBEASST_MOCKUP = '/assets/devbeast_mockup.webp';
 	const WORKFLOW_MOCKUP = '/assets/workflow_mockup.webp';
+	const BIZOPS_URL = 'https://emsme.kushagragupta.co.in/login';
 
 	function getMockup(id: string): string | undefined {
 		switch (id) {
@@ -89,6 +90,7 @@
 
 	let id = $derived($page.params.id);
 	let solution = $derived(solutionsData.find((s) => s.id === id));
+	let isBizOps = $derived(id === 'bizops');
 	let mockupImage = $derived(solution ? getMockup(solution.id) : undefined);
 
 	let apiPrice = $derived(productFromApi?.price ?? null);
@@ -187,7 +189,9 @@
 	function handleGetStarted() {
 		if (!solution) return;
 
-		if (isPurchasable) {
+		if (isBizOps) {
+			window.open(BIZOPS_URL, '_blank', 'noopener,noreferrer');
+		} else if (isPurchasable) {
 			showPurchaseModal = true;
 		} else {
 			goto(`/contact?service=${encodeURIComponent(solution.title)}`);
@@ -211,7 +215,7 @@
 	/>
 {/if}
 
-{#if !solution || solution.comingSoon}
+{#if !solution || solution.comingSoon || solution.externalUrl}
 	<div class="solutions-page pt-32 pb-20 text-center">
 		<div class="container">
 			<span class="section-badge">404</span>
@@ -248,7 +252,16 @@
 					{/if}
 
 					<div class="hero-buttons">
-						{#if isPurchasable}
+						{#if isBizOps}
+							<a
+								href={BIZOPS_URL}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="btn btn-primary btn-with-icon"
+							>
+								Get Started <ExternalLink size={18} />
+							</a>
+						{:else if isPurchasable}
 							<button
 								onclick={handleGetStarted}
 								class="btn btn-primary btn-with-icon"

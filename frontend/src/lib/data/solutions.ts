@@ -56,6 +56,7 @@ export interface SolutionData {
 	techStack?: SolutionTechStack[];
 	features: string[];
 	comingSoon?: boolean;
+	externalUrl?: string;
 }
 
 export const solutionsData: SolutionData[] = solutionsJson as SolutionData[];

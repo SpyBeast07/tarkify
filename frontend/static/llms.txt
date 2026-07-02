@@ -1,0 +1,37 @@
+# Tarkify
+
+> AI-Powered Automation — Build, deploy, and scale intelligent AI agents.
+
+Tarkify builds autonomous AI agents that automate work and make life easier. We help businesses reclaim hours of manual work and scale their teams through intelligent workflow orchestration.
+
+## Products & Solutions
+
+- [DevBeast](https://tarkify.qzz.io/solutions/devbeast): A local-first DevOps control plane that gives developers structural visibility and high-speed control over their entire development stack — containers, databases, and services — in a single pane of glass.
+- [BizOps](https://tarkify.qzz.io/solutions/bizops): A unified platform that connects your entire business stack, automates cross-functional workflows, and provides real-time operational intelligence.
+- [Legal Redline](https://tarkify.qzz.io/solutions/legal-redline): AI-powered contract review and redlining tool that automatically flags risk, suggests compliant clauses, and accelerates negotiations. (Coming Soon)
+
+## Public Pages
+
+- Home: https://tarkify.qzz.io/
+- Solutions: https://tarkify.qzz.io/solutions
+- Discover (Blog): https://tarkify.qzz.io/discover
+- Careers: https://tarkify.qzz.io/careers
+- Contact: https://tarkify.qzz.io/contact
+- Privacy Policy: https://tarkify.qzz.io/privacy
+- Terms of Service: https://tarkify.qzz.io/terms
+
+## Discover Articles
+
+- Tarkify: Building the Future of AI Automation: https://tarkify.qzz.io/discover/building-the-future-of-ai-automation
+- DevBeast: The Developer Control Plane for Modern Teams: https://tarkify.qzz.io/discover/devbeast-developer-control-plane
+- Why Engineering Teams Need an SME Platform: https://tarkify.qzz.io/discover/why-engineering-teams-need-sme-platform
+- BizOps: The Future of Operational Intelligence: https://tarkify.qzz.io/discover/bizops-future-of-operational-intelligence
+- Legal Redline: AI-Powered Contract Intelligence: https://tarkify.qzz.io/discover/legal-redline-ai-powered-contract-intelligence
+
+## Company Info
+
+- Founded: 2025
+- Founders: Kushagra, Ishita
+- Contact Email: tarkify.ai@gmail.com
+- Tagline: "Work. Automated. Life. Effortless."
+- Canonical Website: https://tarkify.qzz.io

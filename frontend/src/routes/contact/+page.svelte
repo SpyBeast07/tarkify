@@ -95,7 +95,7 @@
 			const serviceLabels: Record<string, string> = {
 				DevBeast: 'DevBeast Control Plane',
 				'Legal Redline': 'Legal Redline AI',
-				'Integrate Business Operating System': 'Integrate Business Operating System',
+				'BizOps': 'BizOps',
 				'Custom Solutions': 'Custom Solutions'
 			};
 
@@ -289,8 +289,8 @@
 								>
 									<option value="DevBeast">DevBeast Control Plane</option>
 									<option value="Legal Redline">Legal Redline AI (Coming Soon)</option>
-									<option value="Integrate Business Operating System"
-										>Integrate Business Operating System (Coming Soon)</option
+									<option value="BizOps"
+										>BizOps</option
 									>
 									<option value="Custom Solutions">Custom Solutions</option>
 								</select>

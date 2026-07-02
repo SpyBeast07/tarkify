@@ -146,8 +146,8 @@
 		"comingSoon": true
 	},
 	{
-		"id": "integrate-business-operating-system",
-		"title": "Integrate Business Operating System",
+		"id": "bizops",
+		"title": "BizOps",
 		"badge": "Business OS",
 		"description": "A unified platform that connects your entire business stack, automates cross-functional workflows, and provides real-time operational intelligence.",
 		"iconName": "Cpu",
@@ -157,6 +157,7 @@
 			"AI-driven operational intelligence & insights",
 			"Unified dashboard for business-wide system integration"
 		],
-		"comingSoon": true
+		"comingSoon": false,
+		"externalUrl": "https://emsme.kushagragupta.co.in/login"
 	}
 ]

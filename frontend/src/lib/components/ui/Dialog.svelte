@@ -49,7 +49,7 @@
 
 <dialog
 	bind:this={dialogEl}
-	class="dialog-element glass"
+	class="dialog-element"
 	onclose={handleClose}
 	onclick={(e) => {
 		if (e.target === dialogEl) {
@@ -89,8 +89,9 @@
 		box-shadow:
 			0 20px 25px -5px rgba(0, 0, 0, 0.1),
 			0 10px 10px -5px rgba(0, 0, 0, 0.04);
-		background: var(--color-glass-bg);
-		backdrop-filter: var(--glass-blur);
+		background: var(--color-light-bg);
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
 	}
 
 	.dialog-element::backdrop {
