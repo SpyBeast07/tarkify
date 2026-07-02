@@ -84,7 +84,7 @@ export const mockRazorpayInstance = {
         currency: 'INR',
         receipt: 'r_devbea_123',
       })
-    ),
+    );
   }
 };
 
