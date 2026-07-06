@@ -85,7 +85,7 @@ export async function signOut() {
 }
 
 export async function sendForgotPassword(email: string) {
-  return authFetch("/forget-password", {
+  return authFetch("/request-password-reset", {
     method: "POST",
     body: { email },
   });

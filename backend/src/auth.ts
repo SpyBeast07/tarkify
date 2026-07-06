@@ -66,6 +66,7 @@ export const auth = betterAuth({
     modelName: "session",
     fields: {
       userId: "user_id",
+      expiresAt: "expires_at",
       ipAddress: "ip_address",
       userAgent: "user_agent",
       createdAt: "created_at",
@@ -98,6 +99,7 @@ export const auth = betterAuth({
   verification: {
     modelName: "verification",
     fields: {
+      expiresAt: "expires_at",
       createdAt: "created_at",
       updatedAt: "updated_at",
     },
