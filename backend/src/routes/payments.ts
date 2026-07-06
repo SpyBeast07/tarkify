@@ -67,10 +67,14 @@ payments.post('/create-order', async (c) => {
     );
   }
 
+  // Determine if this is a logged-in user purchasing for themselves.
+  const authUser = c.get('user');
+  const isLoggedInUser = authUser !== null && authUser.email.toLowerCase() === email.toLowerCase();
+  const currentUserId = isLoggedInUser ? authUser.id : undefined;
+
   // Guard: prevent duplicate purchases.
-  // If this email already holds an active entitlement for this product, do
-  // not create another Razorpay order — return a clear error instead.
-  const alreadyOwns = await purchaseService.hasEntitlement(email, product.id);
+  // Checks both user_id and guest_email paths.
+  const alreadyOwns = await purchaseService.hasEntitlement(email, product.id, currentUserId);
   if (alreadyOwns) {
     return c.json(
       {
@@ -90,16 +94,18 @@ payments.post('/create-order', async (c) => {
       receipt
     );
 
-    // Record purchase attempt with normalised guest_email (user_id is null for guests).
+    // Record purchase attempt.
+    // For logged-in users: store user_id + guest_email (audit).
+    // For guests: store only guest_email.
     // createPurchase returns null if a concurrent request already created a purchase
-    // for this email + product (atomic WHERE NOT EXISTS guard). In that case, we still
-    // created a Razorpay order, but it will expire unpaid — that is harmless.
+    // for this identity + product (atomic WHERE NOT EXISTS guard).
     const purchase = await purchaseService.createPurchase(
       email,
       product.id,
       order.id,
       product.price,
-      product.currency
+      product.currency,
+      currentUserId
     );
 
     if (!purchase) {

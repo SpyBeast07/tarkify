@@ -36,45 +36,56 @@ export function normaliseEmail(email: string): string {
  * Create a new purchase record when a Razorpay order is created.
  * Status starts as 'created'.
  * For guest purchases, user_id is null and guest_email is used.
+ * For logged-in users, both user_id and guest_email are set (guest_email for audit).
  * Email is normalised before storage.
  */
 export async function createPurchase(
-  guestEmail: string,
+  email: string,
   productId: string,
   razorpayOrderId: string,
   amount: number,
-  currency: string
+  currency: string,
+  userId?: string
 ): Promise<Purchase | null> {
-  const email = normaliseEmail(guestEmail);
+  const normalisedEmail = normaliseEmail(email);
 
-  // First, expire any stale 'created' orders (> 15 min old) so abandoned
-  // checkouts don't permanently block the user from retrying.
+  // First, expire any stale 'created' orders (> 15 min old).
   await query(
     `UPDATE purchases
      SET status = 'failed', updated_at = NOW()
-     WHERE guest_email = $1
-       AND product_id = $2
+     WHERE product_id = $2
        AND status = 'created'
-       AND created_at < NOW() - INTERVAL '15 minutes'`,
-    [email, productId]
+       AND created_at < NOW() - INTERVAL '15 minutes'
+       AND (
+         ($3::uuid IS NULL AND guest_email = $1) OR
+         ($3::uuid IS NOT NULL AND user_id = $3)
+       )`,
+    [normalisedEmail, productId, userId ?? null]
   );
 
   // Use INSERT ... SELECT ... WHERE NOT EXISTS to atomically check for existing
-  // active purchases and prevent duplicates. This combined with the partial unique
-  // index (migration 006) closes the race between hasEntitlement() check and
-  // createPurchase() — even if two concurrent requests pass hasEntitlement(),
-  // only one INSERT will succeed. The other will return null.
+  // active purchases. For guests, checks by guest_email. For logged-in users, checks by user_id.
   const result = await query<Purchase>(
-    `INSERT INTO purchases (guest_email, product_id, razorpay_order_id, amount, currency, status)
-     SELECT $1, $2, $3, $4, $5, 'created'
+    `INSERT INTO purchases (user_id, guest_email, product_id, razorpay_order_id, amount, currency, status)
+     SELECT
+       CASE WHEN $6::uuid IS NOT NULL THEN $6::uuid ELSE NULL END,
+       $1,
+       $2,
+       $3,
+       $4,
+       $5,
+       'created'
      WHERE NOT EXISTS (
        SELECT 1 FROM purchases p
-       WHERE p.guest_email = $1
-         AND p.product_id = $2
+       WHERE p.product_id = $2
          AND p.status IN ('created', 'paid')
+         AND (
+           ($6::uuid IS NULL AND p.guest_email = $1) OR
+           ($6::uuid IS NOT NULL AND p.user_id = $6::uuid)
+         )
      )
      RETURNING *`,
-    [email, productId, razorpayOrderId, amount, currency]
+    [normalisedEmail, productId, razorpayOrderId, amount, currency, userId ?? null]
   );
   return result.rows[0] ?? null;
 }
@@ -138,9 +149,20 @@ export async function completePurchaseAndGrantEntitlement(
     // return the existing row without error.
     const purchase = updateResult.rows[0] ?? existing;
 
-    // Grant entitlement only for guest purchases (user_id is NULL).
+    // Grant entitlement.
+    // For logged-in purchases (user_id is set), grant by user_id.
+    // For guest purchases, grant by guest_email.
     // ON CONFLICT ensures idempotency if this runs a second time.
-    if (purchase.guest_email) {
+    if (purchase.user_id) {
+      await client.query(
+        `INSERT INTO entitlements (user_id, guest_email, product_id, purchase_id)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (user_id, product_id)
+           WHERE user_id IS NOT NULL
+         DO UPDATE SET purchase_id = $4, granted_at = NOW(), revoked_at = NULL`,
+        [purchase.user_id, purchase.guest_email, purchase.product_id, purchase.id]
+      );
+    } else if (purchase.guest_email) {
       await client.query(
         `INSERT INTO entitlements (guest_email, product_id, purchase_id)
          VALUES ($1, $2, $3)
@@ -218,19 +240,30 @@ export async function refundPurchase(
 // ── Entitlement queries ───────────────────────────────────────────
 
 /**
- * Check if a guest email has an active entitlement for a product.
- * Only considers non-revoked entitlements.
+ * Check if an identity has an active entitlement for a product.
+ * Checks by both guest_email and user_id. Only considers non-revoked entitlements.
  * Email is normalised before lookup.
  */
 export async function hasEntitlement(
-  guestEmail: string,
-  productId: string
+  email: string,
+  productId: string,
+  userId?: string
 ): Promise<boolean> {
+  if (userId) {
+    const result = await query(
+      `SELECT 1 FROM entitlements
+       WHERE product_id = $1 AND revoked_at IS NULL
+         AND (user_id = $2::uuid OR guest_email = $3)
+       LIMIT 1`,
+      [productId, userId, normaliseEmail(email)]
+    );
+    return result.rowCount !== null && result.rowCount > 0;
+  }
   const result = await query(
     `SELECT 1 FROM entitlements
      WHERE guest_email = $1 AND product_id = $2 AND revoked_at IS NULL
      LIMIT 1`,
-    [normaliseEmail(guestEmail), productId]
+    [normaliseEmail(email), productId]
   );
   return result.rowCount !== null && result.rowCount > 0;
 }

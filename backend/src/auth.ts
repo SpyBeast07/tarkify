@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 import { config } from "./config.js";
 import * as userRepository from "./users/repository.js";
+import { linkPurchasesToUserByEmail } from "./purchase-linking/service.js";
 
 export const auth = betterAuth({
   database: new Pool({
@@ -123,6 +124,30 @@ export const auth = betterAuth({
   },
 
   databaseHooks: {
+    user: {
+      update: {
+        after: async (user) => {
+          try {
+            const u = user as Record<string, unknown>;
+            const isVerified = Boolean(u.emailVerified ?? u.email_verified ?? false);
+            if (isVerified) {
+              const uid = (u.id ?? u.userId) as string;
+              const email = u.email as string;
+              if (uid && email) {
+                const result = await linkPurchasesToUserByEmail(uid, email);
+                if (result.purchasesLinked > 0 || result.entitlementsLinked > 0) {
+                  console.info(
+                    `Linked ${result.purchasesLinked} purchase(s) and ${result.entitlementsLinked} entitlement(s) to user ${uid}`
+                  );
+                }
+              }
+            }
+          } catch (err) {
+            console.error("Failed to link guest purchases after email verification:", err);
+          }
+        },
+      },
+    },
     session: {
       create: {
         after: async (session) => {
