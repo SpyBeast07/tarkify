@@ -7,6 +7,7 @@
 	import HowItWorks from '$lib/components/home/HowItWorks.svelte';
 	import WhyTarkify from '$lib/components/home/WhyTarkify.svelte';
 	import Testimonials from '$lib/components/home/Testimonials.svelte';
+	import WorkDelivered from '$lib/components/home/WorkDelivered.svelte';
 	import Seo from '$lib/components/Seo.svelte';
 </script>
 
@@ -18,6 +19,7 @@
 
 <Hero />
 <TrustedCompanies />
+<WorkDelivered />
 <IntegrationGallery />
 <WhatWeDo />
 <ROICalculator />
