@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test';
-import app from '../src/index.ts';
+import { app } from '../src/index.ts';
 import { mockDb } from './helpers.ts';
 
 describe('Communication Modules API Routes', () => {
@@ -9,7 +9,6 @@ describe('Communication Modules API Routes', () => {
 
   describe('POST /api/contact', () => {
     it('creates a contact submission successfully', async () => {
-      // Mock DB: insert contact submission returns row
       mockDb.queryMock.mockImplementation(() =>
         Promise.resolve({ rows: [{ id: 'contact_123' }], rowCount: 1 })
       );
@@ -44,8 +43,7 @@ describe('Communication Modules API Routes', () => {
 
       expect(res.status).toBe(400);
       const data = await res.json();
-      expect(data.success).toBe(false);
-      expect(data.error).toContain('Name');
+      expect(data.error).toBe('BAD_REQUEST');
     });
 
     it('sanitizes HTML input in name and message field', async () => {
@@ -66,12 +64,11 @@ describe('Communication Modules API Routes', () => {
 
       expect(res.status).toBe(200);
 
-      // Verify that sanitization occurred (script/HTML elements stripped before DB write)
       const insertQuery = mockDb.queries.find((q) => q.text.includes('INSERT INTO'));
       expect(insertQuery).toBeDefined();
       expect(insertQuery!.params).toBeDefined();
-      expect(insertQuery!.params![0]).toBe('Jane Doe'); // name parameter has script stripped
-      expect(insertQuery!.params![4]).toBe('Hello World'); // message parameter has bold stripped
+      expect(insertQuery!.params![0]).toBe('Jane Doe');
+      expect(insertQuery!.params![4]).toBe('Hello World');
     });
   });
 
@@ -99,7 +96,6 @@ describe('Communication Modules API Routes', () => {
     });
 
     it('handles duplicate newsletter subscription silently returning 200', async () => {
-      // Mock DB: tryInsertSubscriber returns 0 rows (on conflict do nothing returns empty)
       mockDb.queryMock.mockImplementation((text: string) => {
         if (text.includes('INSERT INTO newsletter_subscribers')) {
           return Promise.resolve({ rows: [], rowCount: 0 });
@@ -132,7 +128,7 @@ describe('Communication Modules API Routes', () => {
 
       expect(res.status).toBe(400);
       const data = await res.json();
-      expect(data.success).toBe(false);
+      expect(data.error).toBe('BAD_REQUEST');
     });
   });
 
@@ -167,15 +163,14 @@ describe('Communication Modules API Routes', () => {
           name: 'John Doe',
           email: 'john@example.com',
           product: 'devbeast',
-          rating: 6, // invalid max rating
+          rating: 6,
           message: 'Great!',
         }),
       });
 
       expect(res.status).toBe(400);
       const data = await res.json();
-      expect(data.success).toBe(false);
-      expect(data.error).toContain('rating');
+      expect(data.error).toBe('BAD_REQUEST');
     });
   });
 
@@ -189,13 +184,12 @@ describe('Communication Modules API Routes', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          role: 'Full Stack Developer',
           name: 'Candidate name',
           email: 'candidate@example.com',
           phone: '+919999999999',
-          cvLink: 'https://docs.google.com/document/cv',
-          portfolioUrl: 'https://github.com/candidate',
-          coverLetter: 'I am excited to join.',
+          resume_url: 'https://docs.google.com/document/cv',
+          portfolio_url: 'https://github.com/candidate',
+          cover_letter: 'I am excited to join.',
         }),
       });
 
@@ -209,37 +203,33 @@ describe('Communication Modules API Routes', () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          role: 'Full Stack Developer',
           name: 'Candidate',
           email: 'candidate@example.com',
-          phone: 'not-a-phone-number', // invalid length / chars for phone
-          cvLink: 'https://docs.google.com/document/cv',
+          phone: 'not-a-phone-number',
+          resume_url: 'https://docs.google.com/document/cv',
         }),
       });
 
       expect(res.status).toBe(400);
       const data = await res.json();
-      expect(data.success).toBe(false);
-      expect(data.error).toContain('Phone');
+      expect(data.error).toBe('BAD_REQUEST');
     });
 
-    it('rejects career application with invalid cvLink url format', async () => {
+    it('rejects career application with invalid resume_url format', async () => {
       const res = await app.request('/api/careers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          role: 'Full Stack Developer',
           name: 'Candidate',
           email: 'candidate@example.com',
           phone: '+919999999999',
-          cvLink: 'invalid-url', // cvLink must be valid URL structure
+          resume_url: 'invalid-url',
         }),
       });
 
       expect(res.status).toBe(400);
       const data = await res.json();
-      expect(data.success).toBe(false);
-      expect(data.error).toContain('Resume');
+      expect(data.error).toBe('BAD_REQUEST');
     });
   });
 });

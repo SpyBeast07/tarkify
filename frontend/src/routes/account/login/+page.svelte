@@ -8,6 +8,7 @@
 
 	let email = $state('');
 	let password = $state('');
+	let rememberMe = $state(true);
 	let showPassword = $state(false);
 	let error = $state('');
 	let loading = $state(false);
@@ -20,7 +21,7 @@
 		loading = true;
 
 		try {
-			const result = await signIn(email, password);
+			const result = await signIn(email, password, rememberMe);
 			if (result.error) {
 				error = result.error.message || 'Invalid email or password';
 				return;
@@ -114,7 +115,7 @@
 
 				<div class="form-options">
 					<label class="checkbox-label">
-						<input type="checkbox" checked />
+						<input type="checkbox" bind:checked={rememberMe} />
 						<span>Remember me</span>
 					</label>
 					<a href="/account/forgot-password" class="forgot-link">Forgot password?</a>

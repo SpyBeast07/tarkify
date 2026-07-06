@@ -65,6 +65,8 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 | `RAZORPAY_KEY_SECRET` | Required | — | Razorpay secret key. | Keep secure. Do not share. |
 | `RAZORPAY_WEBHOOK_SECRET` | Required | — | Webhook validation key. | Configure in Razorpay Dashboard. |
 | `FRONTEND_URL` | Optional | `http://localhost:5173` | CORS whitelist domain. | Set to `https://tarkify.qzz.io`. |
+| `BETTER_AUTH_SECRET` | Required | — | Encryption secret for Better Auth sessions. | Generate with `openssl rand -base64 32`. |
+| `BETTER_AUTH_URL` | Required | — | Backend API base URL for auth redirects. | Set to the backend API base url (e.g. `http://localhost:3001` or `https://backend.tarkify.qzz.io`). |
 | `STORAGE_PATH` | Optional | `./storage` | Folder storing zip packages. | Set to `/app/storage` in Docker. |
 | `DOWNLOAD_TOKEN_TTL_SECONDS`| Optional | `600` | Expiration (s) of download links. | Default is 10 minutes. |
 
@@ -200,9 +202,9 @@ The SvelteKit frontend deploys to Vercel dynamically:
 
 ## 8. Database Migrations
 
-* **System Structure**: Migration SQL files reside under [backend/migrations/](file:///Users/kushagra/Documents/code/tarkify/backend/migrations/). They execute sequentially and record their application history in the `_migrations` database table.
+* **System Structure**: Migration SQL files reside under [backend/migrations/](file:///Users/kushagra/Documents/Tarkify/tarkify/backend/migrations/). They execute sequentially and record their application history in the `_migrations` database table. Currently, 12 migrations exist (from `001_create_users.sql` up to `012_create_purchase_linking_log.sql`).
 * **Adding a New Migration**:
-  1. Create a SQL file with a sequential prefix: `backend/migrations/010_my_new_table.sql`.
+  1. Create a SQL file with a sequential prefix: `backend/migrations/013_my_new_table.sql`.
   2. Write DDL statements inside it. Ensure statements are safe and idempotent.
   3. Deploy: On VPS push, `docker compose up --build -d` will detect and run the new migration script automatically on startup.
 

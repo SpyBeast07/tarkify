@@ -203,4 +203,7 @@ async function start() {
 
 start();
 
-export default app;
+// Named export for test imports. Do NOT change to `export default` —
+// Bun auto-starts a server when the entrypoint exports a default with a
+// `.fetch` property, which conflicts with our explicit Bun.serve() call.
+export { app };

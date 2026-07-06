@@ -4,8 +4,9 @@
 --
 -- Column names use snake_case. Better Auth is configured with field mappings
 -- in backend/src/auth.ts to translate camelCase → snake_case.
--- Better Auth generates IDs for all tables (default behavior), so no
--- DEFAULT clauses are needed on primary keys.
+-- Better Auth generates IDs for all tables. The users.id column is UUID,
+-- so session.user_id and account.user_id must also be UUID to satisfy the FK.
+-- Better Auth is configured with generateId: crypto.randomUUID() in auth.ts.
 
 -- ── Extend existing users table ─────────────────────────────────────
 
@@ -18,7 +19,7 @@ ALTER TABLE users
 
 CREATE TABLE IF NOT EXISTS session (
   id            TEXT PRIMARY KEY,
-  user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   token         TEXT NOT NULL UNIQUE,
   expires_at    TIMESTAMPTZ NOT NULL,
   ip_address    TEXT,
@@ -35,7 +36,7 @@ CREATE INDEX IF NOT EXISTS idx_session_expires_at ON session(expires_at);
 
 CREATE TABLE IF NOT EXISTS account (
   id                        TEXT PRIMARY KEY,
-  user_id                   TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  user_id                   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   account_id                TEXT NOT NULL,
   provider_id               TEXT NOT NULL,
   access_token              TEXT,

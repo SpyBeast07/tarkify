@@ -205,24 +205,15 @@ payments.post('/verify', async (c) => {
       );
     }
 
-    // If the purchase was already paid (idempotent case), do NOT generate
-    // a second download token — the existing one from the first /verify
-    // call remains valid.
+    // Issue a download token. Look for an existing active token first
+    // (idempotent re-verification), otherwise generate a fresh one.
     let downloadTokenRecord;
-    if (updatedPurchase.status === 'paid' && updatedPurchase.razorpay_payment_id !== null) {
-      // This was already completed — look up the existing token.
-      const existingToken = await purchaseService.validateActiveTokenByPurchase(
-        updatedPurchase.id
-      );
-      if (!existingToken) {
-        return c.json(
-          { error: 'COMPLETION_FAILED', message: 'No active token found for this purchase' },
-          500
-        );
-      }
+    const existingToken = await purchaseService.validateActiveTokenByPurchase(
+      updatedPurchase.id
+    );
+    if (existingToken) {
       downloadTokenRecord = existingToken;
     } else {
-      // First-time completion — issue a fresh download token.
       downloadTokenRecord = await purchaseService.generateDownloadToken(
         updatedPurchase.id,
         updatedPurchase.product_id

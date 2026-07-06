@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
+import crypto from "crypto";
 import { config } from "./config.js";
 import * as userRepository from "./users/repository.js";
 import { linkPurchasesToUserByEmail } from "./purchase-linking/service.js";
@@ -8,6 +9,8 @@ export const auth = betterAuth({
   database: new Pool({
     connectionString: config.database.url,
   }),
+  secret: config.auth.secret,
+  baseURL: config.auth.url,
 
   user: {
     modelName: "users",
@@ -105,12 +108,18 @@ export const auth = betterAuth({
     autoSignIn: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
+    sendResetPassword: async ({ user, url }) => {
+      console.info(`[Better Auth Password Reset] Reset password link for ${user.email}: ${url}`);
+    },
   },
 
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     expiresIn: 86400,
+    sendVerificationEmail: async ({ user, url }) => {
+      console.info(`[Better Auth Email Verification] Verification link for ${user.email}: ${url}`);
+    },
   },
 
   advanced: {
@@ -120,6 +129,15 @@ export const auth = betterAuth({
       sameSite: "lax",
       secure: config.nodeEnv === "production",
       httpOnly: true,
+    },
+    database: {
+      /**
+       * Generate UUID v4 strings for all Better Auth tables.
+       * The users.id column is UUID (not TEXT), so we must produce
+       * UUID-format strings that PostgreSQL will accept for the UUID column
+       * and all FK references (session.user_id, account.user_id).
+       */
+      generateId: () => crypto.randomUUID(),
     },
   },
 
