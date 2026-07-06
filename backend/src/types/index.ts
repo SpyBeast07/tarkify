@@ -9,7 +9,17 @@ export interface User {
   id: string;
   email: string;
   name: string | null;
+  role: string;
+  display_name: string | null;
+  timezone: string | null;
+  preferences: Record<string, unknown>;
+  account_status: string;
+  last_login_at: Date | null;
+  last_activity_at: Date | null;
+  email_verified: boolean;
+  image: string | null;
   created_at: Date;
+  updated_at: Date;
 }
 
 export type ProductType = 'ONE_TIME' | 'SUBSCRIPTION';

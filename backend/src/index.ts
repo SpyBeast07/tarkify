@@ -1,17 +1,12 @@
-/**
- * Tarkify Backend — Main Entry Point
- *
- * Initializes the Hono server, mounts route groups,
- * verifies database connectivity, and starts listening.
- */
-
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { corsMiddleware } from './middleware/cors.js';
 import { requestId } from './middleware/request-id.js';
 import { securityHeaders, bodySizeLimit, rateLimit } from './middleware/security.js';
+import { sessionMiddleware } from './middleware/auth.js';
 import { testConnection, pool } from './db.js';
 import { config } from './config.js';
+import { auth } from './auth.js';
 import products from './routes/products.js';
 import payments from './routes/payments.js';
 import webhooks from './routes/webhooks.js';
@@ -20,6 +15,7 @@ import contact from './communication/contact/routes.js';
 import feedback from './communication/feedback/routes.js';
 import newsletter from './communication/newsletter/routes.js';
 import careers from './communication/careers/routes.js';
+import users from './users/routes.js';
 
 const app = new Hono<{ Variables: { requestId: string } }>();
 let migrationState: { applied: number; ok: boolean } = { applied: 0, ok: false };
@@ -30,6 +26,7 @@ app.use('*', corsMiddleware);
 app.use('*', securityHeaders);
 app.use('*', bodySizeLimit);
 app.use('*', logger());
+app.use('*', sessionMiddleware);
 
 // ── Liveness Check (Uptime) ───────────────────────────────────────
 app.get('/api/health', (c) => {
@@ -85,10 +82,12 @@ app.get('/', (c) => {
   return c.json({ name: 'Tarkify API', status: 'active', version: '1.0.0' });
 });
 
+// ── Better Auth handler ──────────────────────────────────────────
+app.on(['POST', 'GET'], '/api/auth/*', (c) => {
+  return auth.handler(c.req.raw);
+});
+
 // ── Rate limiting on the main app with path-prefix matching ─────
-// Applied directly to the main app (not sub-apps) to ensure middleware
-// is always executed. Sub-app `.use()` middleware was not being triggered
-// in Hono, leaving payment/download/webhook endpoints unprotected.
 const paymentLimit = rateLimit({ windowMs: 60_000, max: 30 });
 const downloadLimit = rateLimit({ windowMs: 60_000, max: 60 });
 const webhookLimit = rateLimit({ windowMs: 60_000, max: 20 });
@@ -96,6 +95,8 @@ const contactLimit = rateLimit({ windowMs: 60_000, max: 10 });
 const feedbackLimit = rateLimit({ windowMs: 60_000, max: 20 });
 const newsletterLimit = rateLimit({ windowMs: 60_000, max: 30 });
 const careersLimit = rateLimit({ windowMs: 60_000, max: 10 });
+const authLimit = rateLimit({ windowMs: 60_000, max: 10 });
+const userLimit = rateLimit({ windowMs: 60_000, max: 60 });
 
 app.use('/api/payments/*', paymentLimit);
 app.use('/api/downloads/*', downloadLimit);
@@ -104,6 +105,8 @@ app.use('/api/contact/*', contactLimit);
 app.use('/api/feedback/*', feedbackLimit);
 app.use('/api/newsletter/*', newsletterLimit);
 app.use('/api/careers/*', careersLimit);
+app.use('/api/auth/*', authLimit);
+app.use('/api/users/*', userLimit);
 
 // ── Route Groups ─────────────────────────────────────────────────
 app.route('/api/products', products);
@@ -114,6 +117,7 @@ app.route('/api/contact', contact);
 app.route('/api/feedback', feedback);
 app.route('/api/newsletter', newsletter);
 app.route('/api/careers', careers);
+app.route('/api/users', users);
 
 // ── 404 Fallback ─────────────────────────────────────────────────
 app.notFound((c) => {
@@ -131,7 +135,6 @@ app.onError((err, c) => {
 });
 
 // ── Startup ──────────────────────────────────────────────────────
-// Graceful shutdown handler — hoisted so it's available inside start().
 async function shutdown(signal: string) {
   console.info(`Received ${signal}. Starting graceful shutdown...`);
 
@@ -174,7 +177,6 @@ async function start() {
     process.exit(1);
   }
 
-  // Record migration state
   try {
     const result = await pool.query('SELECT COUNT(*) as count FROM _migrations');
     const count = parseInt(result.rows[0]?.count ?? '0', 10);

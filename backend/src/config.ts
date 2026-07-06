@@ -1,8 +1,3 @@
-/**
- * Centralized configuration — reads and validates environment variables at startup.
- * Fails fast if any required variable is missing or invalid.
- */
-
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
@@ -46,11 +41,15 @@ export const config = {
     webhookSecret: requireEnv('RAZORPAY_WEBHOOK_SECRET'),
   },
 
+  auth: {
+    secret: requireEnv('BETTER_AUTH_SECRET'),
+    url: requireEnv('BETTER_AUTH_URL'),
+  },
+
   frontendUrl: optionalEnv('FRONTEND_URL', 'http://localhost:5173'),
 
   storagePath: optionalEnv('STORAGE_PATH', './storage'),
 
-  /** Download token TTL in seconds (min: 60, max: 86400, default: 600 = 10 minutes). */
   downloadTokenTtlSeconds: parsePositiveInt(
     optionalEnv('DOWNLOAD_TOKEN_TTL_SECONDS', '600'),
     'DOWNLOAD_TOKEN_TTL_SECONDS',
@@ -58,7 +57,6 @@ export const config = {
   ),
 };
 
-// Warn if live Razorpay keys are used outside production
 const isLiveKey = config.razorpay.keyId.startsWith('rzp_live_');
 if (isLiveKey && config.nodeEnv !== 'production') {
   console.warn(
@@ -66,4 +64,3 @@ if (isLiveKey && config.nodeEnv !== 'production') {
     'Set NODE_ENV=production if this is intentional, or switch to test keys (rzp_test_*).'
   );
 }
-

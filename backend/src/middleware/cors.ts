@@ -1,15 +1,8 @@
-/**
- * CORS Middleware
- *
- * Configures Cross-Origin Resource Sharing for the frontend origin.
- */
-
 import { cors } from 'hono/cors';
 import { config } from '../config.js';
 
 export const corsMiddleware = cors({
   origin: (origin) => {
-    // Allow requests with no origin (server-to-server, curl, etc.)
     if (!origin) return '*';
 
     const allowed = [
@@ -19,7 +12,6 @@ export const corsMiddleware = cors({
       config.frontendUrl,
     ];
 
-    // Remove trailing slash from config URL for consistent matching
     const normalizedOrigin = origin.replace(/\/+$/, '');
     const normalizedOrigins = allowed.map((o) => o.replace(/\/+$/, ''));
 
@@ -27,17 +19,14 @@ export const corsMiddleware = cors({
       return origin;
     }
 
-    // Allow Vercel preview deployments
     if (/^https:\/\/.+\.vercel\.app$/.test(normalizedOrigin)) {
       return origin;
     }
 
-    // Reject unknown origins — do NOT return a fallback origin.
-    // Returning a fallback tells the browser to accept the response,
-    // which defeats the purpose of CORS.
     return null;
   },
-  allowMethods: ['GET', 'POST', 'OPTIONS'],
-  allowHeaders: ['Content-Type', 'Authorization'],
+  allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
   maxAge: 86400,
+  credentials: true,
 });
