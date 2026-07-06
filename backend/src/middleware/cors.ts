@@ -3,7 +3,7 @@ import { config } from '../config.js';
 
 export const corsMiddleware = cors({
   origin: (origin) => {
-    if (!origin) return '*';
+    if (!origin) return origin;
 
     const allowed = [
       'http://localhost:5173',

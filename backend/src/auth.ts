@@ -11,6 +11,7 @@ export const auth = betterAuth({
   }),
   secret: config.auth.secret,
   baseURL: config.auth.url,
+  trustedOrigins: [config.frontendUrl],
 
   user: {
     modelName: "users",
