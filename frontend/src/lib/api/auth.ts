@@ -97,3 +97,43 @@ export async function resetPassword(token: string, newPassword: string) {
     body: { token, newPassword },
   });
 }
+
+export async function changePassword(currentPassword: string, newPassword: string) {
+  return authFetch("/change-password", {
+    method: "POST",
+    body: { currentPassword, newPassword },
+  });
+}
+
+export async function sendVerificationEmail(email: string) {
+  return authFetch("/send-verification-email", {
+    method: "POST",
+    body: { email },
+  });
+}
+
+export interface ListedSession {
+  id: string;
+  userId: string;
+  token: string;
+  expiresAt: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export async function listSessions(): Promise<ListedSession[]> {
+  return authFetch<ListedSession[]>("/list-sessions");
+}
+
+export async function revokeSession(sessionToken: string) {
+  return authFetch("/revoke-session", {
+    method: "POST",
+    body: { token: sessionToken },
+  });
+}
+
+export async function revokeOtherSessions() {
+  return authFetch("/revoke-other-sessions", { method: "POST" });
+}

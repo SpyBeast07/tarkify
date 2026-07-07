@@ -30,7 +30,7 @@
 				error = result.error.message || 'Invalid email or password';
 				return;
 			}
-			authState.setUser(result.user);
+			authState.setUser(result.user, result.token);
 			authState.broadcast();
 			await goto(returnUrl);
 		} catch {

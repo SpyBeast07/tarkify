@@ -73,7 +73,7 @@ export const auth = betterAuth({
       createdAt: "created_at",
       updatedAt: "updated_at",
     },
-    expiresIn: 604800,
+    expiresIn: 2592000,
     updateAge: 86400,
     cookieCache: {
       enabled: true,

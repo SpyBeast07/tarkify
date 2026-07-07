@@ -5,6 +5,7 @@ const AUTH_CHANNEL = 'tarkify-auth';
 
 export function createAuthState() {
 	let user = $state<User | null>(null);
+	let currentSessionToken = $state<string | null>(null);
 	let loaded = $state(false);
 	let checking = false;
 
@@ -14,21 +15,25 @@ export function createAuthState() {
 		try {
 			const data = await apiGetSession();
 			user = data?.user ?? null;
+			currentSessionToken = data?.session?.token ?? null;
 		} catch {
 			user = null;
+			currentSessionToken = null;
 		} finally {
 			loaded = true;
 			checking = false;
 		}
 	}
 
-	function setUser(u: User | null) {
+	function setUser(u: User | null, sessionToken?: string | null) {
 		user = u;
+		if (sessionToken !== undefined) currentSessionToken = sessionToken;
 		loaded = true;
 	}
 
 	function clearUser() {
 		user = null;
+		currentSessionToken = null;
 	}
 
 	function broadcast() {
@@ -62,6 +67,9 @@ export function createAuthState() {
 	return {
 		get user() {
 			return user;
+		},
+		get currentSessionToken() {
+			return currentSessionToken;
 		},
 		get loaded() {
 			return loaded;

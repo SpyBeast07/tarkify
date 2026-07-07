@@ -42,7 +42,7 @@
 				error = result.error.message || 'Registration failed';
 				return;
 			}
-			authState.setUser(result.user);
+			authState.setUser(result.user, result.token);
 			authState.broadcast();
 			await goto('/account');
 		} catch {
