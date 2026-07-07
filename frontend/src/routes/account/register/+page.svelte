@@ -17,6 +17,12 @@
 
 	const authState = getContext<AuthState>('auth');
 
+	$effect(() => {
+		if (authState.loaded && authState.user) {
+			goto('/account');
+		}
+	});
+
 	let passwordError = $derived(password.length > 0 && password.length < 8 ? 'Password must be at least 8 characters' : '');
 	let confirmError = $derived(confirmPassword.length > 0 && password !== confirmPassword ? 'Passwords do not match' : '');
 

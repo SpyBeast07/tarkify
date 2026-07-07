@@ -137,3 +137,30 @@ export async function revokeSession(sessionToken: string) {
 export async function revokeOtherSessions() {
   return authFetch("/revoke-other-sessions", { method: "POST" });
 }
+
+const USERS_BASE = `${API_BASE}/api/users`;
+
+async function usersFetch<T = any>(path: string, opts: FetchOptions = {}): Promise<T> {
+  let url = `${USERS_BASE}${path}`;
+
+  const response = await fetch(url, {
+    method: opts.method || "GET",
+    headers: opts.body ? { "Content-Type": "application/json" } : undefined,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: "Request failed" }));
+    throw { status: response.status, ...error };
+  }
+
+  return response.json();
+}
+
+export async function deleteAccount(password: string) {
+  return usersFetch("/delete-account", {
+    method: "POST",
+    body: { password },
+  });
+}

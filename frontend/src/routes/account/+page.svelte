@@ -6,10 +6,10 @@
 		User, Download, Receipt, CreditCard,
 		Lock, Eye, EyeOff, ShieldCheck, LogOut,
 		Monitor, Smartphone, Globe, Clock, CheckCircle, XCircle,
-		Mail, Send, AlertTriangle, RefreshCw
+		Mail, Send, AlertTriangle, RefreshCw, Settings, Trash2
 	} from '@lucide/svelte';
 	import Seo from '$lib/components/Seo.svelte';
-	import { changePassword, sendVerificationEmail, listSessions, revokeSession, revokeOtherSessions } from '$lib/api/auth';
+	import { changePassword, sendVerificationEmail, listSessions, revokeSession, revokeOtherSessions, deleteAccount } from '$lib/api/auth';
 	import type { ListedSession } from '$lib/api/auth';
 	import type { AuthState } from '$lib/context/auth.svelte';
 
@@ -19,7 +19,7 @@
 		goto('/account/login?redirect=/account');
 	}
 
-	let activeTab = $state<'overview' | 'security' | 'sessions'>('overview');
+	let activeTab = $state<'overview' | 'security' | 'sessions' | 'settings'>('overview');
 
 	// ── Email Verification ──
 	let verificationSending = $state(false);
@@ -156,6 +156,39 @@
 		return { browser, os };
 	}
 
+	// ── Delete Account ──
+	let deletePassword = $state('');
+	let deletingAccount = $state(false);
+	let deleteError = $state('');
+	let deleteSuccess = $state(false);
+
+	async function handleDeleteAccount(e: Event) {
+		e.preventDefault();
+		deleteError = '';
+		deleteSuccess = false;
+
+		if (!window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+			return;
+		}
+
+		deletingAccount = true;
+		try {
+			const result = await deleteAccount(deletePassword);
+			if (result.error) {
+				deleteError = result.error.message || 'Failed to delete account';
+				return;
+			}
+			deleteSuccess = true;
+			authState.clearUser();
+			authState.broadcast();
+			setTimeout(() => goto('/'), 2000);
+		} catch (err: any) {
+			deleteError = err?.message || 'An unexpected error occurred. Please try again.';
+		} finally {
+			deletingAccount = false;
+		}
+	}
+
 	function formatDate(iso: string): string {
 		const d = new Date(iso);
 		return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -216,6 +249,14 @@
 			>
 				<Monitor size={16} />
 				Sessions
+			</button>
+			<button
+				class="tab-btn"
+				class:active={activeTab === 'settings'}
+				onclick={() => (activeTab = 'settings')}
+			>
+				<Settings size={16} />
+				Settings
 			</button>
 		</div>
 
@@ -466,6 +507,75 @@
 							{/each}
 						</div>
 					{/if}
+				</div>
+			</div>
+		<!-- ── Settings Tab ── -->
+		{:else if activeTab === 'settings'}
+			<div class="tab-content" transition:fly={{ y: 12, duration: 250 }}>
+				<div class="section-card glass">
+					<div class="section-card-header">
+						<Settings size={20} />
+						<h2>Account Settings</h2>
+					</div>
+					<p class="section-card-desc">Manage your account settings and data.</p>
+
+					<div class="delete-account-section">
+						<div class="delete-account-warning glass">
+							<div class="delete-warning-icon">
+								<AlertTriangle size={24} />
+							</div>
+							<div class="delete-warning-text">
+								<h3>Delete Account</h3>
+								<p>Permanently delete your account and all associated data. This action cannot be undone.</p>
+								<ul>
+									<li>Your profile and account information will be deactivated.</li>
+									<li>Your purchases, invoices, and download history will be preserved for record-keeping.</li>
+									<li>You will be signed out of all sessions immediately.</li>
+									<li>You will not be able to log in again. Contact support to recover your account.</li>
+								</ul>
+							</div>
+						</div>
+
+						{#if deleteError}
+							<div class="form-alert form-alert-error" role="alert">
+								<AlertTriangle size={16} />
+								{deleteError}
+							</div>
+						{/if}
+
+						{#if deleteSuccess}
+							<div class="success-alert">
+								<CheckCircle size={20} />
+								<span>Account deleted. Redirecting...</span>
+							</div>
+						{:else}
+							<form onsubmit={handleDeleteAccount} novalidate>
+								<div class="form-group">
+									<label for="deletePassword" class="form-label">Confirm your password to delete your account</label>
+									<div class="input-container-wrapper input-with-icon">
+										<Lock size={18} class="input-icon" />
+										<input
+											id="deletePassword"
+											type="password"
+											bind:value={deletePassword}
+											required
+											autocomplete="current-password"
+											disabled={deletingAccount}
+											placeholder="Enter current password"
+										/>
+									</div>
+								</div>
+								<button
+									type="submit"
+									class="btn btn-danger"
+									disabled={deletingAccount || !deletePassword}
+								>
+									<Trash2 size={16} />
+									{deletingAccount ? 'Deleting Account...' : 'Delete My Account'}
+								</button>
+							</form>
+						{/if}
+					</div>
 				</div>
 			</div>
 		{/if}
@@ -830,6 +940,107 @@
 		font-size: 0.8rem;
 		opacity: 0.5;
 		font-style: italic;
+	}
+
+	/* ── Delete Account ── */
+	.delete-account-section {
+		margin-top: 2rem;
+		padding-top: 2rem;
+		border-top: 1px solid var(--color-glass-border);
+	}
+
+	.delete-account-warning {
+		display: flex;
+		gap: 1rem;
+		padding: 1.25rem;
+		border-radius: 16px;
+		margin-bottom: 1.5rem;
+		border: 1px solid rgba(239, 68, 68, 0.3);
+		background: rgba(239, 68, 68, 0.06);
+	}
+
+	.delete-warning-icon {
+		flex-shrink: 0;
+		width: 44px;
+		height: 44px;
+		border-radius: 12px;
+		background: rgba(239, 68, 68, 0.15);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #ef4444;
+	}
+
+	.delete-warning-text {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.delete-warning-text h3 {
+		font-size: 1rem;
+		font-weight: 600;
+		margin: 0 0 0.25rem;
+		color: #ef4444;
+	}
+
+	.delete-warning-text p {
+		font-size: 0.85rem;
+		opacity: 0.7;
+		margin: 0 0 0.75rem;
+	}
+
+	.delete-warning-text ul {
+		font-size: 0.8rem;
+		opacity: 0.6;
+		margin: 0;
+		padding-left: 1.25rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.delete-warning-text ul li {
+		line-height: 1.5;
+	}
+
+	.btn-danger {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1.5rem;
+		border: none;
+		border-radius: 12px;
+		font-size: 0.9rem;
+		font-weight: 600;
+		font-family: inherit;
+		cursor: pointer;
+		color: #fff;
+		background: #ef4444;
+		transition: background 0.2s, opacity 0.2s;
+	}
+
+	.btn-danger:hover {
+		background: #dc2626;
+	}
+
+	.btn-danger:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	@media (max-width: 640px) {
+		.delete-account-warning {
+			flex-direction: column;
+			text-align: center;
+		}
+
+		.delete-warning-icon {
+			margin: 0 auto;
+		}
+
+		.delete-warning-text ul {
+			text-align: left;
+		}
 	}
 
 	/* ── Responsive ── */

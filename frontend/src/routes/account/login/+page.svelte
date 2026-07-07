@@ -19,6 +19,12 @@
 
 	let returnUrl = $derived($page.url.searchParams.get('redirect') || '/account');
 
+	$effect(() => {
+		if (authState.loaded && authState.user) {
+			goto('/account');
+		}
+	});
+
 	async function handleLogin(e: Event) {
 		e.preventDefault();
 		error = '';

@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { config } from "./config.js";
 import * as userRepository from "./users/repository.js";
 import { linkPurchasesToUserByEmail } from "./purchase-linking/service.js";
+import * as auditService from "./audit/service.js";
 
 export const auth = betterAuth({
   database: new Pool({
@@ -161,6 +162,7 @@ export const auth = betterAuth({
                     `Linked ${result.purchasesLinked} purchase(s) and ${result.entitlementsLinked} entitlement(s) to user ${uid}`
                   );
                 }
+                await auditService.recordEmailVerified(uid, undefined, undefined, { email });
               }
             }
           } catch (err) {
@@ -174,8 +176,43 @@ export const auth = betterAuth({
         after: async (session) => {
           try {
             await userRepository.updateLastLogin(session.userId);
+            const s = session as Record<string, unknown>;
+            await auditService.recordLogin(
+              session.userId,
+              (s.ipAddress as string) ?? (s.ip_address as string) ?? undefined,
+              (s.userAgent as string) ?? (s.user_agent as string) ?? undefined,
+            );
           } catch (err) {
             console.error("Failed to update last_login_at:", err);
+          }
+        },
+      },
+      delete: {
+        after: async (session) => {
+          try {
+            const s = session as Record<string, unknown>;
+            await auditService.recordSessionRevoked(
+              session.userId,
+              (s.ipAddress as string) ?? (s.ip_address as string) ?? undefined,
+              (s.userAgent as string) ?? (s.user_agent as string) ?? undefined,
+              { session_id: (s.id as string) ?? (s.token as string)?.substring(0, 8) },
+            );
+          } catch (err) {
+            console.error("Failed to record session revocation audit:", err);
+          }
+        },
+      },
+    },
+    account: {
+      update: {
+        after: async (account) => {
+          try {
+            const a = account as Record<string, unknown>;
+            if (a.password) {
+              await auditService.recordPasswordChanged(account.userId);
+            }
+          } catch (err) {
+            console.error("Failed to record password change audit:", err);
           }
         },
       },

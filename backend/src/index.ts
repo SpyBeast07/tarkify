@@ -83,6 +83,25 @@ app.get('/', (c) => {
 });
 
 // ── Better Auth handler ──────────────────────────────────────────
+app.use('/api/auth/sign-in/email', async (c, next) => {
+  if (c.req.method === 'POST') {
+    try {
+      const cloned = c.req.raw.clone();
+      const body = await cloned.json();
+      const email = body?.email as string | undefined;
+      if (email) {
+        const result = await pool.query('SELECT account_status FROM users WHERE email = $1', [email]);
+        const status = result.rows[0]?.account_status;
+        if (status && status !== 'ACTIVE') {
+          return c.json({ error: 'FORBIDDEN', message: 'Account is not active' }, 403);
+        }
+      }
+    } catch {
+      // Ignore JSON parse errors; let Better Auth handle them
+    }
+  }
+  await next();
+});
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {
   return auth.handler(c.req.raw);
 });
