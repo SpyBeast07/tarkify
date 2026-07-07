@@ -108,7 +108,12 @@
 		sessionsLoading = true;
 		sessionsError = '';
 		try {
-			sessions = await listSessions();
+			const result = await listSessions();
+			if (result && typeof result === 'object' && 'error' in result) {
+				sessionsError = (result as any).error?.message || 'Failed to load sessions';
+			} else {
+				sessions = result as ListedSession[];
+			}
 		} catch {
 			sessionsError = 'Failed to load sessions';
 		} finally {
@@ -119,8 +124,12 @@
 	async function handleRevoke(token: string) {
 		revokingToken = token;
 		try {
-			await revokeSession(token);
-			sessions = sessions.filter(s => s.token !== token);
+			const result = await revokeSession(token);
+			if (result && typeof result === 'object' && 'error' in result) {
+				sessionsError = (result as any).error?.message || 'Failed to revoke session';
+			} else {
+				sessions = sessions.filter(s => s.token !== token);
+			}
 		} catch {
 			sessionsError = 'Failed to revoke session';
 		} finally {
@@ -131,8 +140,12 @@
 	async function handleRevokeOthers() {
 		revokingAll = true;
 		try {
-			await revokeOtherSessions();
-			await loadSessions();
+			const result = await revokeOtherSessions();
+			if (result && typeof result === 'object' && 'error' in result) {
+				sessionsError = (result as any).error?.message || 'Failed to revoke other sessions';
+			} else {
+				await loadSessions();
+			}
 		} catch {
 			sessionsError = 'Failed to revoke other sessions';
 		} finally {

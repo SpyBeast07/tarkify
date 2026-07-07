@@ -24,11 +24,13 @@ async function authFetch<T = any>(path: string, opts: FetchOptions = {}): Promis
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: "Request failed" }));
-    throw { status: response.status, ...error };
+    return { error, status: response.status } as T;
   }
 
   return response.json();
 }
+
+export type ApiError = { error: { message: string; code?: string }; status: number };
 
 export interface User {
   id: string;
@@ -59,8 +61,9 @@ export interface SessionData {
 
 export async function getSession(): Promise<SessionData | null> {
   try {
-    const data = await authFetch<{ user: User; session: Session }>("/get-session");
-    return data;
+    const data = await authFetch<{ user: User; session: Session } | ApiError>("/get-session");
+    if ('error' in data) return null;
+    return data as SessionData;
   } catch {
     return null;
   }
@@ -152,7 +155,7 @@ async function usersFetch<T = any>(path: string, opts: FetchOptions = {}): Promi
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: "Request failed" }));
-    throw { status: response.status, ...error };
+    return { error, status: response.status } as T;
   }
 
   return response.json();
