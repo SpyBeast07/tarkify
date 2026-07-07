@@ -4,7 +4,6 @@
     Package, Download, Clock, Calendar,
     Mail, CheckCircle, ArrowRight, RefreshCw, AlertTriangle
   } from '@lucide/svelte';
-  import { goto } from '$app/navigation';
   import { sendVerificationEmail } from '$lib/api/auth';
   import {
     fetchDashboard,
@@ -28,7 +27,12 @@
     error = '';
     const result = await fetchDashboard();
     if ('error' in result) {
-      error = (result as ApiErrorBody).error?.message || 'Failed to load dashboard';
+      const err = result as ApiErrorBody;
+      if (err.status === 401) {
+        authState.clearUser();
+        return;
+      }
+      error = err.error?.message || 'Failed to load dashboard';
     } else {
       data = result;
     }
@@ -67,7 +71,7 @@
 </script>
 
 {#if loading}
-  <div class="dashboard-skeleton">
+  <div class="dashboard-skeleton" aria-hidden="true">
     <div class="skeleton-card"></div>
     <div class="skeleton-row">
       <div class="skeleton-stat"></div>
@@ -76,7 +80,7 @@
     <div class="skeleton-card tall"></div>
   </div>
 {:else if error}
-  <div class="state-card error">
+  <div class="state-card error" role="alert">
     <AlertTriangle size={24} />
     <p>{error}</p>
     <button class="btn btn-primary btn-sm" onclick={load}>
@@ -85,7 +89,7 @@
     </button>
   </div>
 {:else if data}
-  <div class="dashboard">
+  <div class="dashboard" aria-live="polite">
     {#if authState.user && !authState.user.emailVerified}
       <div class="verify-banner glass">
         <div class="verify-banner-icon">
@@ -113,7 +117,7 @@
         </div>
       </div>
       {#if verificationError}
-        <div class="form-alert form-alert-error">{verificationError}</div>
+        <div class="form-alert form-alert-error" role="alert">{verificationError}</div>
       {/if}
     {/if}
 
@@ -160,7 +164,7 @@
         </div>
         <div class="activity-list">
           {#each data.recentActivity as item}
-            <button class="activity-item" onclick={() => goto(`/account/purchases/${item.purchaseId}`)}>
+            <a href="/account/purchases/{item.purchaseId}" class="activity-item">
               <div class="activity-info">
                 <span class="activity-product">{item.productName}</span>
                 <span class="activity-meta">
@@ -171,7 +175,7 @@
                 <span class="activity-date">{formatDate(item.createdAt)}</span>
                 <ArrowRight size={14} />
               </div>
-            </button>
+            </a>
           {/each}
         </div>
       </div>
@@ -313,6 +317,7 @@
     text-align: left;
     width: 100%;
     font-family: inherit;
+    text-decoration: none;
     transition: background 0.2s;
   }
 
@@ -486,6 +491,12 @@
     0% { opacity: 0.5; }
     50% { opacity: 0.8; }
     100% { opacity: 0.5; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dashboard-skeleton * {
+      animation: none;
+    }
   }
 
   @media (max-width: 640px) {

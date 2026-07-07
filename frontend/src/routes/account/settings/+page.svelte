@@ -186,6 +186,12 @@
       deletingAccount = false;
     }
   }
+
+  $effect(() => {
+    if (authState.loaded && authState.user) {
+      loadSessions();
+    }
+  });
 </script>
 
 <div class="settings-page">
@@ -306,7 +312,7 @@
       </div>
     {/if}
 
-    {#if sessionsLoading && sessions.length === 0}
+    {#if sessionsLoading}
       <div class="loading-state">Loading sessions...</div>
     {:else if sessions.length === 0}
       <div class="empty-state">No active sessions found.</div>

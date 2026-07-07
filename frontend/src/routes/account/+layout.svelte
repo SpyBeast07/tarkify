@@ -1,7 +1,9 @@
 <script lang="ts">
   import { getContext } from 'svelte';
+  import { page } from '$app/stores';
   import { fly } from 'svelte/transition';
   import { goto } from '$app/navigation';
+  import { ChevronRight } from '@lucide/svelte';
   import Seo from '$lib/components/Seo.svelte';
   import Sidebar from '$lib/components/account/Sidebar.svelte';
   import type { AuthState } from '$lib/context/auth.svelte';
@@ -25,6 +27,32 @@
       }
     }
   });
+
+  const breadcrumbLabels: Record<string, string> = {
+    profile: 'Profile',
+    purchases: 'Purchases',
+    downloads: 'Downloads',
+    billing: 'Billing',
+    settings: 'Settings',
+  };
+
+  const breadcrumbs = $derived.by(() => {
+    const path = $page.url.pathname;
+    const parts = path.replace(/^\/account\/?/, '').split('/').filter(Boolean);
+    const crumbs: Array<{ label: string; href: string }> = [];
+    crumbs.push({ label: 'Account', href: '/account' });
+    let current = '/account';
+    for (const part of parts) {
+      current += '/' + part;
+      const label = breadcrumbLabels[part] || part;
+      crumbs.push({ label, href: current });
+    }
+    return crumbs;
+  });
+
+  const pageTitle = $derived(
+    breadcrumbs.length > 1 ? breadcrumbs[breadcrumbs.length - 1].label : 'Customer Portal'
+  );
 </script>
 
 <svelte:head>
@@ -32,7 +60,7 @@
 </svelte:head>
 
 <Seo
-  title="Account | Tarkify"
+  title="{pageTitle} | Account | Tarkify"
   description="Manage your Tarkify account, purchases, downloads, and billing."
   ogImage="/og-image.svg"
   ogType="website"
@@ -46,11 +74,40 @@
         <h1>Customer Portal</h1>
       </div>
 
+      <nav class="breadcrumbs" aria-label="Breadcrumb">
+        {#each breadcrumbs as crumb, i (crumb.href)}
+          {#if i > 0}
+            <ChevronRight size={12} class="breadcrumb-sep" />
+          {/if}
+          {#if i < breadcrumbs.length - 1}
+            <a href={crumb.href} class="breadcrumb-link">{crumb.label}</a>
+          {:else}
+            <span class="breadcrumb-current">{crumb.label}</span>
+          {/if}
+        {/each}
+      </nav>
+
       <div class="account-layout">
         <Sidebar />
         <main class="account-content" transition:fly={{ y: 12, duration: 250 }}>
           {@render children()}
         </main>
+      </div>
+    </div>
+  </div>
+{:else}
+  <div class="account-page pt-32 pb-20">
+    <div class="container">
+      <div class="account-hero">
+        <span class="section-badge">Account</span>
+        <h1>Customer Portal</h1>
+      </div>
+      <div class="account-layout">
+        <div class="account-sidebar-skeleton"></div>
+        <div class="account-content-skeleton">
+          <div class="skeleton-block" style="height: 80px"></div>
+          <div class="skeleton-block" style="height: 200px; margin-top: 1rem"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -70,6 +127,36 @@
     margin-bottom: 0.5rem;
   }
 
+  .breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+  }
+
+  :global(.breadcrumb-sep) {
+    opacity: 0.35;
+    flex-shrink: 0;
+  }
+
+  .breadcrumb-link {
+    color: var(--color-text);
+    opacity: 0.5;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+
+  .breadcrumb-link:hover {
+    opacity: 0.8;
+    text-decoration: underline;
+  }
+
+  .breadcrumb-current {
+    opacity: 0.8;
+    font-weight: 500;
+  }
+
   .account-layout {
     display: flex;
     gap: 2.5rem;
@@ -80,6 +167,32 @@
     flex: 1;
     min-width: 0;
     max-width: 720px;
+  }
+
+  .account-sidebar-skeleton {
+    width: 220px;
+    height: 300px;
+    border-radius: 20px;
+    background: var(--color-glass-bg);
+    animation: shimmer 1.5s infinite;
+    flex-shrink: 0;
+  }
+
+  .account-content-skeleton {
+    flex: 1;
+    max-width: 720px;
+  }
+
+  .skeleton-block {
+    border-radius: 20px;
+    background: var(--color-glass-bg);
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+    100% { opacity: 0.5; }
   }
 
   @media (max-width: 768px) {
@@ -94,6 +207,11 @@
 
     .account-content {
       max-width: 100%;
+    }
+
+    .account-sidebar-skeleton {
+      width: 100%;
+      height: 48px;
     }
   }
 </style>

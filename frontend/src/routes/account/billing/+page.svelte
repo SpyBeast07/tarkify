@@ -34,12 +34,7 @@
 
   $effect(() => {
     if (authState.loaded && authState.user) {
-      load();
-    }
-  });
-
-  $effect(() => {
-    if (page && authState.loaded) {
+      page;
       load();
     }
   });

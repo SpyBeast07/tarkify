@@ -2,7 +2,7 @@
   import { getContext } from 'svelte';
   import { goto } from '$app/navigation';
   import {
-    Receipt, ArrowRight, AlertTriangle, RefreshCw, Search
+    Receipt, ArrowRight, AlertTriangle, RefreshCw
   } from '@lucide/svelte';
   import {
     fetchPurchases,
@@ -33,12 +33,7 @@
 
   $effect(() => {
     if (authState.loaded && authState.user) {
-      load();
-    }
-  });
-
-  $effect(() => {
-    if (page && authState.loaded) {
+      page;
       load();
     }
   });
