@@ -4,7 +4,7 @@
     Download, AlertTriangle, RefreshCw, CheckCircle, Clock
   } from '@lucide/svelte';
   import {
-    fetchDownloads, generateDownloadToken,
+    fetchDownloads, generateDownloadToken, API_ORIGIN,
     type DownloadsResponse, type DownloadRow, type ApiErrorBody,
   } from '$lib/api/account';
   import type { AuthState } from '$lib/context/auth.svelte';
@@ -23,7 +23,12 @@
     error = '';
     const result = await fetchDownloads();
     if ('error' in result) {
-      error = (result as ApiErrorBody).error?.message || 'Failed to load downloads';
+      const err = result as ApiErrorBody;
+      if (err.status === 401) {
+        authState.clearUser();
+        return;
+      }
+      error = err.error?.message || 'Failed to load downloads';
     } else {
       data = result;
     }
@@ -39,23 +44,17 @@
   async function handleDownload(item: DownloadRow) {
     downloadingId = item.entitlement_id;
     try {
-      if (item.has_valid_token) {
-        window.open(`/api/downloads/${item.product_slug}?token=refresh`, '_blank');
-        const result = await generateDownloadToken(item.purchase_id);
-        if ('error' in result) {
-          toast.addToast('Failed to generate download link', 'error');
-        } else {
-          window.open(result.downloadUrl, '_blank');
-          toast.addToast('Download started', 'success');
+      const result = await generateDownloadToken(item.purchase_id);
+      if ('error' in result) {
+        const err = result as ApiErrorBody;
+        if (err.status === 401) {
+          authState.clearUser();
+          return;
         }
+        toast.addToast('Failed to generate download link', 'error');
       } else {
-        const result = await generateDownloadToken(item.purchase_id);
-        if ('error' in result) {
-          toast.addToast('Failed to generate download link', 'error');
-        } else {
-          window.open(result.downloadUrl, '_blank');
-          toast.addToast('Download started', 'success');
-        }
+        window.open(API_ORIGIN + result.downloadUrl, '_blank');
+        toast.addToast('Download started', 'success');
       }
     } catch {
       toast.addToast('Download failed. Please try again.', 'error');
@@ -80,13 +79,13 @@
 </div>
 
 {#if loading && !data}
-  <div class="skeleton-list">
+  <div class="skeleton-list" aria-hidden="true">
     {#each { length: 3 } as _}
       <div class="skeleton-row-item"></div>
     {/each}
   </div>
 {:else if error}
-  <div class="state-card error">
+  <div class="state-card error" role="alert">
     <AlertTriangle size={24} />
     <p>{error}</p>
     <button class="btn btn-primary btn-sm" onclick={load}>
@@ -102,10 +101,10 @@
     <a href="/solutions" class="btn btn-primary">Browse Products</a>
   </div>
 {:else if data}
-  <div class="downloads-list">
+  <div class="downloads-list" aria-live="polite">
     {#each data.downloads as item (item.entitlement_id)}
       <div class="download-card glass">
-        <div class="download-icon">
+        <div class="download-icon" aria-hidden="true">
           <Download size={20} />
         </div>
         <div class="download-info">
@@ -131,6 +130,7 @@
           class="btn btn-primary btn-sm"
           onclick={() => handleDownload(item)}
           disabled={downloadingId === item.entitlement_id}
+          aria-label="Download {item.product_name}"
         >
           {downloadingId === item.entitlement_id ? 'Preparing...' : 'Download'}
         </button>
@@ -283,6 +283,12 @@
     0% { opacity: 0.5; }
     50% { opacity: 0.8; }
     100% { opacity: 0.5; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-row-item {
+      animation: none;
+    }
   }
 
   @media (max-width: 640px) {

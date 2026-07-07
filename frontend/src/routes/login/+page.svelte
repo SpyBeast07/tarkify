@@ -83,7 +83,7 @@
 				<div class="form-group">
 					<label for="email" class="form-label">Email</label>
 					<div class="input-container-wrapper input-with-icon">
-						<Mail size={20} class="input-icon" />
+						<Mail size={20} class="input-icon" aria-hidden="true" />
 						<input
 							id="email"
 							type="email"
@@ -99,7 +99,7 @@
 				<div class="form-group">
 					<label for="password" class="form-label">Password</label>
 					<div class="input-container-wrapper input-with-icon">
-						<Lock size={20} class="input-icon" />
+						<Lock size={20} class="input-icon" aria-hidden="true" />
 						<input
 							id="password"
 							type={showPassword ? 'text' : 'password'}
@@ -117,9 +117,9 @@
 							disabled={loading}
 						>
 							{#if showPassword}
-								<EyeOff size={20} />
+								<EyeOff size={20} aria-hidden="true" />
 							{:else}
-								<Eye size={20} />
+								<Eye size={20} aria-hidden="true" />
 							{/if}
 						</button>
 					</div>
@@ -127,7 +127,7 @@
 
 				<div class="form-options">
 					<label class="checkbox-label">
-						<input type="checkbox" bind:checked={rememberMe} />
+						<input type="checkbox" bind:checked={rememberMe} disabled={loading} />
 						<span>Remember me</span>
 					</label>
 					<a href="/forgot-password" class="forgot-link">Forgot password?</a>
@@ -136,7 +136,7 @@
 				<button type="submit" class="btn btn-primary btn-full" disabled={loading}>
 					{loading ? 'Signing in...' : 'Sign In'}
 					{#if !loading}
-						<ArrowRight size={18} />
+						<ArrowRight size={18} aria-hidden="true" />
 					{/if}
 				</button>
 			</form>

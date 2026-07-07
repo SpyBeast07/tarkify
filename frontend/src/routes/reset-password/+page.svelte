@@ -92,9 +92,9 @@
 					</a>
 				</div>
 			{:else if success}
-				<div class="success-state">
+				<div class="success-state" role="status">
 					<div class="success-icon">
-						<ShieldCheck size={32} />
+						<ShieldCheck size={32} aria-hidden="true" />
 					</div>
 					<h2>Password Reset</h2>
 					<p>Your password has been successfully updated.</p>
@@ -113,7 +113,7 @@
 					<div class="form-group">
 						<label for="password" class="form-label">New Password</label>
 						<div class="input-container-wrapper input-with-icon">
-							<Lock size={20} class="input-icon" />
+							<Lock size={20} class="input-icon" aria-hidden="true" />
 							<input
 								id="password"
 								type={showPassword ? 'text' : 'password'}
@@ -129,13 +129,13 @@
 								onclick={togglePassword}
 								aria-label={showPassword ? 'Hide password' : 'Show password'}
 								disabled={loading}
-							>
-								{#if showPassword}
-									<EyeOff size={20} />
-								{:else}
-									<Eye size={20} />
-								{/if}
-							</button>
+						>
+							{#if showPassword}
+								<EyeOff size={20} aria-hidden="true" />
+							{:else}
+								<Eye size={20} aria-hidden="true" />
+							{/if}
+						</button>
 						</div>
 						{#if passwordError}
 							<span class="error-text">{passwordError}</span>
@@ -145,7 +145,7 @@
 					<div class="form-group">
 						<label for="confirmPassword" class="form-label">Confirm New Password</label>
 						<div class="input-container-wrapper input-with-icon">
-							<Lock size={20} class="input-icon" />
+							<Lock size={20} class="input-icon" aria-hidden="true" />
 							<input
 								id="confirmPassword"
 								type={showPassword ? 'text' : 'password'}
@@ -173,7 +173,7 @@
 
 			<div class="auth-footer">
 				<a href="/login" class="back-link">
-					<ArrowLeft size={16} />
+					<ArrowLeft size={16} aria-hidden="true" />
 					Back to login
 				</a>
 			</div>

@@ -95,7 +95,7 @@
 				<div class="form-group">
 					<label for="name" class="form-label">Name</label>
 					<div class="input-container-wrapper input-with-icon">
-						<User size={20} class="input-icon" />
+						<User size={20} class="input-icon" aria-hidden="true" />
 						<input
 							id="name"
 							type="text"
@@ -111,7 +111,7 @@
 				<div class="form-group">
 					<label for="email" class="form-label">Email</label>
 					<div class="input-container-wrapper input-with-icon">
-						<Mail size={20} class="input-icon" />
+						<Mail size={20} class="input-icon" aria-hidden="true" />
 						<input
 							id="email"
 							type="email"
@@ -127,7 +127,7 @@
 				<div class="form-group">
 					<label for="password" class="form-label">Password</label>
 					<div class="input-container-wrapper input-with-icon">
-						<Lock size={20} class="input-icon" />
+						<Lock size={20} class="input-icon" aria-hidden="true" />
 						<input
 							id="password"
 							type={showPassword ? 'text' : 'password'}
@@ -145,9 +145,9 @@
 							disabled={loading}
 						>
 							{#if showPassword}
-								<EyeOff size={20} />
+								<EyeOff size={20} aria-hidden="true" />
 							{:else}
-								<Eye size={20} />
+								<Eye size={20} aria-hidden="true" />
 							{/if}
 						</button>
 					</div>
@@ -159,7 +159,7 @@
 				<div class="form-group">
 					<label for="confirmPassword" class="form-label">Confirm Password</label>
 					<div class="input-container-wrapper input-with-icon">
-						<Lock size={20} class="input-icon" />
+						<Lock size={20} class="input-icon" aria-hidden="true" />
 						<input
 							id="confirmPassword"
 							type={showPassword ? 'text' : 'password'}
@@ -178,7 +178,7 @@
 				<button type="submit" class="btn btn-primary btn-full" disabled={loading || !!passwordError || !!confirmError}>
 					{loading ? 'Creating account...' : 'Create Account'}
 					{#if !loading}
-						<ArrowRight size={18} />
+						<ArrowRight size={18} aria-hidden="true" />
 					{/if}
 				</button>
 			</form>

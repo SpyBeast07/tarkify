@@ -10,10 +10,7 @@ const account = new Hono();
 account.use('*', requireAuth);
 
 account.get('/dashboard', async (c) => {
-  const user = c.get('user');
-  if (!user) {
-    return errorResponse(c, 'UNAUTHORIZED', 'Authentication required', 401);
-  }
+  const user = c.get('user')!;
 
   const data = await accountService.getDashboard(user.id);
 
@@ -33,10 +30,7 @@ account.get('/dashboard', async (c) => {
 });
 
 account.get('/purchases', async (c) => {
-  const user = c.get('user');
-  if (!user) {
-    return errorResponse(c, 'UNAUTHORIZED', 'Authentication required', 401);
-  }
+  const user = c.get('user')!;
 
   const page = Math.max(1, parseInt(c.req.query('page') ?? '1', 10));
   const limit = Math.min(100, Math.max(1, parseInt(c.req.query('limit') ?? '20', 10)));
@@ -46,10 +40,7 @@ account.get('/purchases', async (c) => {
 });
 
 account.get('/purchases/:id', async (c) => {
-  const user = c.get('user');
-  if (!user) {
-    return errorResponse(c, 'UNAUTHORIZED', 'Authentication required', 401);
-  }
+  const user = c.get('user')!;
 
   const purchaseId = c.req.param('id');
 
@@ -62,20 +53,14 @@ account.get('/purchases/:id', async (c) => {
 });
 
 account.get('/downloads', async (c) => {
-  const user = c.get('user');
-  if (!user) {
-    return errorResponse(c, 'UNAUTHORIZED', 'Authentication required', 401);
-  }
+  const user = c.get('user')!;
 
   const downloads = await accountService.getUserDownloads(user.id);
   return c.json({ downloads });
 });
 
 account.post('/downloads/:purchaseId', async (c) => {
-  const user = c.get('user');
-  if (!user) {
-    return errorResponse(c, 'UNAUTHORIZED', 'Authentication required', 401);
-  }
+  const user = c.get('user')!;
 
   const purchaseId = c.req.param('purchaseId');
 
@@ -102,10 +87,7 @@ account.post('/downloads/:purchaseId', async (c) => {
 });
 
 account.get('/billing', async (c) => {
-  const user = c.get('user');
-  if (!user) {
-    return errorResponse(c, 'UNAUTHORIZED', 'Authentication required', 401);
-  }
+  const user = c.get('user')!;
 
   const page = Math.max(1, parseInt(c.req.query('page') ?? '1', 10));
   const limit = Math.min(100, Math.max(1, parseInt(c.req.query('limit') ?? '20', 10)));
@@ -115,14 +97,28 @@ account.get('/billing', async (c) => {
 });
 
 account.get('/profile', async (c) => {
-  const user = c.get('user');
-  if (!user) {
-    return errorResponse(c, 'UNAUTHORIZED', 'Authentication required', 401);
-  }
+  const user = c.get('user')!;
 
   const result = await userService.getProfile(user.id);
   if (!result) {
-    return errorResponse(c, 'NOT_FOUND', 'User not found', 404);
+    return c.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        displayName: user.displayName,
+        name: user.name,
+        image: user.image,
+        role: user.role,
+        timezone: user.timezone,
+        preferences: {},
+        accountStatus: user.accountStatus,
+        emailVerified: user.emailVerified,
+        lastLoginAt: user.lastLoginAt,
+        lastActivityAt: user.lastActivityAt,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
+      },
+    });
   }
 
   const { profile } = result;
@@ -137,10 +133,7 @@ account.get('/profile', async (c) => {
 });
 
 account.put('/profile', async (c) => {
-  const user = c.get('user');
-  if (!user) {
-    return errorResponse(c, 'UNAUTHORIZED', 'Authentication required', 401);
-  }
+  const user = c.get('user')!;
 
   let body: Record<string, unknown>;
   try {
@@ -156,7 +149,25 @@ account.put('/profile', async (c) => {
     });
 
     if (!result) {
-      return errorResponse(c, 'NOT_FOUND', 'User not found', 404);
+      return c.json({
+        message: 'Profile created',
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: body.displayName as string | null ?? null,
+          name: user.name,
+          image: user.image,
+          role: user.role,
+          timezone: body.timezone as string | null ?? null,
+          preferences: {},
+          accountStatus: user.accountStatus,
+          emailVerified: user.emailVerified,
+          lastLoginAt: user.lastLoginAt,
+          lastActivityAt: user.lastActivityAt,
+          createdAt: user.createdAt.toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      });
     }
 
     const { profile } = result;
@@ -179,23 +190,14 @@ account.put('/profile', async (c) => {
 });
 
 account.get('/preferences', async (c) => {
-  const user = c.get('user');
-  if (!user) {
-    return errorResponse(c, 'UNAUTHORIZED', 'Authentication required', 401);
-  }
+  const user = c.get('user')!;
 
   const prefs = await userService.getPreferences(user.id);
-  if (!prefs) {
-    return errorResponse(c, 'NOT_FOUND', 'User not found', 404);
-  }
-  return c.json({ preferences: prefs });
+  return c.json({ preferences: prefs ?? {} });
 });
 
 account.put('/preferences', async (c) => {
-  const user = c.get('user');
-  if (!user) {
-    return errorResponse(c, 'UNAUTHORIZED', 'Authentication required', 401);
-  }
+  const user = c.get('user')!;
 
   let body: Record<string, unknown>;
   try {
@@ -206,10 +208,7 @@ account.put('/preferences', async (c) => {
 
   try {
     const prefs = await userService.updatePreferences(user.id, body);
-    if (!prefs) {
-      return errorResponse(c, 'NOT_FOUND', 'User not found', 404);
-    }
-    return c.json({ message: 'Preferences updated', preferences: prefs });
+    return c.json({ message: 'Preferences updated', preferences: prefs ?? {} });
   } catch (err) {
     if (err instanceof Error) {
       return errorResponse(c, 'VALIDATION_ERROR', err.message, 400);

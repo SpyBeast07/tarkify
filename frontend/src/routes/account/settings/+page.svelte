@@ -2,7 +2,7 @@
   import { getContext } from 'svelte';
   import { goto } from '$app/navigation';
   import {
-    Lock, Eye, EyeOff, ShieldCheck, LogOut,
+    Lock, Eye, EyeOff, LogOut,
     Monitor, Smartphone, Globe, Clock, RefreshCw,
     AlertTriangle, CheckCircle, Trash2, Settings as SettingsIcon,
     KeyRound
@@ -53,7 +53,13 @@
     try {
       const result = await changePassword(currentPassword, newPassword);
       if ('error' in result) {
-        passwordError = (result as ApiErrorBody).error?.message || 'Failed to change password';
+        const err = result as ApiErrorBody;
+        if (err.status === 401) {
+          changingPassword = false;
+          authState.clearUser();
+          return;
+        }
+        passwordError = err.error?.message || 'Failed to change password';
         return;
       }
       passwordSuccess = true;
@@ -81,7 +87,12 @@
     try {
       const result = await listSessions();
       if ('error' in result) {
-        sessionsError = (result as ApiErrorBody).error?.message || 'Failed to load sessions';
+        const err = result as ApiErrorBody;
+        if (err.status === 401) {
+          authState.clearUser();
+          return;
+        }
+        sessionsError = err.error?.message || 'Failed to load sessions';
       } else {
         sessions = result;
       }
@@ -172,7 +183,13 @@
     try {
       const result = await deleteAccount(deletePassword);
       if ('error' in result) {
-        deleteError = (result as ApiErrorBody).error?.message || 'Failed to delete account';
+        const err = result as ApiErrorBody;
+        if (err.status === 401) {
+          deletingAccount = false;
+          authState.clearUser();
+          return;
+        }
+        deleteError = err.error?.message || 'Failed to delete account';
         return;
       }
       deleteSuccess = true;
@@ -198,14 +215,14 @@
   <!-- ── Change Password ── -->
   <div class="section-card glass">
     <div class="section-card-header">
-      <Lock size={20} />
+      <Lock size={20} aria-hidden="true" />
       <h2>Change Password</h2>
     </div>
     <p class="section-card-desc">Update your password. Choose a strong, unique password.</p>
 
     {#if passwordError}
       <div class="form-alert form-alert-error" role="alert">
-        <AlertTriangle size={16} />
+        <AlertTriangle size={16} aria-hidden="true" />
         {passwordError}
       </div>
     {/if}
@@ -214,7 +231,7 @@
       <div class="form-group">
         <label for="currentPassword" class="form-label">Current Password</label>
         <div class="input-container-wrapper input-with-icon">
-          <Lock size={18} class="input-icon" />
+          <Lock size={18} class="input-icon" aria-hidden="true" />
           <input
             id="currentPassword"
             type={showPasswords ? 'text' : 'password'}
@@ -230,7 +247,7 @@
       <div class="form-group">
         <label for="newPassword" class="form-label">New Password</label>
         <div class="input-container-wrapper input-with-icon">
-          <Lock size={18} class="input-icon" />
+          <Lock size={18} class="input-icon" aria-hidden="true" />
           <input
             id="newPassword"
             type={showPasswords ? 'text' : 'password'}
@@ -249,7 +266,7 @@
       <div class="form-group">
         <label for="confirmPassword" class="form-label">Confirm New Password</label>
         <div class="input-container-wrapper input-with-icon">
-          <Lock size={18} class="input-icon" />
+          <Lock size={18} class="input-icon" aria-hidden="true" />
           <input
             id="confirmPassword"
             type={showPasswords ? 'text' : 'password'}
@@ -267,7 +284,11 @@
 
       <div class="form-actions">
         <button type="button" class="btn-text" onclick={() => (showPasswords = !showPasswords)}>
-          <Eye size={16} />
+          {#if showPasswords}
+            <EyeOff size={16} aria-hidden="true" />
+          {:else}
+            <Eye size={16} aria-hidden="true" />
+          {/if}
           {showPasswords ? 'Hide' : 'Show'} passwords
         </button>
       </div>
@@ -285,7 +306,7 @@
   <!-- ── Sessions ── -->
   <div class="section-card glass">
     <div class="section-card-header">
-      <KeyRound size={20} />
+      <KeyRound size={20} aria-hidden="true" />
       <h2>Active Sessions</h2>
     </div>
     <p class="section-card-desc">
@@ -294,7 +315,7 @@
 
     {#if sessionsError}
       <div class="form-alert form-alert-error" role="alert">
-        <AlertTriangle size={16} />
+        <AlertTriangle size={16} aria-hidden="true" />
         {sessionsError}
       </div>
     {/if}
@@ -306,7 +327,7 @@
           onclick={handleRevokeOthers}
           disabled={revokingAll}
         >
-          <LogOut size={16} />
+          <LogOut size={16} aria-hidden="true" />
           {revokingAll ? 'Revoking...' : 'Sign out of all other sessions'}
         </button>
       </div>
@@ -317,16 +338,16 @@
     {:else if sessions.length === 0}
       <div class="empty-state">No active sessions found.</div>
     {:else}
-      <div class="sessions-list">
+      <div class="sessions-list" aria-live="polite">
         {#each sessions as session (session.id)}
           {@const info = parseUserAgent(session.userAgent)}
           {@const isCurrent = session.token === authState.currentSessionToken}
           <div class="session-card" class:current-session={isCurrent}>
             <div class="session-icon">
               {#if info.os === 'macOS' || info.os === 'Windows' || info.os === 'Linux'}
-                <Monitor size={20} />
+                <Monitor size={20} aria-hidden="true" />
               {:else}
-                <Smartphone size={20} />
+                <Smartphone size={20} aria-hidden="true" />
               {/if}
             </div>
             <div class="session-info">
@@ -339,16 +360,16 @@
               <div class="session-details">
                 {#if session.ipAddress}
                   <span class="session-detail">
-                    <Globe size={12} />
+                    <Globe size={12} aria-hidden="true" />
                     {session.ipAddress}
                   </span>
                 {/if}
                 <span class="session-detail">
-                  <Clock size={12} />
+                  <Clock size={12} aria-hidden="true" />
                   Logged in {timeAgo(session.createdAt)}
                 </span>
                 <span class="session-detail">
-                  <RefreshCw size={12} />
+                  <RefreshCw size={12} aria-hidden="true" />
                   Last activity {timeAgo(session.updatedAt)}
                 </span>
               </div>
@@ -373,7 +394,7 @@
 
     {#if !sessionsLoading && sessions.length > 0}
       <button class="btn btn-outline btn-sm" onclick={loadSessions} style="margin-top: 0.75rem">
-        <RefreshCw size={14} />
+        <RefreshCw size={14} aria-hidden="true" />
         Refresh sessions
       </button>
     {/if}
@@ -382,7 +403,7 @@
   <!-- ── Delete Account ── -->
   <div class="section-card glass">
     <div class="section-card-header">
-      <SettingsIcon size={20} />
+      <SettingsIcon size={20} aria-hidden="true" />
       <h2>Account Settings</h2>
     </div>
     <p class="section-card-desc">Manage your account settings and data.</p>
@@ -390,7 +411,7 @@
     <div class="delete-account-section">
       <div class="delete-account-warning glass">
         <div class="delete-warning-icon">
-          <AlertTriangle size={24} />
+          <AlertTriangle size={24} aria-hidden="true" />
         </div>
         <div class="delete-warning-text">
           <h3>Delete Account</h3>
@@ -406,22 +427,22 @@
 
       {#if deleteError}
         <div class="form-alert form-alert-error" role="alert">
-          <AlertTriangle size={16} />
-          {deleteError}
+        <AlertTriangle size={16} aria-hidden="true" />
+        {deleteError}
         </div>
       {/if}
 
       {#if deleteSuccess}
         <div class="success-alert">
-          <CheckCircle size={20} />
-          <span>Account deleted. Redirecting...</span>
+        <CheckCircle size={20} aria-hidden="true" />
+        <span>Account deleted. Redirecting...</span>
         </div>
       {:else}
         <form onsubmit={handleDeleteAccount} novalidate>
           <div class="form-group">
             <label for="deletePassword" class="form-label">Confirm your password to delete your account</label>
             <div class="input-container-wrapper input-with-icon">
-              <Lock size={18} class="input-icon" />
+              <Lock size={18} class="input-icon" aria-hidden="true" />
               <input
                 id="deletePassword"
                 type="password"
@@ -438,7 +459,7 @@
             class="btn btn-danger"
             disabled={deletingAccount || !deletePassword}
           >
-            <Trash2 size={16} />
+            <Trash2 size={16} aria-hidden="true" />
             {deletingAccount ? 'Deleting Account...' : 'Delete My Account'}
           </button>
         </form>

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ROLES, ACCOUNT_STATUSES } from './types.js';
 
-const TIMEZONE_REGEX = /^[A-Za-z_]+\/[A-Za-z_]+$/;
+const TIMEZONE_REGEX = /^[A-Za-z_]+(?:\/[A-Za-z_]+)?$/;
 
 export const updateProfileSchema = z.object({
   displayName: z

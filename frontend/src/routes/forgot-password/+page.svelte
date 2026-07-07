@@ -53,9 +53,9 @@
 
 		<div transition:fly={{ y: 20, duration: 400, delay: 150 }} class="auth-card glass">
 			{#if sent}
-				<div class="success-state">
+				<div class="success-state" role="status">
 					<div class="success-icon">
-						<Send size={32} />
+						<Send size={32} aria-hidden="true" />
 					</div>
 					<h2>Check Your Email</h2>
 					<p>
@@ -77,7 +77,7 @@
 					<div class="form-group">
 						<label for="email" class="form-label">Email</label>
 						<div class="input-container-wrapper input-with-icon">
-							<Mail size={20} class="input-icon" />
+							<Mail size={20} class="input-icon" aria-hidden="true" />
 							<input
 								id="email"
 								type="email"
@@ -93,7 +93,7 @@
 					<button type="submit" class="btn btn-primary btn-full" disabled={loading}>
 						{loading ? 'Sending...' : 'Send Reset Link'}
 						{#if !loading}
-							<Send size={18} />
+							<Send size={18} aria-hidden="true" />
 						{/if}
 					</button>
 				</form>
@@ -101,7 +101,7 @@
 
 			<div class="auth-footer">
 				<a href="/login" class="back-link">
-					<ArrowLeft size={16} />
+					<ArrowLeft size={16} aria-hidden="true" />
 					Back to login
 				</a>
 			</div>

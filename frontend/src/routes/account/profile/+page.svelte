@@ -3,12 +3,13 @@
   import { onDestroy } from 'svelte';
   import { beforeNavigate } from '$app/navigation';
   import {
-    User, MapPin, AlertTriangle, CheckCircle, RefreshCw, Undo2
+    User, MapPin, AlertTriangle, CheckCircle, RefreshCw, Undo2, Mail, Send
   } from '@lucide/svelte';
   import {
     fetchProfile, updateProfile,
     type ProfileData, type ApiErrorBody,
   } from '$lib/api/account';
+  import { sendVerificationEmail } from '$lib/api/auth';
   import type { AuthState } from '$lib/context/auth.svelte';
 
   const authState = getContext<AuthState>('auth');
@@ -143,6 +144,28 @@
     }
     saving = false;
   }
+
+  let verifyingEmail = $state(false);
+  let verifySent = $state(false);
+  let verifyError = $state('');
+
+  async function handleVerifyEmail() {
+    verifyError = '';
+    verifySent = false;
+    verifyingEmail = true;
+    try {
+      const result = await sendVerificationEmail(profile!.email);
+      if ('error' in result) {
+        verifyError = (result as ApiErrorBody).error?.message || 'Failed to send verification email';
+      } else {
+        verifySent = true;
+      }
+    } catch {
+      verifyError = 'Failed to send verification email';
+    } finally {
+      verifyingEmail = false;
+    }
+  }
 </script>
 
 {#if loading}
@@ -189,6 +212,23 @@
             <User size={18} class="input-icon" aria-hidden="true" />
             <input id="email" type="email" value={profile.email} disabled />
           </div>
+          {#if !profile.emailVerified}
+            <div class="verify-email-wrap">
+              {#if verifySent}
+                <span class="verify-success"><Send size={14} aria-hidden="true" /> Verification email sent</span>
+              {:else}
+                <button class="btn-text btn-verify" onclick={handleVerifyEmail} disabled={verifyingEmail}>
+                  <Mail size={14} aria-hidden="true" />
+                  {verifyingEmail ? 'Sending...' : 'Verify email address'}
+                </button>
+              {/if}
+              {#if verifyError}
+                <span class="error-text">{verifyError}</span>
+              {/if}
+            </div>
+          {:else}
+            <span class="verify-verified"><CheckCircle size={14} aria-hidden="true" /> Email verified</span>
+          {/if}
         </div>
 
         <div class="form-group">
@@ -359,6 +399,38 @@
     background-color: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
     color: #ef4444;
+  }
+
+  .verify-email-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.375rem;
+  }
+
+  .btn-verify {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8rem;
+    color: var(--color-primary-green);
+  }
+
+  .verify-success {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8rem;
+    color: #22c55e;
+  }
+
+  .verify-verified {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8rem;
+    color: #22c55e;
+    margin-top: 0.375rem;
   }
 
   .state-card {

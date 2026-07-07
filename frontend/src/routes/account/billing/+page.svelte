@@ -25,7 +25,12 @@
     error = '';
     const result = await fetchBilling(page, limit);
     if ('error' in result) {
-      error = (result as ApiErrorBody).error?.message || 'Failed to load billing history';
+      const err = result as ApiErrorBody;
+      if (err.status === 401) {
+        authState.clearUser();
+        return;
+      }
+      error = err.error?.message || 'Failed to load billing history';
     } else {
       data = result;
     }
@@ -43,6 +48,25 @@
     return new Date(iso).toLocaleDateString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
     });
+  }
+
+  function formatAmount(amount: number, currency: string): string {
+    try {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: currency,
+      }).format(amount / 100);
+    } catch {
+      return `${currency} ${(amount / 100).toFixed(2)}`;
+    }
+  }
+
+  function statusLabel(status: string): string {
+    switch (status) {
+      case 'paid': return 'Completed';
+      case 'refunded': return 'Refunded';
+      default: return 'Failed';
+    }
   }
 
   function statusClass(status: string): string {
@@ -70,13 +94,13 @@
 </div>
 
 {#if loading && !data}
-  <div class="skeleton-list">
+  <div class="skeleton-list" aria-hidden="true">
     {#each { length: 3 } as _}
       <div class="skeleton-row-item"></div>
     {/each}
   </div>
 {:else if error}
-  <div class="state-card error">
+  <div class="state-card error" role="alert">
     <AlertTriangle size={24} />
     <p>{error}</p>
     <button class="btn btn-primary btn-sm" onclick={load}>
@@ -91,7 +115,7 @@
     <p>Your payment history will appear here after your first purchase.</p>
   </div>
 {:else if data}
-  <div class="billing-table glass">
+  <div class="billing-table glass" aria-live="polite">
     <div class="table-header">
       <span class="col-product">Product</span>
       <span class="col-amount">Amount</span>
@@ -106,10 +130,10 @@
             <span class="row-product">{payment.product_name}</span>
           </div>
           <div class="col-amount">
-            <span class="row-amount">{payment.currency} {(payment.amount / 100).toFixed(2)}</span>
+            <span class="row-amount">{formatAmount(payment.amount, payment.currency)}</span>
           </div>
           <div class="col-status">
-            <span class="payment-status {statusClass(payment.status)}">{payment.status}</span>
+            <span class="payment-status {statusClass(payment.status)}">{statusLabel(payment.status)}</span>
           </div>
           <div class="col-date">
             <span class="row-date">{formatDate(payment.created_at)}</span>
@@ -117,14 +141,14 @@
           <div class="col-ids">
             <div class="id-list">
               {#if payment.razorpay_order_id}
-                <button class="id-chip" onclick={() => copyToClipboard(payment.razorpay_order_id)} title="Copy Order ID">
-                  <Copy size={10} />
+                <button class="id-chip" onclick={() => copyToClipboard(payment.razorpay_order_id)} title="Copy Order ID" aria-label="Copy order ID {payment.razorpay_order_id}">
+                  <Copy size={10} aria-hidden="true" />
                   {payment.razorpay_order_id.slice(0, 16)}...
                 </button>
               {/if}
               {#if payment.razorpay_payment_id}
-                <button class="id-chip" onclick={() => copyToClipboard(payment.razorpay_payment_id!)} title="Copy Payment ID">
-                  <Copy size={10} />
+                <button class="id-chip" onclick={() => copyToClipboard(payment.razorpay_payment_id!)} title="Copy Payment ID" aria-label="Copy payment ID {payment.razorpay_payment_id}">
+                  <Copy size={10} aria-hidden="true" />
                   {payment.razorpay_payment_id.slice(0, 16)}...
                 </button>
               {/if}
@@ -134,6 +158,10 @@
       {/each}
     </div>
   </div>
+
+  {#if loading && data}
+    <div class="billing-loading-overlay">Loading...</div>
+  {/if}
 
   <Pagination bind:page totalPages={data.pagination.totalPages} disabled={loading} />
 {/if}
@@ -270,6 +298,13 @@
     opacity: 1;
   }
 
+  .billing-loading-overlay {
+    text-align: center;
+    padding: 0.75rem;
+    font-size: 0.85rem;
+    opacity: 0.5;
+  }
+
   .state-card {
     display: flex;
     flex-direction: column;
@@ -322,6 +357,12 @@
     0% { opacity: 0.5; }
     50% { opacity: 0.8; }
     100% { opacity: 0.5; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-row-item {
+      animation: none;
+    }
   }
 
   @media (max-width: 768px) {

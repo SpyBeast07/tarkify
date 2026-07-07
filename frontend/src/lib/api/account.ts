@@ -1,4 +1,5 @@
 const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3009").replace(/\/+$/, "");
+export const API_ORIGIN = API_BASE;
 const ACCOUNT_BASE = `${API_BASE}/api/account`;
 const REQUEST_TIMEOUT_MS = 15_000;
 
