@@ -52,14 +52,15 @@ const SECURITY_HEADERS: Record<string, string> = {
   'Content-Security-Policy': "default-src 'self'; "
     + "script-src 'self' https://checkout.razorpay.com https://*.razorpay.com; "
     + "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-    + "frame-src https://checkout.razorpay.com https://*.razorpay.com; "
+    + "frame-src 'self' https://checkout.razorpay.com https://*.razorpay.com; "
     + "connect-src 'self' https://checkout.razorpay.com https://*.razorpay.com; "
-    + "img-src 'self' data: https:; "
+    + "img-src 'self' data:; "
     + "font-src 'self' https://fonts.gstatic.com data:; "
     + "object-src 'none'; "
     + "base-uri 'self'; "
     + "form-action 'self'; "
-    + "frame-ancestors 'none';",
+    + "frame-ancestors 'none'; "
+    + "report-uri /api/csp-report;",
 };
 
 export async function securityHeaders(c: Context, next: Next) {

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 import crypto from "crypto";
@@ -5,6 +6,27 @@ import { config } from "./config.js";
 import * as userRepository from "./users/repository.js";
 import { linkPurchasesToUserByEmail } from "./purchase-linking/service.js";
 import * as auditService from "./audit/service.js";
+
+const userHookSchema = z.object({
+  id: z.string().optional(),
+  userId: z.string().optional(),
+  email: z.string().optional(),
+  emailVerified: z.union([z.boolean(), z.string()]).optional(),
+  email_verified: z.union([z.boolean(), z.string()]).optional(),
+}).passthrough();
+
+const sessionHookSchema = z.object({
+  id: z.string().optional(),
+  token: z.string().optional(),
+  ipAddress: z.string().nullable().optional(),
+  ip_address: z.string().nullable().optional(),
+  userAgent: z.string().nullable().optional(),
+  user_agent: z.string().nullable().optional(),
+}).passthrough();
+
+const accountHookSchema = z.object({
+  password: z.string().nullable().optional(),
+}).passthrough();
 
 export const auth = betterAuth({
   database: new Pool({
@@ -154,20 +176,18 @@ export const auth = betterAuth({
       update: {
         after: async (user) => {
           try {
-            const u = user as Record<string, unknown>;
+            const u = userHookSchema.parse(user);
             const isVerified = Boolean(u.emailVerified ?? u.email_verified ?? false);
-            if (isVerified) {
-              const uid = (u.id ?? u.userId) as string;
-              const email = u.email as string;
-              if (uid && email) {
-                const result = await linkPurchasesToUserByEmail(uid, email);
-                if (result.purchasesLinked > 0 || result.entitlementsLinked > 0) {
-                  console.info(
-                    `Linked ${result.purchasesLinked} purchase(s) and ${result.entitlementsLinked} entitlement(s) to user ${uid}`
-                  );
-                }
-                await auditService.recordEmailVerified(uid, undefined, undefined, { email });
+            const uid = u.id ?? u.userId;
+            const email = u.email;
+            if (isVerified && uid && email) {
+              const result = await linkPurchasesToUserByEmail(uid, email);
+              if (result.purchasesLinked > 0 || result.entitlementsLinked > 0) {
+                console.info(
+                  `Linked ${result.purchasesLinked} purchase(s) and ${result.entitlementsLinked} entitlement(s) to user ${uid}`
+                );
               }
+              await auditService.recordEmailVerified(uid, undefined, undefined, { email });
             }
           } catch (err) {
             console.error("Failed to link guest purchases after email verification:", err);
@@ -180,11 +200,11 @@ export const auth = betterAuth({
         after: async (session) => {
           try {
             await userRepository.updateLastLogin(session.userId);
-            const s = session as Record<string, unknown>;
+            const s = sessionHookSchema.parse(session);
             await auditService.recordLogin(
               session.userId,
-              (s.ipAddress as string) ?? (s.ip_address as string) ?? undefined,
-              (s.userAgent as string) ?? (s.user_agent as string) ?? undefined,
+              s.ipAddress ?? s.ip_address ?? undefined,
+              s.userAgent ?? s.user_agent ?? undefined,
             );
           } catch (err) {
             console.error("Failed to update last_login_at:", err);
@@ -194,12 +214,12 @@ export const auth = betterAuth({
       delete: {
         after: async (session) => {
           try {
-            const s = session as Record<string, unknown>;
+            const s = sessionHookSchema.parse(session);
             await auditService.recordSessionRevoked(
               session.userId,
-              (s.ipAddress as string) ?? (s.ip_address as string) ?? undefined,
-              (s.userAgent as string) ?? (s.user_agent as string) ?? undefined,
-              { session_id: (s.id as string) ?? (s.token as string)?.substring(0, 8) },
+              s.ipAddress ?? s.ip_address ?? undefined,
+              s.userAgent ?? s.user_agent ?? undefined,
+              { session_id: s.id ?? s.token?.substring(0, 8) },
             );
           } catch (err) {
             console.error("Failed to record session revocation audit:", err);
@@ -211,7 +231,7 @@ export const auth = betterAuth({
       update: {
         after: async (account) => {
           try {
-            const a = account as Record<string, unknown>;
+            const a = accountHookSchema.parse(account);
             if (a.password) {
               await auditService.recordPasswordChanged(account.userId);
             }

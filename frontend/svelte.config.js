@@ -47,7 +47,7 @@ export default {
 				'script-src': scriptSrc,
 				'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
 				'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
-				'img-src': ["'self'", 'data:', 'blob:'],
+				'img-src': ["'self'", 'data:', 'blob:', 'https://image.thum.io', 'https://*.razorpay.com'],
 				'connect-src': connectSrc,
 				'frame-src': ["'self'", 'https://checkout.razorpay.com', 'https://*.razorpay.com'],
 				'object-src': ["'none'"],

@@ -170,6 +170,17 @@ describe('Webhooks API Route', () => {
     it('ignores unknown webhook events and returns 200', async () => {
       const payload = {
         event: 'order.paid',
+        payload: {
+          payment: {
+            entity: {
+              id: 'pay_unknown',
+              order_id: 'order_unknown',
+              amount: 0,
+              currency: 'INR',
+              status: 'paid',
+            },
+          },
+        },
       };
 
       const reqOptions = createSignedRequest(payload);

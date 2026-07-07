@@ -9,6 +9,7 @@
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import { config } from '../config.js';
+import { razorpayOrderSchema } from '../razorpay.validation.js';
 import type { RazorpayOrder } from '../types/index.js';
 
 const razorpayInstance = new Razorpay({
@@ -50,7 +51,7 @@ export async function createOrder(
     receipt,
   });
 
-  return order as unknown as RazorpayOrder;
+  return razorpayOrderSchema.parse(order);
 }
 
 /**

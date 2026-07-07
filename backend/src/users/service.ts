@@ -11,9 +11,7 @@ function toProfile(user: TarkifyUser): Profile {
     image: null,
     role: user.role,
     timezone: user.timezone,
-    preferences: typeof user.preferences === 'object' && user.preferences !== null
-      ? user.preferences as Record<string, unknown>
-      : {},
+    preferences: preferencesSchema.parse(user.preferences),
     accountStatus: user.account_status,
     emailVerified: false,
     lastLoginAt: user.last_login_at,
@@ -47,10 +45,7 @@ export async function updateProfile(
 export async function getPreferences(id: string): Promise<Record<string, unknown> | null> {
   const user = await userRepository.getUserById(id);
   if (!user) return null;
-  const prefs = typeof user.preferences === 'object' && user.preferences !== null
-    ? user.preferences as Record<string, unknown>
-    : {};
-  return preferencesSchema.parse(prefs);
+  return preferencesSchema.parse(user.preferences);
 }
 
 export async function updatePreferences(
@@ -60,10 +55,7 @@ export async function updatePreferences(
   const parsed = preferencesSchema.parse(input);
   const user = await userRepository.updatePreferences(id, parsed);
   if (!user) return null;
-  const prefs = typeof user.preferences === 'object' && user.preferences !== null
-    ? user.preferences as Record<string, unknown>
-    : {};
-  return preferencesSchema.parse(prefs);
+  return preferencesSchema.parse(user.preferences);
 }
 
 export async function touchActivity(id: string): Promise<void> {

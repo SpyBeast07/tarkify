@@ -116,16 +116,18 @@ const newsletterLimit = rateLimit({ windowMs: 60_000, max: 30 });
 const careersLimit = rateLimit({ windowMs: 60_000, max: 10 });
 const authLimit = rateLimit({ windowMs: 60_000, max: 10 });
 const userLimit = rateLimit({ windowMs: 60_000, max: 60 });
+const cspReportLimit = rateLimit({ windowMs: 60_000, max: 100 });
 
 app.use('/api/payments/*', paymentLimit);
 app.use('/api/downloads/*', downloadLimit);
 app.use('/api/webhooks/*', webhookLimit);
-app.use('/api/contact/*', contactLimit);
-app.use('/api/feedback/*', feedbackLimit);
-app.use('/api/newsletter/*', newsletterLimit);
-app.use('/api/careers/*', careersLimit);
+app.use('/api/contact', contactLimit);
+app.use('/api/feedback', feedbackLimit);
+app.use('/api/newsletter', newsletterLimit);
+app.use('/api/careers', careersLimit);
 app.use('/api/auth/*', authLimit);
 app.use('/api/users/*', userLimit);
+app.use('/api/csp-report', cspReportLimit);
 
 // ── Route Groups ─────────────────────────────────────────────────
 app.route('/api/products', products);
@@ -137,6 +139,28 @@ app.route('/api/feedback', feedback);
 app.route('/api/newsletter', newsletter);
 app.route('/api/careers', careers);
 app.route('/api/users', users);
+
+// ── CSP Violation Report Receiver ───────────────────────────────
+app.post('/api/csp-report', async (c) => {
+  try {
+    const report = await c.req.json();
+    const blocked = report?.['csp-report']?.blocked_uri
+      ?? report?.['body']?.blockedURL
+      ?? 'unknown';
+    const directive = report?.['csp-report']?.violated_directive
+      ?? report?.['body']?.effectiveDirective
+      ?? 'unknown';
+    const documentUri = report?.['csp-report']?.document_uri
+      ?? report?.['body']?.documentURL
+      ?? 'unknown';
+    console.warn(
+      `[CSP] Blocked: ${blocked} | Directive: ${directive} | Document: ${documentUri}`
+    );
+  } catch {
+    // Ignore malformed reports
+  }
+  return c.body(null, 204);
+});
 
 // ── 404 Fallback ─────────────────────────────────────────────────
 app.notFound((c) => {

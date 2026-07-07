@@ -17,6 +17,7 @@
 import { Hono } from 'hono';
 import * as razorpayService from '../services/razorpay.service.js';
 import * as purchaseService from '../services/purchase.service.js';
+import { razorpayWebhookPayloadSchema } from '../razorpay.validation.js';
 import type { RazorpayWebhookPayload } from '../types/index.js';
 
 const webhooks = new Hono();
@@ -41,7 +42,7 @@ webhooks.post('/razorpay', async (c) => {
 
   let payload: RazorpayWebhookPayload;
   try {
-    payload = JSON.parse(rawBody) as RazorpayWebhookPayload;
+    payload = razorpayWebhookPayloadSchema.parse(JSON.parse(rawBody));
   } catch {
     console.error('Failed to parse webhook payload');
     return c.json({ error: 'Invalid payload' }, 400);
