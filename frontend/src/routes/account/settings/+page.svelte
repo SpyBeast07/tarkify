@@ -315,7 +315,6 @@
     {#if sessions.length > 1}
       <div class="revoke-all-wrap">
         <button
-          class="btn btn-outline btn-sm"
           onclick={handleRevokeOthers}
           disabled={revokingAll}
         >
@@ -396,7 +395,7 @@
     {/if}
 
     {#if !sessionsLoading && sessions.length > 0}
-      <button class="btn btn-outline btn-sm" onclick={loadSessions} style="margin-top: 0.75rem">
+      <button class="refresh-btn" onclick={loadSessions} style="margin-top: 0.75rem">
         <RefreshCw size={14} aria-hidden="true" />
         Refresh sessions
       </button>
@@ -496,6 +495,36 @@
 
   .revoke-all-wrap {
     margin-bottom: 0.75rem;
+  }
+
+  .revoke-all-wrap button,
+  .refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid var(--color-glass-border);
+    background: var(--color-glass-bg);
+    color: var(--color-text);
+    opacity: 0.7;
+    transition: var(--transition-smooth);
+  }
+
+  .revoke-all-wrap button:hover,
+  .refresh-btn:hover {
+    opacity: 1;
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+
+  .revoke-all-wrap button:disabled,
+  .refresh-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
   }
 
   .loading-state,
