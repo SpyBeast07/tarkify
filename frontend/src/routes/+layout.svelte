@@ -4,6 +4,7 @@
 	import { navigating } from '$app/stores';
 	import { createThemeState } from '$lib/context/theme.svelte';
 	import { createToastState } from '$lib/context/toast.svelte';
+	import { createAuthState } from '$lib/context/auth.svelte';
 	import Navbar from '$lib/components/layout/Navbar.svelte';
 	import Footer from '$lib/components/layout/Footer.svelte';
 	import Toast from '$lib/components/ui/Toast.svelte';
@@ -27,6 +28,13 @@
 
 	const toastState = createToastState();
 	setContext('toast', toastState);
+
+	const authState = createAuthState();
+	setContext('auth', authState);
+
+	$effect(() => {
+		authState.checkSession();
+	});
 
 	$effect(() => {
 		const unsub = navigating.subscribe((nav) => {

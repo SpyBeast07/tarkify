@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { goto } from '$app/navigation';
 	import { Mail, Lock, User, Eye, EyeOff, ArrowRight } from '@lucide/svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { signUp } from '$lib/api/auth';
+	import type { AuthState } from '$lib/context/auth.svelte';
 
 	let name = $state('');
 	let email = $state('');
@@ -12,6 +14,8 @@
 	let showPassword = $state(false);
 	let error = $state('');
 	let loading = $state(false);
+
+	const authState = getContext<AuthState>('auth');
 
 	let passwordError = $derived(password.length > 0 && password.length < 8 ? 'Password must be at least 8 characters' : '');
 	let confirmError = $derived(confirmPassword.length > 0 && password !== confirmPassword ? 'Passwords do not match' : '');
@@ -38,6 +42,8 @@
 				error = result.error.message || 'Registration failed';
 				return;
 			}
+			authState.setUser(result.user);
+			authState.broadcast();
 			await goto('/account');
 		} catch {
 			error = 'An unexpected error occurred. Please try again.';

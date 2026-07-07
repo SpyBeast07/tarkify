@@ -4,15 +4,15 @@
 	import { Menu, X, Sun, Moon, User, LogOut } from '@lucide/svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { getSession, signOut } from '$lib/api/auth';
+	import { signOut } from '$lib/api/auth';
+	import type { AuthState } from '$lib/context/auth.svelte';
 
 	let y = $state(0);
 	let isMobileMenuOpen = $state(false);
 	let isDropdownOpen = $state(false);
-	let user = $state<{ name: string; email: string } | null>(null);
-	let authLoaded = $state(false);
 
 	const themeState = getContext<{ theme: 'light' | 'dark'; toggleTheme: () => void }>('theme');
+	const authState = getContext<AuthState>('auth');
 
 	const navLinks = [
 		{ name: 'Home', href: '/' },
@@ -21,24 +21,14 @@
 		{ name: 'Careers', href: '/careers' }
 	];
 
-	async function checkSession() {
-		try {
-			const session = await getSession();
-			user = session?.user ?? null;
-		} catch {
-			user = null;
-		} finally {
-			authLoaded = true;
-		}
-	}
-
 	async function handleLogout() {
 		try {
 			await signOut();
 		} catch {
 			// ignore
 		}
-		user = null;
+		authState.clearUser();
+		authState.broadcast();
 		isDropdownOpen = false;
 		await goto('/');
 	}
@@ -55,10 +45,6 @@
 			isDropdownOpen = false;
 		}
 	}
-
-	$effect(() => {
-		checkSession();
-	});
 </script>
 
 <svelte:window bind:scrollY={y} onkeydown={handleKeydown} />
@@ -107,9 +93,9 @@
 					{/if}
 				</button>
 
-				{#if !authLoaded}
+				{#if !authState.loaded}
 					<div class="auth-placeholder" style="width: 80px; height: 36px;"></div>
-				{:else if user}
+				{:else if authState.user}
 					<div class="user-menu">
 						<!-- svelte-ignore a11y_click_events_have_key_events -->
 						<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -123,7 +109,7 @@
 							aria-expanded={isDropdownOpen}
 						>
 							<User size={20} />
-							<span class="user-name">{user.name || user.email}</span>
+							<span class="user-name">{authState.user.name || authState.user.email}</span>
 						</button>
 						{#if isDropdownOpen}
 							<div class="user-dropdown glass" transition:fly={{ y: -8, duration: 150 }}>
@@ -180,7 +166,7 @@
 					</li>
 				{/each}
 				<li class="mobile-auth">
-					{#if user}
+					{#if authState.user}
 						<a href="/account" class="btn btn-primary btn-full" onclick={closeMobileMenu}>
 							<User size={18} />
 							Account

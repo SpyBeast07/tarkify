@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { getContext } from 'svelte';
 	import { fly } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { Mail, Lock, ArrowRight, Eye, EyeOff } from '@lucide/svelte';
 	import Seo from '$lib/components/Seo.svelte';
-	import { signIn, getSession } from '$lib/api/auth';
+	import { signIn } from '$lib/api/auth';
+	import type { AuthState } from '$lib/context/auth.svelte';
 
 	let email = $state('');
 	let password = $state('');
@@ -12,6 +14,8 @@
 	let showPassword = $state(false);
 	let error = $state('');
 	let loading = $state(false);
+
+	const authState = getContext<AuthState>('auth');
 
 	let returnUrl = $derived($page.url.searchParams.get('redirect') || '/account');
 
@@ -26,6 +30,8 @@
 				error = result.error.message || 'Invalid email or password';
 				return;
 			}
+			authState.setUser(result.user);
+			authState.broadcast();
 			await goto(returnUrl);
 		} catch {
 			error = 'An unexpected error occurred. Please try again.';
