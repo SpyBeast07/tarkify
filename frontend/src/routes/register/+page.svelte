@@ -1,23 +1,21 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
 	import { fly } from 'svelte/transition';
-	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { Mail, Lock, ArrowRight, Eye, EyeOff } from '@lucide/svelte';
+	import { Mail, Lock, User, Eye, EyeOff, ArrowRight } from '@lucide/svelte';
 	import Seo from '$lib/components/Seo.svelte';
-	import { signIn } from '$lib/api/auth';
+	import { signUp } from '$lib/api/auth';
 	import type { AuthState } from '$lib/context/auth.svelte';
 
+	let name = $state('');
 	let email = $state('');
 	let password = $state('');
-	let rememberMe = $state(true);
+	let confirmPassword = $state('');
 	let showPassword = $state(false);
 	let error = $state('');
 	let loading = $state(false);
 
 	const authState = getContext<AuthState>('auth');
-
-	let returnUrl = $derived($page.url.searchParams.get('redirect') || '/account');
 
 	$effect(() => {
 		if (authState.loaded && authState.user) {
@@ -25,20 +23,34 @@
 		}
 	});
 
-	async function handleLogin(e: Event) {
+	let passwordError = $derived(password.length > 0 && password.length < 8 ? 'Password must be at least 8 characters' : '');
+	let confirmError = $derived(confirmPassword.length > 0 && password !== confirmPassword ? 'Passwords do not match' : '');
+
+	async function handleRegister(e: Event) {
 		e.preventDefault();
 		error = '';
+
+		if (password !== confirmPassword) {
+			error = 'Passwords do not match';
+			return;
+		}
+
+		if (password.length < 8) {
+			error = 'Password must be at least 8 characters';
+			return;
+		}
+
 		loading = true;
 
 		try {
-			const result = await signIn(email, password, rememberMe);
+			const result = await signUp(name, email, password);
 			if ('error' in result) {
-				error = result.error.message || 'Invalid email or password';
+				error = result.error.message || 'Registration failed';
 				return;
 			}
 			authState.setUser(result.user, result.token);
 			authState.broadcast();
-			await goto(returnUrl);
+			await goto('/account');
 		} catch {
 			error = 'An unexpected error occurred. Please try again.';
 		} finally {
@@ -56,8 +68,8 @@
 </svelte:head>
 
 <Seo
-	title="Login | Tarkify"
-	description="Sign in to your Tarkify account to access your purchases and downloads."
+	title="Create Account | Tarkify"
+	description="Create a Tarkify account to manage your purchases and downloads."
 	ogImage="/og-image.svg"
 	ogType="website"
 />
@@ -66,19 +78,35 @@
 	<div class="container">
 		<div transition:fly={{ y: 20, duration: 400 }} class="auth-hero text-center">
 			<span class="section-badge">Account</span>
-			<h1>Welcome Back</h1>
+			<h1>Create Account</h1>
 			<p class="section-subtext">
-				Sign in to access your purchases and downloads.
+				Sign up to manage your purchases and downloads.
 			</p>
 		</div>
 
 		<div transition:fly={{ y: 20, duration: 400, delay: 150 }} class="auth-card glass">
-			<form onsubmit={handleLogin} novalidate>
+			<form onsubmit={handleRegister} novalidate>
 				{#if error}
 					<div class="form-alert form-alert-error" role="alert">
 						{error}
 					</div>
 				{/if}
+
+				<div class="form-group">
+					<label for="name" class="form-label">Name</label>
+					<div class="input-container-wrapper input-with-icon">
+						<User size={20} class="input-icon" />
+						<input
+							id="name"
+							type="text"
+							placeholder="Your name"
+							bind:value={name}
+							required
+							autocomplete="name"
+							disabled={loading}
+						/>
+					</div>
+				</div>
 
 				<div class="form-group">
 					<label for="email" class="form-label">Email</label>
@@ -103,10 +131,10 @@
 						<input
 							id="password"
 							type={showPassword ? 'text' : 'password'}
-							placeholder="Enter your password"
+							placeholder="At least 8 characters"
 							bind:value={password}
 							required
-							autocomplete="current-password"
+							autocomplete="new-password"
 							disabled={loading}
 						/>
 						<button
@@ -123,18 +151,32 @@
 							{/if}
 						</button>
 					</div>
+					{#if passwordError}
+						<span class="error-text">{passwordError}</span>
+					{/if}
 				</div>
 
-				<div class="form-options">
-					<label class="checkbox-label">
-						<input type="checkbox" bind:checked={rememberMe} />
-						<span>Remember me</span>
-					</label>
-					<a href="/account/forgot-password" class="forgot-link">Forgot password?</a>
+				<div class="form-group">
+					<label for="confirmPassword" class="form-label">Confirm Password</label>
+					<div class="input-container-wrapper input-with-icon">
+						<Lock size={20} class="input-icon" />
+						<input
+							id="confirmPassword"
+							type={showPassword ? 'text' : 'password'}
+							placeholder="Repeat your password"
+							bind:value={confirmPassword}
+							required
+							autocomplete="new-password"
+							disabled={loading}
+						/>
+					</div>
+					{#if confirmError}
+						<span class="error-text">{confirmError}</span>
+					{/if}
 				</div>
 
-				<button type="submit" class="btn btn-primary btn-full" disabled={loading}>
-					{loading ? 'Signing in...' : 'Sign In'}
+				<button type="submit" class="btn btn-primary btn-full" disabled={loading || !!passwordError || !!confirmError}>
+					{loading ? 'Creating account...' : 'Create Account'}
 					{#if !loading}
 						<ArrowRight size={18} />
 					{/if}
@@ -143,8 +185,8 @@
 
 			<div class="auth-footer">
 				<p>
-					Don't have an account?
-					<a href="/account/register">Create one</a>
+					Already have an account?
+					<a href="/login">Sign in</a>
 				</p>
 			</div>
 		</div>
@@ -178,37 +220,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.25rem;
-	}
-
-	.form-options {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		font-size: 0.9rem;
-	}
-
-	.checkbox-label {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		cursor: pointer;
-		opacity: 0.8;
-	}
-
-	.checkbox-label :global(input[type='checkbox']) {
-		width: 16px;
-		height: 16px;
-		accent-color: var(--color-primary-green);
-	}
-
-	.forgot-link {
-		color: var(--color-primary-green);
-		text-decoration: none;
-		font-weight: 500;
-	}
-
-	.forgot-link:hover {
-		text-decoration: underline;
 	}
 
 	.auth-footer {
@@ -246,6 +257,13 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.5rem;
+	}
+
+	.error-text {
+		color: #ef4444;
+		font-size: 0.85rem;
+		margin-top: 0.25rem;
+		display: block;
 	}
 
 	.input-toggle {

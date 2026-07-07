@@ -10,13 +10,21 @@
 
   const authState = getContext<AuthState>('auth');
 
-  if (!authState.loaded) {
+  if (!authState.loaded && !authState.user) {
     authState.checkSession();
   }
 
-  if (authState.loaded && !authState.user) {
-    goto('/account/login?redirect=/account');
-  }
+  let ready = $state(false);
+
+  $effect(() => {
+    if (authState.loaded) {
+      if (authState.user) {
+        ready = true;
+      } else {
+        goto('/login?redirect=/account');
+      }
+    }
+  });
 </script>
 
 <svelte:head>
@@ -30,23 +38,23 @@
   ogType="website"
 />
 
-<div class="account-page pt-32 pb-20">
-  <div class="container">
-    <div transition:fly={{ y: 20, duration: 400 }} class="account-hero">
-      <span class="section-badge">Account</span>
-      <h1>Customer Portal</h1>
-    </div>
+{#if ready}
+  <div class="account-page pt-32 pb-20">
+    <div class="container">
+      <div transition:fly={{ y: 20, duration: 400 }} class="account-hero">
+        <span class="section-badge">Account</span>
+        <h1>Customer Portal</h1>
+      </div>
 
-    <div class="account-layout">
-      <Sidebar />
-      <main class="account-content" transition:fly={{ y: 12, duration: 250 }}>
-        {#if authState.loaded && authState.user}
+      <div class="account-layout">
+        <Sidebar />
+        <main class="account-content" transition:fly={{ y: 12, duration: 250 }}>
           {@render children()}
-        {/if}
-      </main>
+        </main>
+      </div>
     </div>
   </div>
-</div>
+{/if}
 
 <style>
   .account-page {

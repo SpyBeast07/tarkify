@@ -100,7 +100,7 @@
 			{/if}
 
 			<div class="auth-footer">
-				<a href="/account/login" class="back-link">
+				<a href="/login" class="back-link">
 					<ArrowLeft size={16} />
 					Back to login
 				</a>

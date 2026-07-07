@@ -87,7 +87,7 @@
 				<div class="error-state">
 					<h2>Invalid Reset Link</h2>
 					<p>This password reset link is invalid or has expired.</p>
-					<a href="/account/forgot-password" class="btn btn-primary">
+					<a href="/forgot-password" class="btn btn-primary">
 						Request New Reset Link
 					</a>
 				</div>
@@ -98,7 +98,7 @@
 					</div>
 					<h2>Password Reset</h2>
 					<p>Your password has been successfully updated.</p>
-					<a href="/account/login" class="btn btn-primary">
+					<a href="/login" class="btn btn-primary">
 						Sign In
 					</a>
 				</div>
@@ -172,7 +172,7 @@
 			{/if}
 
 			<div class="auth-footer">
-				<a href="/account/login" class="back-link">
+				<a href="/login" class="back-link">
 					<ArrowLeft size={16} />
 					Back to login
 				</a>

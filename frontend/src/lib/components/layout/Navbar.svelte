@@ -122,7 +122,7 @@
 						{/if}
 					</div>
 				{:else}
-					<a href="/account/login" class="btn btn-primary btn-sm">Sign In</a>
+					<a href="/login" class="btn btn-primary btn-sm">Sign In</a>
 				{/if}
 
 				<a href="/contact" class="btn btn-primary btn-sm" style="display: none;">Contact Us</a>
@@ -168,7 +168,7 @@
 							Account
 						</a>
 					{:else}
-						<a href="/account/login" class="btn btn-primary btn-full" onclick={closeMobileMenu}>
+						<a href="/login" class="btn btn-primary btn-full" onclick={closeMobileMenu}>
 							Sign In
 						</a>
 					{/if}
