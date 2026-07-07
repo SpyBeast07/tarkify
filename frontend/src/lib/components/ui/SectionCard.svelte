@@ -41,7 +41,7 @@
 
 <style>
 	.section-card {
-		padding: 1.75rem;
+		padding: 1.25rem;
 		border-radius: 20px;
 		transition: var(--transition-smooth);
 	}
@@ -49,8 +49,8 @@
 	.section-card-header {
 		display: flex;
 		align-items: center;
-		gap: 0.625rem;
-		margin-bottom: 0.375rem;
+		gap: 0.5rem;
+		margin-bottom: 0.25rem;
 	}
 
 	.section-card-header :global(svg) {
@@ -69,14 +69,14 @@
 	.section-card-desc {
 		font-size: 0.85rem;
 		opacity: 0.55;
-		margin: 0 0 1.25rem;
+		margin: 0 0 0.875rem;
 		line-height: 1.5;
 	}
 
 	.section-card > :global(form) {
 		display: flex;
 		flex-direction: column;
-		gap: 1.25rem;
-		margin-top: 1rem;
+		gap: 1rem;
+		margin-top: 0.75rem;
 	}
 </style>

@@ -112,7 +112,7 @@
   .purchases-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.375rem;
     position: relative;
   }
 
@@ -120,8 +120,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
     border-radius: 16px;
     background: var(--color-glass-bg);
     backdrop-filter: var(--glass-blur);

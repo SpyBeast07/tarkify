@@ -303,7 +303,7 @@
   .page-content {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
   }
 
   .input-readonly input:disabled {
@@ -360,15 +360,15 @@
   .info-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 0.75rem;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
   }
 
   .info-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.625rem 0;
+    padding: 0.5rem 0;
     border-bottom: 1px solid var(--color-glass-border);
   }
 
@@ -377,12 +377,12 @@
   }
 
   .info-label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     opacity: 0.6;
   }
 
   .info-value {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
   }
 
@@ -390,7 +390,7 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding-top: 0.5rem;
+    padding-top: 0.25rem;
   }
 
   :global(.tall) {

@@ -56,13 +56,13 @@
 	}
 
 	.auth-hero {
-		margin-bottom: 2.5rem;
+		margin-bottom: 1.5rem;
 	}
 
 	.auth-hero h1 {
 		font-family: var(--font-heading);
 		font-size: clamp(2rem, 5vw, 3rem);
-		margin-bottom: 0.75rem;
+		margin-bottom: 0.5rem;
 		color: var(--color-text);
 	}
 
@@ -74,14 +74,14 @@
 	.auth-card {
 		max-width: 440px;
 		margin: 0 auto;
-		padding: 2.5rem;
+		padding: 1.75rem;
 		border-radius: 24px;
 	}
 
 	.auth-card :global(form) {
 		display: flex;
 		flex-direction: column;
-		gap: 1.25rem;
+		gap: 1rem;
 	}
 
 	.auth-card :global(input:not([type='checkbox']):not([type='radio'])),
@@ -89,7 +89,7 @@
 		background: var(--color-glass-bg);
 		border: 1px solid var(--color-glass-border);
 		border-radius: 12px;
-		padding: 0.85rem 1rem 0.85rem 3.25rem;
+		padding: 0.75rem 1rem 0.75rem 3rem;
 		font-size: 0.95rem;
 		color: var(--color-text);
 		font-family: var(--font-main);

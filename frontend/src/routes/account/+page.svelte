@@ -185,11 +185,11 @@
   .dashboard {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
   }
 
   .welcome-card {
-    padding: 1.5rem 1.75rem;
+    padding: 1.25rem 1.5rem;
     border-radius: 20px;
     border: 1px solid var(--color-glass-border);
     backdrop-filter: var(--glass-blur);
@@ -199,13 +199,13 @@
     font-family: var(--font-heading);
     font-size: 1.35rem;
     font-weight: 700;
-    margin: 0 0 0.5rem;
+    margin: 0 0 0.375rem;
   }
 
   .welcome-meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .welcome-meta-item {
@@ -219,14 +219,14 @@
   .stats-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .stat-card {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    padding: 1.5rem;
+    gap: 1rem;
+    padding: 1.25rem;
     border-radius: 16px;
     border: 1px solid var(--color-glass-border);
     backdrop-filter: var(--glass-blur);
@@ -240,9 +240,9 @@
   }
 
   .stat-icon {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -266,7 +266,7 @@
   }
 
   .stat-value {
-    font-size: 1.85rem;
+    font-size: 1.65rem;
     font-weight: 700;
     font-family: var(--font-heading);
     line-height: 1.2;
@@ -281,15 +281,15 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
   }
 
   .activity-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    padding: 0.875rem 1rem;
+    gap: 0.75rem;
+    padding: 0.75rem 0.875rem;
     border-radius: 12px;
     border: 1px solid transparent;
     background: none;
@@ -338,8 +338,8 @@
   .verify-banner {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
+    gap: 0.75rem;
+    padding: 1rem;
     border-radius: 16px;
     border: 1px solid rgba(251, 191, 36, 0.3);
     background: rgba(251, 191, 36, 0.06);
@@ -348,8 +348,8 @@
 
   .verify-banner-icon {
     flex-shrink: 0;
-    width: 44px;
-    height: 44px;
+    width: 40px;
+    height: 40px;
     border-radius: 12px;
     background: rgba(251, 191, 36, 0.15);
     display: flex;

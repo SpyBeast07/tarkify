@@ -461,7 +461,7 @@
   .settings-page {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
   }
 
   .error-text {
@@ -494,7 +494,7 @@
   }
 
   .revoke-all-wrap {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
 
   .revoke-all-wrap button,
@@ -538,14 +538,14 @@
   .sessions-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.375rem;
   }
 
   .session-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem;
+    gap: 0.75rem;
+    padding: 0.75rem;
     border-radius: 14px;
     border: 1px solid var(--color-glass-border);
     background: var(--color-glass-bg);
@@ -564,9 +564,9 @@
 
   .session-icon {
     flex-shrink: 0;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     background: var(--color-glass-bg);
     display: flex;
     align-items: center;
@@ -583,11 +583,11 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
   }
 
   .session-browser {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
   }
 
@@ -605,14 +605,14 @@
   .session-details {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 
   .session-detail {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     opacity: 0.6;
   }
 
@@ -627,17 +627,17 @@
   }
 
   .delete-account-section {
-    margin-top: 1.5rem;
-    padding-top: 1.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
     border-top: 1px solid var(--color-glass-border);
   }
 
   .delete-account-warning {
     display: flex;
-    gap: 1rem;
-    padding: 1.25rem;
+    gap: 0.75rem;
+    padding: 1rem;
     border-radius: 16px;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1rem;
     border: 1px solid rgba(239, 68, 68, 0.3);
     background: rgba(239, 68, 68, 0.06);
   }

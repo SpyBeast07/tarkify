@@ -162,22 +162,22 @@
   .detail-page {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .back-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     background: var(--color-glass-bg);
     border: 1px solid var(--color-glass-border);
     border-radius: 10px;
     color: var(--color-text);
     opacity: 0.65;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-family: inherit;
-    padding: 0.5rem 1rem;
+    padding: 0.375rem 0.75rem;
     text-decoration: none;
     transition: var(--transition-smooth);
     align-self: flex-start;
@@ -198,9 +198,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 0;
+    padding: 0.5rem 0;
     border-bottom: 1px solid var(--color-glass-border);
-    gap: 1rem;
+    gap: 0.75rem;
   }
 
   .detail-field:first-child {
@@ -213,23 +213,23 @@
   }
 
   .detail-label {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     opacity: 0.55;
     flex-shrink: 0;
   }
 
   .detail-value {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.375rem;
     text-align: right;
   }
 
   .detail-value.mono {
     font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   .copy-btn {
@@ -252,13 +252,13 @@
   }
 
   .detail-actions {
-    margin-top: 1rem;
-    padding-top: 1rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
     border-top: 1px solid var(--color-glass-border);
   }
 
   .skeleton-card.tall {
-    height: 320px;
+    height: 260px;
     border-radius: 20px;
     background: var(--color-glass-bg);
     border: 1px solid var(--color-glass-border);

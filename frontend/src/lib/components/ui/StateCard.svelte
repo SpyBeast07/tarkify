@@ -39,8 +39,8 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.75rem;
-		padding: 2.5rem 2rem;
+		gap: 0.5rem;
+		padding: 1.75rem 1.5rem;
 		border-radius: 20px;
 		text-align: center;
 	}

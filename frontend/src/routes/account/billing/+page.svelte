@@ -162,9 +162,9 @@
   .table-header {
     display: grid;
     grid-template-columns: 1fr 100px 90px 1fr 1fr;
-    gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
-    font-size: 0.75rem;
+    gap: 0.375rem;
+    padding: 0.625rem 1rem;
+    font-size: 0.7rem;
     font-weight: 600;
     opacity: 0.45;
     text-transform: uppercase;
@@ -180,8 +180,8 @@
   .table-row {
     display: grid;
     grid-template-columns: 1fr 100px 90px 1fr 1fr;
-    gap: 0.5rem;
-    padding: 0.875rem 1.25rem;
+    gap: 0.375rem;
+    padding: 0.75rem 1rem;
     align-items: center;
     font-size: 0.85rem;
     border-bottom: 1px solid var(--color-glass-border);
@@ -208,7 +208,7 @@
 
   .row-date {
     opacity: 0.55;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   .id-list {

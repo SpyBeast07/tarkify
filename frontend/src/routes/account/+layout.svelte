@@ -120,19 +120,19 @@
   }
 
   .account-hero {
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
   }
 
   .account-hero h1 {
     font-size: 2.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
   }
 
   .breadcrumbs {
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     font-size: 0.8rem;
   }
 
@@ -160,7 +160,7 @@
 
   .account-layout {
     display: flex;
-    gap: 2.5rem;
+    gap: 2rem;
     align-items: flex-start;
   }
 
@@ -175,7 +175,7 @@
     background: var(--color-glass-bg);
     border: 1px solid var(--color-glass-border);
     border-radius: 12px;
-    padding: 0.85rem 1rem;
+    padding: 0.75rem 1rem;
     font-size: 0.95rem;
     color: var(--color-text);
     font-family: var(--font-main);
@@ -205,7 +205,7 @@
 
   .account-content :global(.input-with-icon input:not([type='checkbox']):not([type='radio'])),
   .account-content :global(.input-with-icon select) {
-    padding-left: 3.25rem;
+    padding-left: 3rem;
   }
 
   .account-content :global(.input-readonly input:disabled) {

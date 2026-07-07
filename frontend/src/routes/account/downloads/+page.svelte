@@ -136,14 +136,14 @@
   .downloads-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.375rem;
   }
 
   .download-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1rem 1.25rem;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
     border-radius: 16px;
     border: 1px solid var(--color-glass-border);
     backdrop-filter: var(--glass-blur);
@@ -158,9 +158,9 @@
 
   .download-icon {
     flex-shrink: 0;
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
     background: rgba(123, 144, 75, 0.15);
     color: var(--color-primary-green);
     display: flex;
