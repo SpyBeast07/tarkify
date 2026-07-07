@@ -1,7 +1,6 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { page } from '$app/stores';
-  import { goto } from '$app/navigation';
   import {
     Receipt, ArrowLeft, AlertTriangle, RefreshCw, Copy, Download
   } from '@lucide/svelte';
@@ -32,6 +31,10 @@
     const result = await fetchPurchase(purchaseId);
     if ('error' in result) {
       const errBody = result as ApiErrorBody;
+      if (errBody.status === 401) {
+        authState.clearUser();
+        return;
+      }
       if (errBody.status === 404) {
         error = 'Purchase not found.';
       } else {
@@ -69,10 +72,10 @@
     return 'status-created';
   }
 
-  async function copyToClipboard(val: string) {
+  async function copyToClipboard(val: string, label: string) {
     try {
       await navigator.clipboard.writeText(val);
-      toast.addToast('Copied to clipboard', 'success');
+      toast.addToast(`${label} copied to clipboard`, 'success');
     } catch {
       toast.addToast('Failed to copy', 'error');
     }
@@ -80,15 +83,15 @@
 </script>
 
 <div class="detail-page">
-  <button class="back-btn" onclick={() => goto('/account/purchases')}>
+  <a href="/account/purchases" class="back-btn">
     <ArrowLeft size={16} />
     Back to Purchases
-  </button>
+  </a>
 
   {#if loading}
-    <div class="skeleton-card tall"></div>
+    <div class="skeleton-card tall" aria-hidden="true"></div>
   {:else if error}
-    <div class="state-card error">
+    <div class="state-card error" role="alert">
       <AlertTriangle size={24} />
       <p>{error}</p>
       <button class="btn btn-primary btn-sm" onclick={load}>
@@ -126,7 +129,7 @@
             <span class="detail-label">Order ID</span>
             <span class="detail-value mono">
               {p.razorpay_order_id}
-              <button class="copy-btn" onclick={() => copyToClipboard(p.razorpay_order_id)}>
+              <button class="copy-btn" onclick={() => copyToClipboard(p.razorpay_order_id, 'Order ID')} aria-label="Copy order ID">
                 <Copy size={14} />
               </button>
             </span>
@@ -137,7 +140,7 @@
             <span class="detail-label">Payment ID</span>
             <span class="detail-value mono">
               {p.razorpay_payment_id}
-              <button class="copy-btn" onclick={() => { if (p.razorpay_payment_id) copyToClipboard(p.razorpay_payment_id); }}>
+              <button class="copy-btn" onclick={() => { if (p.razorpay_payment_id) copyToClipboard(p.razorpay_payment_id, 'Payment ID'); }} aria-label="Copy payment ID">
                 <Copy size={14} />
               </button>
             </span>
@@ -184,6 +187,7 @@
     font-size: 0.85rem;
     font-family: inherit;
     padding: 0;
+    text-decoration: none;
     transition: opacity 0.2s;
   }
 
@@ -322,5 +326,11 @@
     0% { opacity: 0.5; }
     50% { opacity: 0.8; }
     100% { opacity: 0.5; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-card {
+      animation: none;
+    }
   }
 </style>

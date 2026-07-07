@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
-  import { goto } from '$app/navigation';
   import {
     Receipt, ArrowRight, AlertTriangle, RefreshCw
   } from '@lucide/svelte';
@@ -9,6 +7,7 @@
     type PurchasesResponse, type ApiErrorBody,
   } from '$lib/api/account';
   import Pagination from '$lib/components/account/Pagination.svelte';
+  import { getContext } from 'svelte';
   import type { AuthState } from '$lib/context/auth.svelte';
 
   const authState = getContext<AuthState>('auth');
@@ -24,7 +23,12 @@
     error = '';
     const result = await fetchPurchases(page, limit);
     if ('error' in result) {
-      error = (result as ApiErrorBody).error?.message || 'Failed to load purchases';
+      const err = result as ApiErrorBody;
+      if (err.status === 401) {
+        authState.clearUser();
+        return;
+      }
+      error = err.error?.message || 'Failed to load purchases';
     } else {
       data = result;
     }
@@ -44,6 +48,13 @@
     });
   }
 
+  function statusLabel(s: string): string {
+    if (s === 'paid') return 'Completed';
+    if (s === 'refunded') return 'Refunded';
+    if (s === 'failed') return 'Failed';
+    return 'Pending';
+  }
+
   function statusClass(status: string): string {
     if (status === 'paid') return 'status-paid';
     if (status === 'refunded') return 'status-refunded';
@@ -61,13 +72,13 @@
 </div>
 
 {#if loading && !data}
-  <div class="skeleton-list">
+  <div class="skeleton-list" aria-hidden="true">
     {#each { length: 3 } as _}
       <div class="skeleton-row-item"></div>
     {/each}
   </div>
 {:else if error}
-  <div class="state-card error">
+  <div class="state-card error" role="alert">
     <AlertTriangle size={24} />
     <p>{error}</p>
     <button class="btn btn-primary btn-sm" onclick={load}>
@@ -83,13 +94,16 @@
     <a href="/solutions" class="btn btn-primary">Browse Products</a>
   </div>
 {:else if data}
-  <div class="purchases-list">
+  <div class="purchases-list" aria-live="polite" aria-label="Purchase history">
+    {#if loading}
+      <div class="purchases-loading-overlay" aria-hidden="true"></div>
+    {/if}
     {#each data.purchases as purchase (purchase.id)}
-      <button class="purchase-card glass" onclick={() => goto(`/account/purchases/${purchase.id}`)}>
+      <a href="/account/purchases/{purchase.id}" class="purchase-card glass" aria-label="View purchase details for {purchase.product_name}">
         <div class="purchase-info">
           <div class="purchase-product">
             <span class="product-name">{purchase.product_name}</span>
-            <span class="purchase-status {statusClass(purchase.status)}">{purchase.status}</span>
+            <span class="purchase-status {statusClass(purchase.status)}">{statusLabel(purchase.status)}</span>
           </div>
           <div class="purchase-meta">
             <span>{purchase.currency} {(purchase.amount / 100).toFixed(2)}</span>
@@ -100,7 +114,7 @@
         <div class="purchase-action">
           <ArrowRight size={16} />
         </div>
-      </button>
+      </a>
     {/each}
   </div>
 
@@ -154,6 +168,7 @@
     text-align: left;
     width: 100%;
     font-family: inherit;
+    text-decoration: none;
     transition: background 0.2s;
   }
 
@@ -282,5 +297,25 @@
     0% { opacity: 0.5; }
     50% { opacity: 0.8; }
     100% { opacity: 0.5; }
+  }
+
+  .purchases-list {
+    position: relative;
+  }
+
+  .purchases-loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--color-glass-bg);
+    opacity: 0.4;
+    border-radius: 16px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton-list * {
+      animation: none;
+    }
   }
 </style>

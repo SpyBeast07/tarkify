@@ -1,7 +1,8 @@
 <script lang="ts">
   import { getContext } from 'svelte';
+  import { onDestroy } from 'svelte';
   import {
-    User, MapPin, AlertTriangle, CheckCircle, RefreshCw
+    User, MapPin, AlertTriangle, CheckCircle, RefreshCw, Undo2
   } from '@lucide/svelte';
   import {
     fetchProfile, updateProfile,
@@ -20,6 +21,49 @@
   let saving = $state(false);
   let saveError = $state('');
   let saveSuccess = $state(false);
+
+  let successTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const timezoneList = $derived(
+    typeof Intl !== 'undefined' && typeof Intl.supportedValuesOf === 'function'
+      ? Intl.supportedValuesOf('timeZone')
+      : [
+          'UTC', 'America/New_York', 'America/Chicago', 'America/Denver',
+          'America/Los_Angeles', 'Europe/London', 'Europe/Berlin',
+          'Europe/Paris', 'Asia/Kolkata', 'Asia/Tokyo', 'Asia/Shanghai',
+          'Australia/Sydney', 'Pacific/Auckland',
+        ]
+  );
+
+  const allTimezoneOptions = $derived(
+    timezone && !timezoneList.includes(timezone)
+      ? [timezone, ...timezoneList]
+      : timezoneList
+  );
+
+  const isDirty = $derived(
+    displayName !== (profile?.displayName ?? '') || timezone !== (profile?.timezone ?? '')
+  );
+
+  function resetForm() {
+    if (!profile) return;
+    displayName = profile.displayName || '';
+    timezone = profile.timezone || '';
+    saveError = '';
+    saveSuccess = false;
+  }
+
+  let cancelTimer: ReturnType<typeof setTimeout> | undefined;
+  function scheduleSaveSuccessDismiss() {
+    clearTimeout(successTimer);
+    successTimer = setTimeout(() => {
+      saveSuccess = false;
+    }, 5000);
+  }
+
+  onDestroy(() => {
+    clearTimeout(successTimer);
+  });
 
   async function load() {
     loading = true;
@@ -53,30 +97,32 @@
     });
 
     if ('error' in result) {
-      saveError = (result as ApiErrorBody).error?.message || 'Failed to update profile';
+      const err = result as ApiErrorBody;
+      if (err.status === 401) {
+        saving = false;
+        authState.clearUser();
+        return;
+      }
+      saveError = err.error?.message || 'Failed to update profile';
     } else {
       saveSuccess = true;
       if (profile) {
         profile.displayName = displayName.trim() || null;
         profile.timezone = timezone.trim() || null;
       }
+      scheduleSaveSuccessDismiss();
     }
     saving = false;
   }
-
-  const commonTimezones = [
-    'UTC', 'America/New_York', 'America/Chicago', 'America/Denver',
-    'America/Los_Angeles', 'Europe/London', 'Europe/Berlin',
-    'Europe/Paris', 'Asia/Kolkata', 'Asia/Tokyo', 'Asia/Shanghai',
-    'Australia/Sydney', 'Pacific/Auckland',
-  ];
 </script>
 
 {#if loading}
-  <div class="skeleton-card"></div>
-  <div class="skeleton-card tall" style="margin-top: 1rem"></div>
+  <div class="dashboard-skeleton" aria-hidden="true">
+    <div class="skeleton-card"></div>
+    <div class="skeleton-card tall" style="margin-top: 1rem"></div>
+  </div>
 {:else if error}
-  <div class="state-card error">
+  <div class="state-card error" role="alert">
     <AlertTriangle size={24} />
     <p>{error}</p>
     <button class="btn btn-primary btn-sm" onclick={load}>
@@ -85,7 +131,7 @@
     </button>
   </div>
 {:else if profile}
-  <div class="page-content">
+  <div class="page-content" aria-live="polite">
     <div class="section-card glass">
       <div class="section-card-header">
         <User size={20} />
@@ -94,7 +140,7 @@
       <p class="section-card-desc">Manage your public profile information.</p>
 
       {#if saveSuccess}
-        <div class="success-alert">
+        <div class="success-alert" role="status">
           <CheckCircle size={20} />
           <span>Profile updated successfully.</span>
         </div>
@@ -126,6 +172,7 @@
               bind:value={displayName}
               placeholder="Your display name"
               maxlength={100}
+              disabled={saving}
             />
           </div>
         </div>
@@ -134,22 +181,35 @@
           <label for="timezone" class="form-label">Timezone</label>
           <div class="input-container-wrapper input-with-icon">
             <MapPin size={18} class="input-icon" />
-            <select id="timezone" bind:value={timezone}>
+            <select id="timezone" bind:value={timezone} disabled={saving}>
               <option value="">Select timezone...</option>
-              {#each commonTimezones as tz}
+              {#each allTimezoneOptions as tz}
                 <option value={tz}>{tz}</option>
               {/each}
             </select>
           </div>
         </div>
 
-        <button
-          type="submit"
-          class="btn btn-primary"
-          disabled={saving}
-        >
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
+        <div class="form-actions-row">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            disabled={saving || !isDirty}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+          {#if isDirty}
+            <button
+              type="button"
+              class="btn btn-outline"
+              onclick={resetForm}
+              disabled={saving}
+            >
+              <Undo2 size={16} />
+              Reset
+            </button>
+          {/if}
+        </div>
       </form>
     </div>
 
@@ -320,6 +380,44 @@
     font-weight: 500;
   }
 
+  .form-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.5rem;
+  }
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.625rem 1rem;
+    border: 1px solid var(--color-glass-border);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--color-text);
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    background: var(--color-glass-bg);
+    border-color: var(--color-accent-green);
+  }
+
+  .btn-outline:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .dashboard-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
   .skeleton-card {
     height: 80px;
     border-radius: 20px;
@@ -335,5 +433,18 @@
     0% { opacity: 0.5; }
     50% { opacity: 0.8; }
     100% { opacity: 0.5; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dashboard-skeleton * {
+      animation: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .form-actions-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
   }
 </style>
