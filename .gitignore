@@ -2,4 +2,3 @@ client/
 docs/
 .DS_Store
 .env
-.env.*

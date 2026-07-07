@@ -78,7 +78,44 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 
 ---
 
-## 3. Local Development Setup
+## 3. Secret Management
+
+### Environment File Policy
+
+| File | Tracked by Git | Purpose |
+|------|---------------|---------|
+| `backend/.env.example` | ✅ Yes | Documented template with placeholder values |
+| `frontend/.env.example` | ✅ Yes | Documented template with placeholder values |
+| `backend/.env` | ❌ No | Local/production secrets per environment |
+| `frontend/.env` | ❌ No | Frontend API URL per environment |
+| `frontend/.env.production` | ❌ No | Production frontend configuration |
+| Any other `.env.*` file | ❌ No | Ignored by `.env.*` gitignore rules |
+
+### How Secrets Are Managed
+
+1. **All secrets come from environment variables only.** The backend config (`config.ts`) enforces this with `requireEnv()` — the process crashes at startup if a required variable is missing.
+2. **No production secret exists in source code.** All `.env` files are gitignored. Never commit a `.env` file.
+3. **Docker images do not contain secrets.** The Dockerfile copies no `.env` file, and `docker-compose.yml` references all secrets via `${VARIABLE}` syntax — values come from the host environment at runtime.
+4. **Don't repeat yourself.** Each deployment environment (local dev, staging, production) has its own `.env` file. Template files (`.env.example`) contain placeholder values only — copy them to create your environment files:
+
+   ```bash
+   cp backend/.env.example backend/.env    # then edit with real credentials
+   cp frontend/.env.example frontend/.env   # then edit with real URL
+   ```
+
+### Production Secret Checklist
+
+- [ ] Generate a strong `BETTER_AUTH_SECRET`: `openssl rand -base64 32`
+- [ ] Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` to live keys (start with `rzp_live_`)
+- [ ] Set `RAZORPAY_WEBHOOK_SECRET` matching your Razorpay dashboard
+- [ ] Set a strong unique `PG_PASSWORD` (never use the local dev default `tarkifyPassword`)
+- [ ] Set `NODE_ENV=production`
+- [ ] Set `BETTER_AUTH_URL` to the production backend URL
+- [ ] Set `FRONTEND_URL` to the production frontend URL
+
+---
+
+## 4. Local Development Setup
 
 ### Prerequisites
 * [Bun](https://bun.sh) runtime installed.
@@ -115,7 +152,7 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 
 ---
 
-## 4. Production VPS Deployment Guide
+## 5. Production VPS Deployment Guide
 
 Our backend stack runs fully containerized under a zero-touch, self-healing configuration.
 
@@ -159,7 +196,7 @@ docker compose up --build -d
 
 ---
 
-## 5. Health & Monitoring
+## 6. Health & Monitoring
 
 We distinguish between liveness and readiness:
 
@@ -179,7 +216,7 @@ We distinguish between liveness and readiness:
 
 ---
 
-## 6. Cloudflare Tunnel Integration
+## 7. Cloudflare Tunnel Integration
 
 Cloudflare Tunnel provides secure public access to your backend without exposing raw VPS ports to the internet.
 
@@ -190,7 +227,7 @@ Cloudflare Tunnel provides secure public access to your backend without exposing
 
 ---
 
-## 7. Frontend Deployment (Vercel)
+## 8. Frontend Deployment (Vercel)
 
 The SvelteKit frontend deploys to Vercel dynamically:
 
@@ -200,17 +237,17 @@ The SvelteKit frontend deploys to Vercel dynamically:
 
 ---
 
-## 8. Database Migrations
+## 9. Database Migrations
 
-* **System Structure**: Migration SQL files reside under [backend/migrations/](file:///Users/kushagra/Documents/Tarkify/tarkify/backend/migrations/). They execute sequentially and record their application history in the `_migrations` database table. Currently, 12 migrations exist (from `001_create_users.sql` up to `012_create_purchase_linking_log.sql`).
+* **System Structure**: Migration SQL files reside under [backend/migrations/](file:///Users/kushagra/Documents/Tarkify/tarkify/backend/migrations/). They execute sequentially and record their application history in the `_migrations` database table. Currently, 13 migrations exist (from `001_create_users.sql` up to `013_create_audit_logs.sql`).
 * **Adding a New Migration**:
-  1. Create a SQL file with a sequential prefix: `backend/migrations/013_my_new_table.sql`.
+  1. Create a SQL file with a sequential prefix: `backend/migrations/014_my_new_table.sql`.
   2. Write DDL statements inside it. Ensure statements are safe and idempotent.
   3. Deploy: On VPS push, `docker compose up --build -d` will detect and run the new migration script automatically on startup.
 
 ---
 
-## 9. Troubleshooting Guide
+## 10. Troubleshooting Guide
 
 ### 1. Backend API Container Won't Start
 * **Cause**: Environment variables are missing or incorrect.

@@ -113,7 +113,9 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
     sendResetPassword: async ({ user, url }) => {
-      console.info(`[Better Auth Password Reset] Reset password link for ${user.email}: ${url}`);
+      if (config.nodeEnv !== "production") {
+        console.info(`[Better Auth Password Reset] Reset password link for ${user.email}: ${url}`);
+      }
     },
   },
 
@@ -122,7 +124,9 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     expiresIn: 86400,
     sendVerificationEmail: async ({ user, url }) => {
-      console.info(`[Better Auth Email Verification] Verification link for ${user.email}: ${url}`);
+      if (config.nodeEnv !== "production") {
+        console.info(`[Better Auth Email Verification] Verification link for ${user.email}: ${url}`);
+      }
     },
   },
 

@@ -9,6 +9,8 @@ services:
       - "5439:5432"
     environment:
       POSTGRES_USER: ${PG_USER:-tarkify_user}
+      # Default password is for local development only. NEVER use in production.
+      # Generate a strong random password and set PG_PASSWORD in your environment.
       POSTGRES_PASSWORD: ${PG_PASSWORD:-tarkifyPassword}
       POSTGRES_DB: ${PG_DB:-tarkifyDB}
     volumes:
