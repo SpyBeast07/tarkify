@@ -153,7 +153,7 @@ export interface ListedSession {
   updatedAt: string;
 }
 
-export async function listSessions(): Promise<ListedSession[]> {
+export async function listSessions(): Promise<ListedSession[] | ApiErrorBody> {
   return authFetch<ListedSession[]>("/list-sessions");
 }
 

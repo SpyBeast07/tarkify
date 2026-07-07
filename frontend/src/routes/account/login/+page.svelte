@@ -32,7 +32,7 @@
 
 		try {
 			const result = await signIn(email, password, rememberMe);
-			if (result.error) {
+			if ('error' in result) {
 				error = result.error.message || 'Invalid email or password';
 				return;
 			}

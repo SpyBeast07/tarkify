@@ -3,6 +3,7 @@
 	import { Mail, ArrowLeft, Send } from '@lucide/svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { sendForgotPassword } from '$lib/api/auth';
+	import type { ApiErrorBody } from '$lib/api/auth';
 
 	let email = $state('');
 	let error = $state('');
@@ -16,8 +17,8 @@
 
 		try {
 			const result = await sendForgotPassword(email);
-			if (result.error) {
-				error = result.error.message || 'Failed to send reset email';
+			if ('error' in result) {
+				error = (result as ApiErrorBody).error.message || 'Failed to send reset email';
 				return;
 			}
 			sent = true;

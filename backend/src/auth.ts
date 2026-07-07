@@ -6,6 +6,7 @@ import { config } from "./config.js";
 import * as userRepository from "./users/repository.js";
 import { linkPurchasesToUserByEmail } from "./purchase-linking/service.js";
 import * as auditService from "./audit/service.js";
+import * as emailService from "./email/service.js";
 
 const userHookSchema = z.object({
   id: z.string().optional(),
@@ -26,6 +27,11 @@ const sessionHookSchema = z.object({
 
 const accountHookSchema = z.object({
   password: z.string().nullable().optional(),
+}).passthrough();
+
+const accountCreateHookSchema = z.object({
+  userId: z.string(),
+  providerId: z.string(),
 }).passthrough();
 
 export const auth = betterAuth({
@@ -135,9 +141,11 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
     sendResetPassword: async ({ user, url }) => {
-      if (config.nodeEnv !== "production") {
-        console.info(`[Better Auth Password Reset] Reset password link for ${user.email}: ${url}`);
-      }
+      await emailService.send({
+        to: user.email,
+        subject: "Reset your Tarkify password",
+        html: `<p>Click <a href="${url}">here</a> to reset your password.</p>`,
+      });
     },
   },
 
@@ -146,9 +154,11 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     expiresIn: 86400,
     sendVerificationEmail: async ({ user, url }) => {
-      if (config.nodeEnv !== "production") {
-        console.info(`[Better Auth Email Verification] Verification link for ${user.email}: ${url}`);
-      }
+      await emailService.send({
+        to: user.email,
+        subject: "Verify your Tarkify email",
+        html: `<p>Click <a href="${url}">here</a> to verify your email.</p>`,
+      });
     },
   },
 
@@ -228,6 +238,18 @@ export const auth = betterAuth({
       },
     },
     account: {
+      create: {
+        after: async (account) => {
+          try {
+            const a = accountCreateHookSchema.parse(account);
+            if (a.providerId === "email") {
+              await auditService.recordAccountCreated(a.userId);
+            }
+          } catch (err) {
+            console.error("Failed to record account creation audit:", err);
+          }
+        },
+      },
       update: {
         after: async (account) => {
           try {

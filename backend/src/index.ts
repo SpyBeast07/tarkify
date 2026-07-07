@@ -82,6 +82,31 @@ app.get('/', (c) => {
   return c.json({ name: 'Tarkify API', status: 'active', version: '1.0.0' });
 });
 
+// ── Rate limiting on the main app with path-prefix matching ─────
+// Must be registered BEFORE route handlers and per-route middleware
+// so that rate limits protect downstream DB queries (e.g. the sign-in guard).
+const paymentLimit = rateLimit({ windowMs: 60_000, max: 30 });
+const downloadLimit = rateLimit({ windowMs: 60_000, max: 60 });
+const webhookLimit = rateLimit({ windowMs: 60_000, max: 20 });
+const contactLimit = rateLimit({ windowMs: 60_000, max: 10 });
+const feedbackLimit = rateLimit({ windowMs: 60_000, max: 20 });
+const newsletterLimit = rateLimit({ windowMs: 60_000, max: 30 });
+const careersLimit = rateLimit({ windowMs: 60_000, max: 10 });
+const authLimit = rateLimit({ windowMs: 60_000, max: 10 });
+const userLimit = rateLimit({ windowMs: 60_000, max: 60 });
+const cspReportLimit = rateLimit({ windowMs: 60_000, max: 100 });
+
+app.use('/api/payments/*', paymentLimit);
+app.use('/api/downloads/*', downloadLimit);
+app.use('/api/webhooks/*', webhookLimit);
+app.use('/api/contact', contactLimit);
+app.use('/api/feedback', feedbackLimit);
+app.use('/api/newsletter', newsletterLimit);
+app.use('/api/careers', careersLimit);
+app.use('/api/auth/*', authLimit);
+app.use('/api/users/*', userLimit);
+app.use('/api/csp-report', cspReportLimit);
+
 // ── Better Auth handler ──────────────────────────────────────────
 app.use('/api/auth/sign-in/email', async (c, next) => {
   if (c.req.method === 'POST') {
@@ -105,29 +130,6 @@ app.use('/api/auth/sign-in/email', async (c, next) => {
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {
   return auth.handler(c.req.raw);
 });
-
-// ── Rate limiting on the main app with path-prefix matching ─────
-const paymentLimit = rateLimit({ windowMs: 60_000, max: 30 });
-const downloadLimit = rateLimit({ windowMs: 60_000, max: 60 });
-const webhookLimit = rateLimit({ windowMs: 60_000, max: 20 });
-const contactLimit = rateLimit({ windowMs: 60_000, max: 10 });
-const feedbackLimit = rateLimit({ windowMs: 60_000, max: 20 });
-const newsletterLimit = rateLimit({ windowMs: 60_000, max: 30 });
-const careersLimit = rateLimit({ windowMs: 60_000, max: 10 });
-const authLimit = rateLimit({ windowMs: 60_000, max: 10 });
-const userLimit = rateLimit({ windowMs: 60_000, max: 60 });
-const cspReportLimit = rateLimit({ windowMs: 60_000, max: 100 });
-
-app.use('/api/payments/*', paymentLimit);
-app.use('/api/downloads/*', downloadLimit);
-app.use('/api/webhooks/*', webhookLimit);
-app.use('/api/contact', contactLimit);
-app.use('/api/feedback', feedbackLimit);
-app.use('/api/newsletter', newsletterLimit);
-app.use('/api/careers', careersLimit);
-app.use('/api/auth/*', authLimit);
-app.use('/api/users/*', userLimit);
-app.use('/api/csp-report', cspReportLimit);
 
 // ── Route Groups ─────────────────────────────────────────────────
 app.route('/api/products', products);

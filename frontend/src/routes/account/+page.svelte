@@ -10,7 +10,7 @@
 	} from '@lucide/svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { changePassword, sendVerificationEmail, listSessions, revokeSession, revokeOtherSessions, deleteAccount } from '$lib/api/auth';
-	import type { ListedSession } from '$lib/api/auth';
+	import type { ApiErrorBody, ListedSession } from '$lib/api/auth';
 	import type { AuthState } from '$lib/context/auth.svelte';
 
 	const authState = getContext<AuthState>('auth');
@@ -33,8 +33,8 @@
 		verificationSent = false;
 		try {
 			const result = await sendVerificationEmail(authState.user.email);
-			if (result.error) {
-				verificationError = result.error.message || 'Failed to send verification email';
+			if ('error' in result) {
+				verificationError = (result as ApiErrorBody).error.message || 'Failed to send verification email';
 				return;
 			}
 			verificationSent = true;
@@ -82,8 +82,8 @@
 		changingPassword = true;
 		try {
 			const result = await changePassword(currentPassword, newPassword);
-			if (result.error) {
-				passwordError = result.error.message || 'Failed to change password';
+			if ('error' in result) {
+				passwordError = (result as ApiErrorBody).error.message || 'Failed to change password';
 				return;
 			}
 			passwordSuccess = true;
@@ -109,10 +109,10 @@
 		sessionsError = '';
 		try {
 			const result = await listSessions();
-			if (result && typeof result === 'object' && 'error' in result) {
-				sessionsError = (result as any).error?.message || 'Failed to load sessions';
+			if ('error' in result) {
+				sessionsError = result.error.message || 'Failed to load sessions';
 			} else {
-				sessions = result as ListedSession[];
+				sessions = result;
 			}
 		} catch {
 			sessionsError = 'Failed to load sessions';
@@ -125,8 +125,8 @@
 		revokingToken = token;
 		try {
 			const result = await revokeSession(token);
-			if (result && typeof result === 'object' && 'error' in result) {
-				sessionsError = (result as any).error?.message || 'Failed to revoke session';
+			if ('error' in result) {
+				sessionsError = (result as ApiErrorBody).error.message || 'Failed to revoke session';
 			} else {
 				sessions = sessions.filter(s => s.token !== token);
 			}
@@ -141,8 +141,8 @@
 		revokingAll = true;
 		try {
 			const result = await revokeOtherSessions();
-			if (result && typeof result === 'object' && 'error' in result) {
-				sessionsError = (result as any).error?.message || 'Failed to revoke other sessions';
+			if ('error' in result) {
+				sessionsError = (result as ApiErrorBody).error.message || 'Failed to revoke other sessions';
 			} else {
 				await loadSessions();
 			}
@@ -187,8 +187,8 @@
 		deletingAccount = true;
 		try {
 			const result = await deleteAccount(deletePassword);
-			if (result.error) {
-				deleteError = result.error.message || 'Failed to delete account';
+			if ('error' in result) {
+				deleteError = (result as ApiErrorBody).error.message || 'Failed to delete account';
 				return;
 			}
 			deleteSuccess = true;

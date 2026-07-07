@@ -11,6 +11,15 @@ async function recordEvent(
   return insertAuditLog(userId, event, metadata, ipAddress, userAgent);
 }
 
+export async function recordAccountCreated(
+  userId: string,
+  ipAddress?: string | null,
+  userAgent?: string | null,
+  metadata?: Record<string, unknown>,
+): Promise<AuditLogEntry> {
+  return recordEvent(userId, 'account_created', metadata, ipAddress, userAgent);
+}
+
 export async function recordLogin(
   userId: string,
   ipAddress?: string | null,

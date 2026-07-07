@@ -1,6 +1,7 @@
 export const AUDIT_EVENTS = {
   LOGIN: 'login',
   LOGOUT: 'logout',
+  ACCOUNT_CREATED: 'account_created',
   PASSWORD_CHANGED: 'password_changed',
   PASSWORD_RESET: 'password_reset',
   EMAIL_VERIFIED: 'email_verified',

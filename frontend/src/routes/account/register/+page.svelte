@@ -44,7 +44,7 @@
 
 		try {
 			const result = await signUp(name, email, password);
-			if (result.error) {
+			if ('error' in result) {
 				error = result.error.message || 'Registration failed';
 				return;
 			}

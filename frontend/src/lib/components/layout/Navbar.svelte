@@ -22,11 +22,7 @@
 	];
 
 	async function handleLogout() {
-		try {
-			await signOut();
-		} catch {
-			// ignore
-		}
+		await signOut();
 		authState.clearUser();
 		authState.broadcast();
 		isDropdownOpen = false;

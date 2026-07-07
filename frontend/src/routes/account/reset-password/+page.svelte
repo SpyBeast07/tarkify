@@ -5,6 +5,7 @@
 	import { Lock, Eye, EyeOff, ArrowLeft, ShieldCheck } from '@lucide/svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import { resetPassword } from '$lib/api/auth';
+	import type { ApiErrorBody } from '$lib/api/auth';
 
 	let token = $derived($page.url.searchParams.get('token') || '');
 
@@ -43,8 +44,8 @@
 
 		try {
 			const result = await resetPassword(token, password);
-			if (result.error) {
-				error = result.error.message || 'Failed to reset password';
+			if ('error' in result) {
+				error = (result as ApiErrorBody).error.message || 'Failed to reset password';
 				return;
 			}
 			success = true;
