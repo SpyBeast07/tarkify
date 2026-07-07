@@ -15,10 +15,16 @@
  */
 
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import * as razorpayService from '../services/razorpay.service.js';
 import * as purchaseService from '../services/purchase.service.js';
 import { razorpayWebhookPayloadSchema } from '../razorpay.validation.js';
 import type { RazorpayWebhookPayload } from '../types/index.js';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
+
+function webhookError(c: Context, error: string, message: string, status: ContentfulStatusCode) {
+  return c.json({ error, message, requestId: (c as any).get('requestId') as string | undefined }, status);
+}
 
 const webhooks = new Hono();
 
@@ -29,15 +35,13 @@ webhooks.post('/razorpay', async (c) => {
 
   if (!signature) {
     console.error('Webhook received without signature header');
-    return c.json({ error: 'Missing signature' }, 400);
+    return webhookError(c, 'WEBHOOK_SIGNATURE_MISSING', 'Request is missing the webhook signature header', 400);
   }
 
-  // Verify webhook signature using HMAC SHA256.
-  // verifyWebhookSignature safely returns false on malformed input.
   const isValid = razorpayService.verifyWebhookSignature(rawBody, signature);
   if (!isValid) {
     console.error('Webhook signature verification failed');
-    return c.json({ error: 'Invalid signature' }, 400);
+    return webhookError(c, 'WEBHOOK_INVALID_SIGNATURE', 'Webhook signature verification failed', 400);
   }
 
   let payload: RazorpayWebhookPayload;
@@ -45,7 +49,7 @@ webhooks.post('/razorpay', async (c) => {
     payload = razorpayWebhookPayloadSchema.parse(JSON.parse(rawBody));
   } catch {
     console.error('Failed to parse webhook payload');
-    return c.json({ error: 'Invalid payload' }, 400);
+    return webhookError(c, 'WEBHOOK_INVALID_PAYLOAD', 'Failed to parse webhook payload', 400);
   }
 
   const { event } = payload;
@@ -57,7 +61,7 @@ webhooks.post('/razorpay', async (c) => {
 
     if (!orderId || !paymentId) {
       console.error('Webhook payment.captured: missing order_id or payment id');
-      return c.json({ error: 'Missing required fields in payload' }, 400);
+      return webhookError(c, 'WEBHOOK_MISSING_FIELDS', 'Missing required fields in webhook payload', 400);
     }
 
     // Find the purchase record.
@@ -88,7 +92,7 @@ webhooks.post('/razorpay', async (c) => {
 
       if (!updated) {
         console.error(`Webhook payment.captured: failed to complete purchase ${orderId}`);
-        return c.json({ error: 'Failed to process' }, 500);
+        return webhookError(c, 'WEBHOOK_PROCESSING_FAILED', 'Failed to process payment capture', 500);
       }
 
       // Generate download token if one does not already exist for this purchase.
@@ -116,7 +120,7 @@ webhooks.post('/razorpay', async (c) => {
       return c.json({ status: 'processed' });
     } catch (error) {
       console.error(`Webhook payment.captured: error for order ${orderId}`, error);
-      return c.json({ error: 'Failed to process' }, 500);
+      return webhookError(c, 'WEBHOOK_PROCESSING_FAILED', 'Failed to process payment capture', 500);
     }
   }
 
@@ -127,7 +131,7 @@ webhooks.post('/razorpay', async (c) => {
 
     if (!orderId) {
       console.error('Webhook payment.refunded: missing order_id');
-      return c.json({ error: 'Missing required fields in payload' }, 400);
+      return webhookError(c, 'WEBHOOK_MISSING_FIELDS', 'Missing required fields in webhook payload', 400);
     }
 
     const purchase = await purchaseService.getPurchaseByOrderId(orderId);
@@ -147,7 +151,7 @@ webhooks.post('/razorpay', async (c) => {
 
       if (!updated) {
         console.error(`Webhook payment.refunded: failed to refund purchase ${orderId}`);
-        return c.json({ error: 'Failed to process refund' }, 500);
+        return webhookError(c, 'WEBHOOK_PROCESSING_FAILED', 'Failed to process refund', 500);
       }
 
       console.info(
@@ -156,7 +160,7 @@ webhooks.post('/razorpay', async (c) => {
       return c.json({ status: 'refund_processed' });
     } catch (error) {
       console.error(`Webhook payment.refunded: error for order ${orderId}`, error);
-      return c.json({ error: 'Failed to process refund' }, 500);
+      return webhookError(c, 'WEBHOOK_PROCESSING_FAILED', 'Failed to process refund', 500);
     }
   }
 

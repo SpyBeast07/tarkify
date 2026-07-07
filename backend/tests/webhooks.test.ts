@@ -84,7 +84,7 @@ describe('Webhooks API Route', () => {
 
       expect(res.status).toBe(400);
       const data = await res.json();
-      expect(data.error).toBe('Invalid signature');
+      expect(data.error).toBe('WEBHOOK_INVALID_SIGNATURE');
     });
 
     it('handles duplicate webhook deliveries gracefully (idempotency)', async () => {

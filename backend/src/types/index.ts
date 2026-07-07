@@ -115,6 +115,7 @@ export interface ProductResponse {
 export interface ApiError {
   error: string;
   message: string;
+  requestId?: string;
 }
 
 // ── Razorpay Types ───────────────────────────────────────────────

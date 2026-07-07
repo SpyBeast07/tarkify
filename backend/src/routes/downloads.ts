@@ -14,12 +14,18 @@
  */
 
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { join } from 'path';
 import { existsSync, readdirSync } from 'fs';
 import { stat } from 'fs/promises';
 import * as productService from '../services/product.service.js';
 import * as purchaseService from '../services/purchase.service.js';
 import { config } from '../config.js';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
+
+function dlError(c: Context, error: string, message: string, status: ContentfulStatusCode) {
+  return c.json({ error, message, requestId: (c as any).get('requestId') as string | undefined }, status);
+}
 
 const downloads = new Hono();
 
@@ -69,56 +75,33 @@ downloads.get('/:productSlug', async (c) => {
 
   // Token is required — no email fallback.
   if (!token) {
-    return c.json(
-      { error: 'UNAUTHORIZED', message: 'A valid download token is required.' },
-      401
-    );
+    return dlError(c, 'UNAUTHORIZED', 'A valid download token is required.', 401);
   }
 
-  // Validate token: existence + expiry check (single DB query).
   const tokenRecord = await purchaseService.validateDownloadToken(token);
   if (!tokenRecord) {
-    return c.json(
-      { error: 'UNAUTHORIZED', message: 'Download token is invalid or has expired.' },
-      401
-    );
+    return dlError(c, 'UNAUTHORIZED', 'Download token is invalid or has expired.', 401);
   }
 
-  // Get the product by slug to resolve the download_key.
   const product = await productService.getActiveProduct(productSlug);
   if (!product) {
-    return c.json(
-      { error: 'NOT_FOUND', message: 'Product not found' },
-      404
-    );
+    return dlError(c, 'NOT_FOUND', 'Product not found', 404);
   }
 
-  // Cross-check: the token must belong to this product.
-  // This prevents a token issued for product A from downloading product B.
   if (tokenRecord.product_id !== product.id) {
-    return c.json(
-      { error: 'FORBIDDEN', message: 'This token is not valid for the requested product.' },
-      403
-    );
+    return dlError(c, 'FORBIDDEN', 'This token is not valid for the requested product.', 403);
   }
 
   if (!product.download_key) {
-    return c.json(
-      { error: 'NOT_FOUND', message: 'No download available for this product' },
-      404
-    );
+    return dlError(c, 'NOT_FOUND', 'No download available for this product', 404);
   }
 
-  // Resolve the latest download file using semver-correct ordering.
   const filePath = resolveLatestDownload(product.download_key);
   if (!filePath) {
     console.error(
       `No download files found for product slug=${productSlug} download_key=${product.download_key}`
     );
-    return c.json(
-      { error: 'FILE_NOT_FOUND', message: 'Download file is not available. Please contact support.' },
-      500
-    );
+    return dlError(c, 'FILE_NOT_FOUND', 'Download file is not available. Please contact support.', 500);
   }
 
   try {
@@ -140,10 +123,7 @@ downloads.get('/:productSlug', async (c) => {
     });
   } catch (error) {
     console.error('Failed to serve download:', error);
-    return c.json(
-      { error: 'DOWNLOAD_FAILED', message: 'Failed to serve download. Please try again.' },
-      500
-    );
+    return dlError(c, 'DOWNLOAD_FAILED', 'Failed to serve download. Please try again.', 500);
   }
 });
 

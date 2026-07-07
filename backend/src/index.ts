@@ -1,12 +1,14 @@
 import { Hono } from 'hono';
 import { logger } from 'hono/logger';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { corsMiddleware } from './middleware/cors.js';
 import { requestId } from './middleware/request-id.js';
 import { securityHeaders, bodySizeLimit, rateLimit } from './middleware/security.js';
 import { sessionMiddleware } from './middleware/auth.js';
 import { testConnection, pool } from './db.js';
 import { config } from './config.js';
-import { auth } from './auth.js';
+import { initAuth, getAuth } from './auth.js';
 import products from './routes/products.js';
 import payments from './routes/payments.js';
 import webhooks from './routes/webhooks.js';
@@ -118,7 +120,7 @@ app.use('/api/auth/sign-in/email', async (c, next) => {
         const result = await pool.query('SELECT account_status FROM users WHERE email = $1', [email]);
         const status = result.rows[0]?.account_status;
         if (status && status !== 'ACTIVE') {
-          return c.json({ error: 'FORBIDDEN', message: 'Account is not active' }, 403);
+          return c.json({ error: 'FORBIDDEN', message: 'Account is not active', requestId: c.get('requestId') }, 403);
         }
       }
     } catch {
@@ -128,7 +130,7 @@ app.use('/api/auth/sign-in/email', async (c, next) => {
   await next();
 });
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {
-  return auth.handler(c.req.raw);
+  return getAuth().handler(c.req.raw);
 });
 
 // ── Route Groups ─────────────────────────────────────────────────
@@ -166,7 +168,7 @@ app.post('/api/csp-report', async (c) => {
 
 // ── 404 Fallback ─────────────────────────────────────────────────
 app.notFound((c) => {
-  return c.json({ error: 'NOT_FOUND', message: 'Route not found' }, 404);
+  return c.json({ error: 'NOT_FOUND', message: 'Route not found', requestId: c.get('requestId') }, 404);
 });
 
 // ── Global Error Handler ─────────────────────────────────────────
@@ -208,17 +210,34 @@ process.on('SIGINT', () => shutdown('SIGINT'));
 
 let server: { stop: () => void } | null = null;
 
+function getVersion(): string {
+  try {
+    const pkg = JSON.parse(readFileSync(join(import.meta.dir, '../package.json'), 'utf8')) as Record<string, unknown>;
+    return String(pkg.version ?? '0.0.0');
+  } catch {
+    return '0.0.0';
+  }
+}
+
 async function start() {
-  console.info('Starting Tarkify backend...');
-  console.info(`  NODE_ENV: ${config.nodeEnv}`);
-  console.info(`  Port:     ${config.port}`);
-  console.info(`  Frontend: ${config.frontendUrl}`);
+  const version = getVersion();
+  console.info(`Starting Tarkify backend v${version}...`);
+  console.info(`  Environment:  ${config.nodeEnv}`);
+  console.info(`  Port:         ${config.port}`);
+  console.info(`  Frontend URL: ${config.frontendUrl}`);
 
   try {
     await testConnection();
-    console.info('✓ Database connected');
   } catch (error) {
     console.error('✗ Failed to connect to database:', error);
+    process.exit(1);
+  }
+
+  try {
+    initAuth();
+    console.info('✓ Better Auth initialized');
+  } catch (error) {
+    console.error('✗ Failed to initialize Better Auth:', error);
     process.exit(1);
   }
 
@@ -232,7 +251,14 @@ async function start() {
     console.warn('⚠ Could not query migration state (migrations may not have run)');
   }
 
-  console.info(`✓ Starting server on port ${config.port}`);
+  try {
+    const { accessSync, constants } = await import('fs');
+    accessSync(config.storagePath, constants.R_OK | constants.W_OK);
+    console.info(`✓ Storage validated: ${config.storagePath}`);
+  } catch {
+    console.error(`✗ Storage directory is not accessible: ${config.storagePath}. Check that the directory exists and is writable.`);
+    process.exit(1);
+  }
 
   try {
     server = Bun.serve({

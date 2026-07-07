@@ -6,12 +6,18 @@
  */
 
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import * as productService from '../services/product.service.js';
 import * as razorpayService from '../services/razorpay.service.js';
 import * as purchaseService from '../services/purchase.service.js';
 import { config } from '../config.js';
 import { validateEmail } from '../communication/shared/validators.js';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { CreateOrderRequest, VerifyPaymentRequest } from '../types/index.js';
+
+function payError(c: Context, error: string, message: string, status: ContentfulStatusCode) {
+  return c.json({ error, message, requestId: (c as any).get('requestId') as string | undefined }, status);
+}
 
 const payments = new Hono();
 
@@ -32,39 +38,23 @@ payments.post('/create-order', async (c) => {
   try {
     body = await c.req.json<CreateOrderRequest>();
   } catch {
-    return c.json(
-      { error: 'BAD_REQUEST', message: 'Invalid JSON in request body' },
-      400
-    );
+    return payError(c, 'BAD_REQUEST', 'Invalid JSON in request body', 400);
   }
   const { productSlug, email: rawEmail } = body!;
 
-  // Validate required fields
   if (!productSlug || !rawEmail) {
-    return c.json(
-      { error: 'VALIDATION_ERROR', message: 'productSlug and email are required' },
-      400
-    );
+    return payError(c, 'VALIDATION_ERROR', 'productSlug and email are required', 400);
   }
 
-  // Normalise email before any use
   const email = purchaseService.normaliseEmail(rawEmail);
 
-  // Validate email format (after normalisation)
   if (!validateEmail(email)) {
-    return c.json(
-      { error: 'VALIDATION_ERROR', message: 'Invalid email address' },
-      400
-    );
+    return payError(c, 'VALIDATION_ERROR', 'Invalid email address', 400);
   }
 
-  // Validate product through ProductService
   const { valid, product, reason } = await productService.validateProduct(productSlug);
   if (!valid || !product) {
-    return c.json(
-      { error: 'INVALID_PRODUCT', message: reason || 'Product not available' },
-      400
-    );
+    return payError(c, 'INVALID_PRODUCT', reason || 'Product not available', 400);
   }
 
   // Determine if this is a logged-in user purchasing for themselves.
@@ -76,13 +66,7 @@ payments.post('/create-order', async (c) => {
   // Checks both user_id and guest_email paths.
   const alreadyOwns = await purchaseService.hasEntitlement(email, product.id, currentUserId);
   if (alreadyOwns) {
-    return c.json(
-      {
-        error: 'ALREADY_PURCHASED',
-        message: 'You already own this product. Download it from your confirmation email.',
-      },
-      409
-    );
+    return payError(c, 'ALREADY_PURCHASED', 'You already own this product. Download it from your confirmation email.', 409);
   }
 
   try {
@@ -110,13 +94,7 @@ payments.post('/create-order', async (c) => {
 
     if (!purchase) {
       console.warn(`Duplicate purchase attempt blocked: email=${email} product=${productSlug}`);
-      return c.json(
-        {
-          error: 'ALREADY_PURCHASED',
-          message: 'A recent purchase is already in progress for this email and product. If you abandoned a previous checkout, please wait 30 minutes and try again.',
-        },
-        409
-      );
+      return payError(c, 'ALREADY_PURCHASED', 'A recent purchase is already in progress for this email and product. If you abandoned a previous checkout, please wait 30 minutes and try again.', 409);
     }
 
     return c.json({
@@ -128,10 +106,7 @@ payments.post('/create-order', async (c) => {
     });
   } catch (error) {
     console.error('Failed to create order:', error);
-    return c.json(
-      { error: 'ORDER_CREATION_FAILED', message: 'Failed to create payment order. Please try again.' },
-      500
-    );
+    return payError(c, 'ORDER_CREATION_FAILED', 'Failed to create payment order. Please try again.', 500);
   }
 });
 
@@ -150,23 +125,14 @@ payments.post('/verify', async (c) => {
   try {
     body = await c.req.json<VerifyPaymentRequest>();
   } catch {
-    return c.json(
-      { error: 'BAD_REQUEST', message: 'Invalid JSON in request body' },
-      400
-    );
+    return payError(c, 'BAD_REQUEST', 'Invalid JSON in request body', 400);
   }
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body!;
 
-  // Validate required fields
   if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
-    return c.json(
-      { error: 'VALIDATION_ERROR', message: 'Missing required payment verification fields' },
-      400
-    );
+    return payError(c, 'VALIDATION_ERROR', 'Missing required payment verification fields', 400);
   }
 
-  // Verify signature — this proves the payment came from Razorpay.
-  // verifyPaymentSignature now safely returns false on malformed input.
   const isValid = razorpayService.verifyPaymentSignature(
     razorpay_order_id,
     razorpay_payment_id,
@@ -175,19 +141,12 @@ payments.post('/verify', async (c) => {
 
   if (!isValid) {
     console.error('Payment signature verification failed for order:', razorpay_order_id);
-    return c.json(
-      { error: 'VERIFICATION_FAILED', message: 'Payment verification failed. Contact support if payment was deducted.' },
-      400
-    );
+    return payError(c, 'VERIFICATION_FAILED', 'Payment verification failed. Contact support if payment was deducted.', 400);
   }
 
-  // Find the purchase record first to get product context.
   const purchase = await purchaseService.getPurchaseByOrderId(razorpay_order_id);
   if (!purchase) {
-    return c.json(
-      { error: 'ORDER_NOT_FOUND', message: 'No matching order found for this payment' },
-      400
-    );
+    return payError(c, 'ORDER_NOT_FOUND', 'No matching order found for this payment', 400);
   }
 
   try {
@@ -199,10 +158,7 @@ payments.post('/verify', async (c) => {
     );
 
     if (!updatedPurchase) {
-      return c.json(
-        { error: 'COMPLETION_FAILED', message: 'Failed to complete purchase' },
-        500
-      );
+      return payError(c, 'COMPLETION_FAILED', 'Failed to complete purchase', 500);
     }
 
     // Issue a download token. Look for an existing active token first
@@ -233,10 +189,7 @@ payments.post('/verify', async (c) => {
     });
   } catch (error) {
     console.error('Failed to complete purchase for order:', razorpay_order_id, error);
-    return c.json(
-      { error: 'COMPLETION_FAILED', message: 'Failed to complete purchase. Please contact support.' },
-      500
-    );
+    return payError(c, 'COMPLETION_FAILED', 'Failed to complete purchase. Please contact support.', 500);
   }
 });
 

@@ -1,10 +1,16 @@
 import { Hono } from 'hono';
+import type { Context } from 'hono';
 import { scrypt } from 'node:crypto';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import * as userService from './service.js';
 import * as userRepository from './repository.js';
 import * as auditService from '../audit/service.js';
 import { query } from '../db.js';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
+
+function userError(c: Context, error: string, message: string, status: ContentfulStatusCode) {
+  return c.json({ error, message, requestId: (c as any).get('requestId') as string | undefined }, status);
+}
 
 const SCRYPT_CONFIG = { N: 16384, r: 16, p: 1, dkLen: 64 };
 
@@ -34,12 +40,12 @@ users.use('*', requireAuth);
 users.get('/me', async (c) => {
   const authUser = c.get('user');
   if (!authUser) {
-    return c.json({ error: 'UNAUTHORIZED', message: 'Authentication required' }, 401);
+    return userError(c, 'UNAUTHORIZED', 'Authentication required', 401);
   }
 
   const result = await userService.getProfile(authUser.id);
   if (!result) {
-    return c.json({ error: 'NOT_FOUND', message: 'User not found' }, 404);
+    return userError(c, 'NOT_FOUND', 'User not found', 404);
   }
 
   const { profile } = result;
@@ -57,14 +63,14 @@ users.get('/me', async (c) => {
 users.put('/me', async (c) => {
   const authUser = c.get('user');
   if (!authUser) {
-    return c.json({ error: 'UNAUTHORIZED', message: 'Authentication required' }, 401);
+    return userError(c, 'UNAUTHORIZED', 'Authentication required', 401);
   }
 
   let body: Record<string, unknown>;
   try {
     body = await c.req.json();
   } catch {
-    return c.json({ error: 'BAD_REQUEST', message: 'Invalid JSON in request body' }, 400);
+    return userError(c, 'BAD_REQUEST', 'Invalid JSON in request body', 400);
   }
 
   try {
@@ -74,7 +80,7 @@ users.put('/me', async (c) => {
     });
 
     if (!result) {
-      return c.json({ error: 'NOT_FOUND', message: 'User not found' }, 404);
+      return userError(c, 'NOT_FOUND', 'User not found', 404);
     }
 
     const { profile } = result;
@@ -90,7 +96,7 @@ users.put('/me', async (c) => {
     });
   } catch (err) {
     if (err instanceof Error) {
-      return c.json({ error: 'VALIDATION_ERROR', message: err.message }, 400);
+      return userError(c, 'VALIDATION_ERROR', err.message, 400);
     }
     throw err;
   }
@@ -99,12 +105,12 @@ users.put('/me', async (c) => {
 users.get('/preferences', async (c) => {
   const authUser = c.get('user');
   if (!authUser) {
-    return c.json({ error: 'UNAUTHORIZED', message: 'Authentication required' }, 401);
+    return userError(c, 'UNAUTHORIZED', 'Authentication required', 401);
   }
 
   const prefs = await userService.getPreferences(authUser.id);
   if (!prefs) {
-    return c.json({ error: 'NOT_FOUND', message: 'User not found' }, 404);
+    return userError(c, 'NOT_FOUND', 'User not found', 404);
   }
 
   return c.json({ preferences: prefs });
@@ -113,26 +119,26 @@ users.get('/preferences', async (c) => {
 users.put('/preferences', async (c) => {
   const authUser = c.get('user');
   if (!authUser) {
-    return c.json({ error: 'UNAUTHORIZED', message: 'Authentication required' }, 401);
+    return userError(c, 'UNAUTHORIZED', 'Authentication required', 401);
   }
 
   let body: Record<string, unknown>;
   try {
     body = await c.req.json();
   } catch {
-    return c.json({ error: 'BAD_REQUEST', message: 'Invalid JSON in request body' }, 400);
+    return userError(c, 'BAD_REQUEST', 'Invalid JSON in request body', 400);
   }
 
   try {
     const prefs = await userService.updatePreferences(authUser.id, body);
     if (!prefs) {
-      return c.json({ error: 'NOT_FOUND', message: 'User not found' }, 404);
+      return userError(c, 'NOT_FOUND', 'User not found', 404);
     }
 
     return c.json({ message: 'Preferences updated', preferences: prefs });
   } catch (err) {
     if (err instanceof Error) {
-      return c.json({ error: 'VALIDATION_ERROR', message: err.message }, 400);
+      return userError(c, 'VALIDATION_ERROR', err.message, 400);
     }
     throw err;
   }
@@ -141,7 +147,7 @@ users.put('/preferences', async (c) => {
 users.get('/touch', async (c) => {
   const authUser = c.get('user');
   if (!authUser) {
-    return c.json({ error: 'UNAUTHORIZED', message: 'Authentication required' }, 401);
+    return userError(c, 'UNAUTHORIZED', 'Authentication required', 401);
   }
 
   await userService.touchActivity(authUser.id);
@@ -151,22 +157,22 @@ users.get('/touch', async (c) => {
 users.post('/delete-account', async (c) => {
   const authUser = c.get('user');
   if (!authUser) {
-    return c.json({ error: 'UNAUTHORIZED', message: 'Authentication required' }, 401);
+    return userError(c, 'UNAUTHORIZED', 'Authentication required', 401);
   }
 
   if (authUser.accountStatus !== 'ACTIVE') {
-    return c.json({ error: 'FORBIDDEN', message: 'Account is not active' }, 403);
+    return userError(c, 'FORBIDDEN', 'Account is not active', 403);
   }
 
   let body: { password?: string };
   try {
     body = await c.req.json();
   } catch {
-    return c.json({ error: 'BAD_REQUEST', message: 'Invalid JSON in request body' }, 400);
+    return userError(c, 'BAD_REQUEST', 'Invalid JSON in request body', 400);
   }
 
   if (!body.password) {
-    return c.json({ error: 'BAD_REQUEST', message: 'Password is required' }, 400);
+    return userError(c, 'BAD_REQUEST', 'Password is required', 400);
   }
 
   try {
@@ -177,12 +183,12 @@ users.post('/delete-account', async (c) => {
 
     const storedHash = accountResult.rows[0]?.password;
     if (!storedHash) {
-      return c.json({ error: 'INTERNAL_ERROR', message: 'No credential account found' }, 500);
+      return userError(c, 'INTERNAL_ERROR', 'No credential account found', 500);
     }
 
     const passwordValid = await verifyPassword(storedHash, body.password);
     if (!passwordValid) {
-      return c.json({ error: 'INVALID_PASSWORD', message: 'Current password is incorrect' }, 403);
+      return userError(c, 'INVALID_PASSWORD', 'Current password is incorrect', 403);
     }
 
     await userRepository.changeAccountStatus(authUser.id, 'DELETED');
@@ -196,7 +202,7 @@ users.post('/delete-account', async (c) => {
     return c.json({ message: 'Account deleted successfully' });
   } catch (err) {
     console.error('Failed to delete account:', err);
-    return c.json({ error: 'INTERNAL_ERROR', message: 'Failed to delete account' }, 500);
+    return userError(c, 'INTERNAL_ERROR', 'Failed to delete account', 500);
   }
 });
 
@@ -205,20 +211,20 @@ users.post('/reactivate', requireRole('admin', 'super_admin'), async (c) => {
   try {
     body = await c.req.json();
   } catch {
-    return c.json({ error: 'BAD_REQUEST', message: 'Invalid JSON in request body' }, 400);
+    return userError(c, 'BAD_REQUEST', 'Invalid JSON in request body', 400);
   }
 
   if (!body.userId) {
-    return c.json({ error: 'BAD_REQUEST', message: 'userId is required' }, 400);
+    return userError(c, 'BAD_REQUEST', 'userId is required', 400);
   }
 
   const user = await userRepository.getUserById(body.userId);
   if (!user) {
-    return c.json({ error: 'NOT_FOUND', message: 'User not found' }, 404);
+    return userError(c, 'NOT_FOUND', 'User not found', 404);
   }
 
   if (user.account_status !== 'DELETED') {
-    return c.json({ error: 'BAD_REQUEST', message: 'Account is not deleted' }, 400);
+    return userError(c, 'BAD_REQUEST', 'Account is not deleted', 400);
   }
 
   await userRepository.changeAccountStatus(body.userId, 'ACTIVE');

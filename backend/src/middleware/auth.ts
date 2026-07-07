@@ -1,6 +1,6 @@
 import type { Context, Next } from "hono";
 import { z } from "zod";
-import { auth } from "../auth.js";
+import { getAuth } from "../auth.js";
 import * as userRepository from "../users/repository.js";
 
 export type AuthUser = {
@@ -60,9 +60,19 @@ const authSessionSchema = z.object({
 }).passthrough();
 
 export async function sessionMiddleware(c: Context, next: Next) {
-  const session = await auth.api.getSession({
-    headers: c.req.raw.headers,
-  });
+  let session;
+  try {
+    const auth = getAuth();
+    session = await auth.api.getSession({
+      headers: c.req.raw.headers,
+    });
+  } catch (err) {
+    console.error("Failed to get Better Auth session:", err);
+    c.set("user", null);
+    c.set("session", null);
+    await next();
+    return;
+  }
 
   if (!session) {
     c.set("user", null);
@@ -121,7 +131,11 @@ export async function sessionMiddleware(c: Context, next: Next) {
 export async function requireAuth(c: Context, next: Next) {
   const user = c.get("user");
   if (!user) {
-    return c.json({ error: "UNAUTHORIZED", message: "Authentication required" }, 401);
+    return c.json({
+      error: "UNAUTHORIZED",
+      message: "Authentication required",
+      requestId: c.get("requestId") as string | undefined,
+    }, 401);
   }
   await next();
 }
@@ -130,10 +144,18 @@ export function requireRole(...roles: string[]) {
   return async function roleMiddleware(c: Context, next: Next) {
     const user = c.get("user");
     if (!user) {
-      return c.json({ error: "UNAUTHORIZED", message: "Authentication required" }, 401);
+      return c.json({
+        error: "UNAUTHORIZED",
+        message: "Authentication required",
+        requestId: c.get("requestId") as string | undefined,
+      }, 401);
     }
     if (!roles.includes(user.role)) {
-      return c.json({ error: "FORBIDDEN", message: "Insufficient permissions" }, 403);
+      return c.json({
+        error: "FORBIDDEN",
+        message: "Insufficient permissions",
+        requestId: c.get("requestId") as string | undefined,
+      }, 403);
     }
     await next();
   };

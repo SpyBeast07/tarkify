@@ -10,6 +10,7 @@
  */
 
 import { Hono } from 'hono';
+import { errorResponse } from '../lib/response.js';
 import * as productService from '../services/product.service.js';
 import type { ProductResponse } from '../types/index.js';
 
@@ -41,10 +42,7 @@ products.get('/:slug', async (c) => {
   const product = await productService.getActiveProduct(slug);
 
   if (!product) {
-    return c.json(
-      { error: 'NOT_FOUND', message: 'Product not found' },
-      404
-    );
+    return errorResponse(c, 'NOT_FOUND', 'Product not found', 404);
   }
 
   const response: ProductResponse = {
