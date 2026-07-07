@@ -1,0 +1,9 @@
+ALTER TABLE session
+  ADD COLUMN IF NOT EXISTS device_id TEXT,
+  ADD COLUMN IF NOT EXISTS device_name TEXT,
+  ADD COLUMN IF NOT EXISTS device_type TEXT,
+  ADD COLUMN IF NOT EXISTS browser TEXT,
+  ADD COLUMN IF NOT EXISTS os TEXT,
+  ADD COLUMN IF NOT EXISTS last_seen TIMESTAMPTZ;
+
+CREATE INDEX IF NOT EXISTS idx_session_device_id ON session(device_id);

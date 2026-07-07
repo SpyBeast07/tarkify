@@ -11,6 +11,10 @@
     type ApiErrorBody,
   } from '$lib/api/account';
   import type { AuthState } from '$lib/context/auth.svelte';
+  import SectionCard from '$lib/components/ui/SectionCard.svelte';
+  import StateCard from '$lib/components/ui/StateCard.svelte';
+  import Skeleton from '$lib/components/ui/Skeleton.svelte';
+  import Alert from '$lib/components/ui/Alert.svelte';
 
   const authState = getContext<AuthState>('auth');
 
@@ -71,29 +75,25 @@
 </script>
 
 {#if loading}
-  <div class="dashboard-skeleton" aria-hidden="true">
-    <div class="skeleton-card"></div>
-    <div class="skeleton-row">
-      <div class="skeleton-stat"></div>
-      <div class="skeleton-stat"></div>
-    </div>
-    <div class="skeleton-card tall"></div>
+  <Skeleton variant="card" />
+  <div class="skeleton-row" aria-hidden="true">
+    <Skeleton variant="card" />
+    <Skeleton variant="card" />
   </div>
+  <div class="skeleton-card tall" aria-hidden="true"></div>
 {:else if error}
-  <div class="state-card error" role="alert">
-    <AlertTriangle size={24} />
-    <p>{error}</p>
+  <StateCard type="error" icon={AlertTriangle} message={error}>
     <button class="btn btn-primary btn-sm" onclick={load}>
       <RefreshCw size={16} />
       Retry
     </button>
-  </div>
+  </StateCard>
 {:else if data}
   <div class="dashboard" aria-live="polite">
     {#if authState.user && !authState.user.emailVerified}
       <div class="verify-banner glass">
         <div class="verify-banner-icon">
-          <Mail size={24} />
+          <Mail size={24} aria-hidden="true" />
         </div>
         <div class="verify-banner-text">
           <h3>Verify Your Email</h3>
@@ -102,7 +102,7 @@
         <div class="verify-banner-action">
           {#if verificationSent}
             <span class="verify-sent">
-              <CheckCircle size={16} />
+              <CheckCircle size={16} aria-hidden="true" />
               Verification email sent
             </span>
           {:else}
@@ -117,7 +117,7 @@
         </div>
       </div>
       {#if verificationError}
-        <div class="form-alert form-alert-error" role="alert">{verificationError}</div>
+        <Alert type="error">{verificationError}</Alert>
       {/if}
     {/if}
 
@@ -125,11 +125,11 @@
       <h2>Welcome back{data.summary.name ? `, ${data.summary.name}` : ''}!</h2>
       <div class="welcome-meta">
         <span class="welcome-meta-item">
-          <Calendar size={14} />
+          <Calendar size={14} aria-hidden="true" />
           Member since {formatDate(data.memberSince)}
         </span>
         <span class="welcome-meta-item">
-          <CheckCircle size={14} />
+          <CheckCircle size={14} aria-hidden="true" />
           {data.summary.accountStatus}
         </span>
       </div>
@@ -138,7 +138,7 @@
     <div class="stats-row">
       <div class="stat-card glass">
         <div class="stat-icon purchases">
-          <Package size={22} />
+          <Package size={22} aria-hidden="true" />
         </div>
         <div class="stat-info">
           <span class="stat-value">{data.totalPurchases}</span>
@@ -147,7 +147,7 @@
       </div>
       <div class="stat-card glass">
         <div class="stat-icon downloads">
-          <Download size={22} />
+           <Download size={22} aria-hidden="true" />
         </div>
         <div class="stat-info">
           <span class="stat-value">{data.activeDownloads}</span>
@@ -157,11 +157,7 @@
     </div>
 
     {#if data.recentActivity.length > 0}
-      <div class="section-card glass">
-        <div class="section-card-header">
-          <Clock size={18} />
-          <h3>Recent Activity</h3>
-        </div>
+      <SectionCard icon={Clock} title="Recent Activity">
         <div class="activity-list">
           {#each data.recentActivity as item}
             <a href="/account/purchases/{item.purchaseId}" class="activity-item">
@@ -173,18 +169,14 @@
               </div>
               <div class="activity-right">
                 <span class="activity-date">{formatDate(item.createdAt)}</span>
-                <ArrowRight size={14} />
+                <ArrowRight size={14} aria-hidden="true" />
               </div>
             </a>
           {/each}
         </div>
-      </div>
+      </SectionCard>
     {:else}
-      <div class="state-card empty glass">
-        <Package size={32} />
-        <h3>No purchases yet</h3>
-        <p>Your recent activity will appear here once you make a purchase.</p>
-      </div>
+      <StateCard type="empty" icon={Package} title="No purchases yet" message="Your recent activity will appear here once you make a purchase." />
     {/if}
   </div>
 {/if}
@@ -196,10 +188,11 @@
     gap: 1.25rem;
   }
 
-  /* ── Welcome Card ── */
   .welcome-card {
     padding: 1.5rem 1.75rem;
     border-radius: 20px;
+    border: 1px solid var(--color-glass-border);
+    backdrop-filter: var(--glass-blur);
   }
 
   .welcome-card h2 {
@@ -223,7 +216,6 @@
     opacity: 0.65;
   }
 
-  /* ── Stats ── */
   .stats-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -233,15 +225,24 @@
   .stat-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    padding: 1.25rem;
+    gap: 1.25rem;
+    padding: 1.5rem;
     border-radius: 16px;
+    border: 1px solid var(--color-glass-border);
+    backdrop-filter: var(--glass-blur);
+    transition: var(--transition-smooth);
+  }
+
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(39, 59, 9, 0.08);
+    border-color: rgba(123, 144, 75, 0.2);
   }
 
   .stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -254,17 +255,18 @@
   }
 
   .stat-icon.downloads {
-    background: rgba(88, 100, 29, 0.15);
-    color: var(--color-secondary-green);
+    background: rgba(59, 130, 246, 0.12);
+    color: #3b82f6;
   }
 
   .stat-info {
     display: flex;
     flex-direction: column;
+    gap: 0.125rem;
   }
 
   .stat-value {
-    font-size: 1.75rem;
+    font-size: 1.85rem;
     font-weight: 700;
     font-family: var(--font-heading);
     line-height: 1.2;
@@ -272,35 +274,14 @@
 
   .stat-label {
     font-size: 0.8rem;
-    opacity: 0.6;
-  }
-
-  /* ── Activity ── */
-  .section-card {
-    padding: 1.25rem;
-    border-radius: 20px;
-  }
-
-  .section-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    color: var(--color-primary-green);
-  }
-
-  .section-card-header h3 {
-    font-family: var(--font-heading);
-    font-size: 1rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--color-text);
+    opacity: 0.55;
   }
 
   .activity-list {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    margin-top: 0.5rem;
   }
 
   .activity-item {
@@ -308,9 +289,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.75rem 0.875rem;
+    padding: 0.875rem 1rem;
     border-radius: 12px;
-    border: none;
+    border: 1px solid transparent;
     background: none;
     color: var(--color-text);
     cursor: pointer;
@@ -318,11 +299,12 @@
     width: 100%;
     font-family: inherit;
     text-decoration: none;
-    transition: background 0.2s;
+    transition: var(--transition-smooth);
   }
 
   .activity-item:hover {
     background: var(--color-glass-bg);
+    border-color: rgba(123, 144, 75, 0.1);
   }
 
   .activity-info {
@@ -353,7 +335,6 @@
     opacity: 0.5;
   }
 
-  /* ── Verification Banner ── */
   .verify-banner {
     display: flex;
     align-items: center;
@@ -362,6 +343,7 @@
     border-radius: 16px;
     border: 1px solid rgba(251, 191, 36, 0.3);
     background: rgba(251, 191, 36, 0.06);
+    backdrop-filter: var(--glass-blur);
   }
 
   .verify-banner-icon {
@@ -405,98 +387,17 @@
     color: var(--color-primary-green);
   }
 
-  .form-alert {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
-  }
-
-  .form-alert-error {
-    background-color: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #ef4444;
-  }
-
-  /* ── States ── */
-  .state-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 2.5rem 2rem;
-    border-radius: 20px;
-    text-align: center;
-  }
-
-  .state-card.error {
-    color: #ef4444;
-  }
-
-  .state-card.empty {
-    opacity: 0.7;
-  }
-
-  .state-card h3 {
-    font-family: var(--font-heading);
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 0;
-  }
-
-  .state-card p {
-    font-size: 0.9rem;
-    margin: 0;
-    max-width: 360px;
-  }
-
-  .error .btn {
-    margin-top: 0.5rem;
-  }
-
-  /* ── Skeleton ── */
-  .dashboard-skeleton {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .skeleton-card {
-    height: 80px;
-    border-radius: 20px;
-    background: var(--color-glass-bg);
-    animation: shimmer 1.5s infinite;
-  }
-
-  .skeleton-card.tall {
-    height: 180px;
-  }
-
   .skeleton-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
   }
 
-  .skeleton-stat {
-    height: 80px;
-    border-radius: 16px;
+  .skeleton-card.tall {
+    height: 180px;
+    border-radius: 20px;
     background: var(--color-glass-bg);
     animation: shimmer 1.5s infinite;
-  }
-
-  @keyframes shimmer {
-    0% { opacity: 0.5; }
-    50% { opacity: 0.8; }
-    100% { opacity: 0.5; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .dashboard-skeleton * {
-      animation: none;
-    }
   }
 
   @media (max-width: 640px) {

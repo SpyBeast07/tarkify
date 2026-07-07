@@ -11,6 +11,9 @@
   import type { ApiErrorBody, ListedSession } from '$lib/api/auth';
   import type { AuthState } from '$lib/context/auth.svelte';
   import type { ToastState } from '$lib/context/toast.svelte';
+  import SectionCard from '$lib/components/ui/SectionCard.svelte';
+  import Alert from '$lib/components/ui/Alert.svelte';
+  import { getDeviceId } from '$lib/utils/device';
 
   const authState = getContext<AuthState>('auth');
   const toast = getContext<ToastState>('toast');
@@ -80,10 +83,12 @@
   let sessionsError = $state('');
   let revokingToken = $state<string | null>(null);
   let revokingAll = $state(false);
+  let currentDeviceId = $state('');
 
   async function loadSessions() {
     sessionsLoading = true;
     sessionsError = '';
+    currentDeviceId = getDeviceId();
     try {
       const result = await listSessions();
       if ('error' in result) {
@@ -137,20 +142,29 @@
     }
   }
 
-  function parseUserAgent(ua: string | null): { browser: string; os: string } {
-    if (!ua) return { browser: 'Unknown', os: 'Unknown' };
-    let browser = 'Unknown';
-    let os = 'Unknown';
-    if (ua.includes('Firefox')) browser = 'Firefox';
-    else if (ua.includes('Chrome')) browser = 'Chrome';
-    else if (ua.includes('Safari')) browser = 'Safari';
-    else if (ua.includes('Edge')) browser = 'Edge';
-    if (ua.includes('Windows')) os = 'Windows';
-    else if (ua.includes('Mac')) os = 'macOS';
-    else if (ua.includes('Linux')) os = 'Linux';
-    else if (ua.includes('Android')) os = 'Android';
-    else if (ua.includes('iOS') || ua.includes('iPhone')) os = 'iOS';
-    return { browser, os };
+  function sessionBrowser(session: ListedSession): string {
+    return session.browser || 'Unknown';
+  }
+
+  function sessionOs(session: ListedSession): string {
+    return session.os || 'Unknown';
+  }
+
+  function sessionDeviceName(session: ListedSession): string {
+    if (session.deviceName) return session.deviceName;
+    return `${sessionBrowser(session)} on ${sessionOs(session)}`;
+  }
+
+  function sessionLastActivity(session: ListedSession): string {
+    const ts = session.lastSeen || session.updatedAt;
+    const diff = Date.now() - new Date(ts).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
   }
 
   function timeAgo(iso: string): string {
@@ -212,19 +226,9 @@
 </script>
 
 <div class="settings-page">
-  <!-- ── Change Password ── -->
-  <div class="section-card glass">
-    <div class="section-card-header">
-      <Lock size={20} aria-hidden="true" />
-      <h2>Change Password</h2>
-    </div>
-    <p class="section-card-desc">Update your password. Choose a strong, unique password.</p>
-
+  <SectionCard icon={Lock} title="Change Password" description="Update your password. Choose a strong, unique password.">
     {#if passwordError}
-      <div class="form-alert form-alert-error" role="alert">
-        <AlertTriangle size={16} aria-hidden="true" />
-        {passwordError}
-      </div>
+      <Alert type="error">{passwordError}</Alert>
     {/if}
 
     <form onsubmit={handleChangePassword} novalidate>
@@ -301,23 +305,11 @@
         {changingPassword ? 'Updating...' : 'Update Password'}
       </button>
     </form>
-  </div>
+  </SectionCard>
 
-  <!-- ── Sessions ── -->
-  <div class="section-card glass">
-    <div class="section-card-header">
-      <KeyRound size={20} aria-hidden="true" />
-      <h2>Active Sessions</h2>
-    </div>
-    <p class="section-card-desc">
-      Manage your active sessions. Revoke any session you don't recognize.
-    </p>
-
+  <SectionCard icon={KeyRound} title="Active Sessions" description="Manage your active sessions. Revoke any session you don't recognize.">
     {#if sessionsError}
-      <div class="form-alert form-alert-error" role="alert">
-        <AlertTriangle size={16} aria-hidden="true" />
-        {sessionsError}
-      </div>
+      <Alert type="error">{sessionsError}</Alert>
     {/if}
 
     {#if sessions.length > 1}
@@ -340,24 +332,35 @@
     {:else}
       <div class="sessions-list" aria-live="polite">
         {#each sessions as session (session.id)}
-          {@const info = parseUserAgent(session.userAgent)}
-          {@const isCurrent = session.token === authState.currentSessionToken}
+          {@const devName = sessionDeviceName(session)}
+          {@const browser = sessionBrowser(session)}
+          {@const os = sessionOs(session)}
+          {@const isCurrent = session.token === authState.currentSessionToken || (currentDeviceId && session.deviceId === currentDeviceId)}
+          {@const iconSize = session.deviceType === 'mobile' ? 18 : 20}
           <div class="session-card" class:current-session={isCurrent}>
             <div class="session-icon">
-              {#if info.os === 'macOS' || info.os === 'Windows' || info.os === 'Linux'}
-                <Monitor size={20} aria-hidden="true" />
+              {#if session.deviceType === 'mobile'}
+                <Smartphone size={iconSize} aria-hidden="true" />
+              {:else if session.deviceType === 'tablet'}
+                <Smartphone size={iconSize} aria-hidden="true" />
               {:else}
-                <Smartphone size={20} aria-hidden="true" />
+                <Monitor size={iconSize} aria-hidden="true" />
               {/if}
             </div>
             <div class="session-info">
               <div class="session-meta">
-                <span class="session-browser">{info.browser} on {info.os}</span>
+                <span class="session-browser">{devName}</span>
                 {#if isCurrent}
                   <span class="current-badge">Current</span>
                 {/if}
               </div>
               <div class="session-details">
+                {#if browser !== 'Unknown'}
+                  <span class="session-detail">
+                    <Globe size={12} aria-hidden="true" />
+                    {browser} &middot; {os}
+                  </span>
+                {/if}
                 {#if session.ipAddress}
                   <span class="session-detail">
                     <Globe size={12} aria-hidden="true" />
@@ -370,13 +373,13 @@
                 </span>
                 <span class="session-detail">
                   <RefreshCw size={12} aria-hidden="true" />
-                  Last activity {timeAgo(session.updatedAt)}
+                  Active {sessionLastActivity(session)}
                 </span>
               </div>
             </div>
             <div class="session-action">
               {#if isCurrent}
-                <span class="current-label">Current</span>
+                <span class="current-label">Current session</span>
               {:else}
                 <button
                   class="btn btn-outline btn-xs"
@@ -398,16 +401,9 @@
         Refresh sessions
       </button>
     {/if}
-  </div>
+  </SectionCard>
 
-  <!-- ── Delete Account ── -->
-  <div class="section-card glass">
-    <div class="section-card-header">
-      <SettingsIcon size={20} aria-hidden="true" />
-      <h2>Account Settings</h2>
-    </div>
-    <p class="section-card-desc">Manage your account settings and data.</p>
-
+  <SectionCard icon={SettingsIcon} title="Account Settings" description="Manage your account settings and data.">
     <div class="delete-account-section">
       <div class="delete-account-warning glass">
         <div class="delete-warning-icon">
@@ -426,17 +422,11 @@
       </div>
 
       {#if deleteError}
-        <div class="form-alert form-alert-error" role="alert">
-        <AlertTriangle size={16} aria-hidden="true" />
-        {deleteError}
-        </div>
+        <Alert type="error">{deleteError}</Alert>
       {/if}
 
       {#if deleteSuccess}
-        <div class="success-alert">
-        <CheckCircle size={20} aria-hidden="true" />
-        <span>Account deleted. Redirecting...</span>
-        </div>
+        <Alert type="success">Account deleted. Redirecting...</Alert>
       {:else}
         <form onsubmit={handleDeleteAccount} novalidate>
           <div class="form-group">
@@ -465,7 +455,7 @@
         </form>
       {/if}
     </div>
-  </div>
+  </SectionCard>
 </div>
 
 <style>
@@ -473,51 +463,6 @@
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
-  }
-
-  .section-card {
-    padding: 1.5rem;
-    border-radius: 20px;
-  }
-
-  .section-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
-    color: var(--color-primary-green);
-  }
-
-  .section-card-header h2 {
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--color-text);
-  }
-
-  .section-card-desc {
-    font-size: 0.85rem;
-    opacity: 0.6;
-    margin: 0 0 1.25rem;
-  }
-
-  .section-card :global(form) {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-  }
-
-  .form-label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    opacity: 0.8;
   }
 
   .error-text {
@@ -549,36 +494,6 @@
     opacity: 1;
   }
 
-  .form-alert {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-
-  .form-alert-error {
-    background-color: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #ef4444;
-  }
-
-  .success-alert {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    background-color: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    color: #22c55e;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-
-  /* ── Sessions ── */
   .revoke-all-wrap {
     margin-bottom: 0.75rem;
   }
@@ -600,23 +515,29 @@
   .session-card {
     display: flex;
     align-items: center;
-    gap: 0.875rem;
-    padding: 0.875rem;
+    gap: 1rem;
+    padding: 1rem;
     border-radius: 14px;
     border: 1px solid var(--color-glass-border);
-    transition: border-color 0.2s;
+    background: var(--color-glass-bg);
+    backdrop-filter: var(--glass-blur);
+    transition: var(--transition-smooth);
+  }
+
+  .session-card:hover {
+    border-color: rgba(123, 144, 75, 0.15);
   }
 
   .session-card.current-session {
-    border-color: var(--color-primary-green);
-    background: rgba(34, 197, 94, 0.03);
+    border-color: var(--color-accent-green);
+    background: rgba(123, 144, 75, 0.06);
   }
 
   .session-icon {
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
     background: var(--color-glass-bg);
     display: flex;
     align-items: center;
@@ -642,12 +563,14 @@
   }
 
   .current-badge {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 600;
     padding: 0.125rem 0.5rem;
     border-radius: 6px;
-    background: var(--color-primary-green);
+    background: var(--color-accent-green);
     color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   .session-details {
@@ -674,7 +597,6 @@
     font-style: italic;
   }
 
-  /* ── Delete Account ── */
   .delete-account-section {
     margin-top: 1.5rem;
     padding-top: 1.5rem;
@@ -748,16 +670,20 @@
     cursor: pointer;
     color: #fff;
     background: #ef4444;
-    transition: background 0.2s, opacity 0.2s;
+    transition: var(--transition-smooth);
   }
 
   .btn-danger:hover {
     background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2);
   }
 
   .btn-danger:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 
   @media (max-width: 640px) {

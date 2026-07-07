@@ -9,6 +9,8 @@
   } from '$lib/api/account';
   import type { AuthState } from '$lib/context/auth.svelte';
   import type { ToastState } from '$lib/context/toast.svelte';
+  import StateCard from '$lib/components/ui/StateCard.svelte';
+  import Skeleton from '$lib/components/ui/Skeleton.svelte';
 
   const authState = getContext<AuthState>('auth');
   const toast = getContext<ToastState>('toast');
@@ -79,27 +81,18 @@
 </div>
 
 {#if loading && !data}
-  <div class="skeleton-list" aria-hidden="true">
-    {#each { length: 3 } as _}
-      <div class="skeleton-row-item"></div>
-    {/each}
-  </div>
+  <Skeleton variant="list" count={3} />
 {:else if error}
-  <div class="state-card error" role="alert">
-    <AlertTriangle size={24} />
-    <p>{error}</p>
+  <StateCard type="error" icon={AlertTriangle} message={error}>
     <button class="btn btn-primary btn-sm" onclick={load}>
       <RefreshCw size={16} />
       Retry
     </button>
-  </div>
+  </StateCard>
 {:else if data && data.downloads.length === 0}
-  <div class="state-card empty">
-    <Download size={32} />
-    <h3>No downloads available</h3>
-    <p>Products you purchase will appear here once your payment is confirmed.</p>
+  <StateCard type="empty" icon={Download} title="No downloads available" message="Products you purchase will appear here once your payment is confirmed.">
     <a href="/solutions" class="btn btn-primary">Browse Products</a>
-  </div>
+  </StateCard>
 {:else if data}
   <div class="downloads-list" aria-live="polite">
     {#each data.downloads as item (item.entitlement_id)}
@@ -140,32 +133,6 @@
 {/if}
 
 <style>
-  .page-header {
-    margin-bottom: 1rem;
-  }
-
-  .section-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
-    color: var(--color-primary-green);
-  }
-
-  .section-card-header h2 {
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--color-text);
-  }
-
-  .section-card-desc {
-    font-size: 0.85rem;
-    opacity: 0.6;
-    margin: 0;
-  }
-
   .downloads-list {
     display: flex;
     flex-direction: column;
@@ -178,13 +145,22 @@
     gap: 1rem;
     padding: 1rem 1.25rem;
     border-radius: 16px;
+    border: 1px solid var(--color-glass-border);
+    backdrop-filter: var(--glass-blur);
+    transition: var(--transition-smooth);
+  }
+
+  .download-card:hover {
+    border-color: rgba(123, 144, 75, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(39, 59, 9, 0.06);
   }
 
   .download-icon {
     flex-shrink: 0;
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
     background: rgba(123, 144, 75, 0.15);
     color: var(--color-primary-green);
     display: flex;
@@ -216,79 +192,23 @@
 
   .status-available,
   .status-pending {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.375rem;
     font-size: 0.8rem;
     font-weight: 500;
+    padding: 0.25rem 0.625rem;
+    border-radius: 8px;
   }
 
   .status-available {
-    color: #22c55e;
+    color: #16a34a;
+    background: rgba(22, 163, 74, 0.08);
   }
 
   .status-pending {
-    opacity: 0.6;
-  }
-
-  .state-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 2.5rem 2rem;
-    border-radius: 20px;
-    text-align: center;
-  }
-
-  .state-card.error {
-    color: #ef4444;
-  }
-
-  .state-card.empty {
-    opacity: 0.7;
-  }
-
-  .state-card h3 {
-    font-family: var(--font-heading);
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin: 0;
-  }
-
-  .state-card p {
-    font-size: 0.9rem;
-    margin: 0;
-    max-width: 360px;
-  }
-
-  .error .btn {
-    margin-top: 0.5rem;
-  }
-
-  .skeleton-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .skeleton-row-item {
-    height: 60px;
-    border-radius: 16px;
+    opacity: 0.65;
     background: var(--color-glass-bg);
-    animation: shimmer 1.5s infinite;
-  }
-
-  @keyframes shimmer {
-    0% { opacity: 0.5; }
-    50% { opacity: 0.8; }
-    100% { opacity: 0.5; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .skeleton-row-item {
-      animation: none;
-    }
   }
 
   @media (max-width: 640px) {

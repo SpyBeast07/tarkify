@@ -7,6 +7,7 @@ import * as userRepository from "./users/repository.js";
 import { linkPurchasesToUserByEmail } from "./purchase-linking/service.js";
 import * as auditService from "./audit/service.js";
 import * as emailService from "./email/service.js";
+import { pool } from "./db.js";
 
 const userHookSchema = z.object({
   id: z.string().optional(),
@@ -108,6 +109,14 @@ export function initAuth() {
         userAgent: "user_agent",
         createdAt: "created_at",
         updatedAt: "updated_at",
+      },
+      additionalFields: {
+        device_id: { type: "string", required: false },
+        device_name: { type: "string", required: false },
+        device_type: { type: "string", required: false },
+        browser: { type: "string", required: false },
+        os: { type: "string", required: false },
+        last_seen: { type: "string", required: false },
       },
       expiresIn: 2592000,
       updateAge: 86400,
@@ -219,6 +228,15 @@ export function initAuth() {
               );
             } catch (err) {
               console.error("Failed to update last_login_at:", err);
+            }
+          },
+        },
+        update: {
+          after: async (session) => {
+            try {
+              await pool.query('UPDATE session SET last_seen = NOW() WHERE id = $1', [session.id]);
+            } catch (err) {
+              console.error("Failed to update last_seen:", err);
             }
           },
         },

@@ -11,6 +11,10 @@
   } from '$lib/api/account';
   import { sendVerificationEmail } from '$lib/api/auth';
   import type { AuthState } from '$lib/context/auth.svelte';
+  import SectionCard from '$lib/components/ui/SectionCard.svelte';
+  import StateCard from '$lib/components/ui/StateCard.svelte';
+  import Skeleton from '$lib/components/ui/Skeleton.svelte';
+  import Alert from '$lib/components/ui/Alert.svelte';
 
   const authState = getContext<AuthState>('auth');
 
@@ -169,40 +173,24 @@
 </script>
 
 {#if loading}
-  <div class="dashboard-skeleton" aria-hidden="true">
-    <div class="skeleton-card"></div>
-    <div class="skeleton-card tall" style="margin-top: 1rem"></div>
-  </div>
+  <Skeleton variant="card" />
+  <Skeleton variant="card" class="tall" />
 {:else if error}
-  <div class="state-card error" role="alert">
-    <AlertTriangle size={24} />
-    <p>{error}</p>
+  <StateCard type="error" icon={AlertTriangle} message={error}>
     <button class="btn btn-primary btn-sm" onclick={load}>
       <RefreshCw size={16} />
       Retry
     </button>
-  </div>
+  </StateCard>
 {:else if profile}
   <div class="page-content" aria-live="polite">
-    <div class="section-card glass">
-      <div class="section-card-header">
-        <User size={20} />
-        <h2>Profile</h2>
-      </div>
-      <p class="section-card-desc">Manage your public profile information.</p>
-
+    <SectionCard icon={User} title="Profile" description="Manage your public profile information.">
       {#if saveSuccess}
-        <div class="success-alert" role="status">
-          <CheckCircle size={20} />
-          <span>Profile updated successfully.</span>
-        </div>
+        <Alert type="success">Profile updated successfully.</Alert>
       {/if}
 
       {#if saveError}
-        <div class="form-alert form-alert-error" role="alert">
-          <AlertTriangle size={16} />
-          {saveError}
-        </div>
+        <Alert type="error">{saveError}</Alert>
       {/if}
 
       <form onsubmit={handleSave} novalidate>
@@ -280,13 +268,9 @@
           {/if}
         </div>
       </form>
-    </div>
+    </SectionCard>
 
-    <div class="section-card glass">
-      <div class="section-card-header">
-        <User size={20} />
-        <h2>Account Info</h2>
-      </div>
+    <SectionCard icon={User} title="Account Info">
       <div class="info-list">
         <div class="info-item">
           <span class="info-label">Role</span>
@@ -311,7 +295,7 @@
           </div>
         {/if}
       </div>
-    </div>
+    </SectionCard>
   </div>
 {/if}
 
@@ -322,83 +306,9 @@
     gap: 1.25rem;
   }
 
-  .section-card {
-    padding: 1.5rem;
-    border-radius: 20px;
-  }
-
-  .section-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.25rem;
-    color: var(--color-primary-green);
-  }
-
-  .section-card-header h2 {
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--color-text);
-  }
-
-  .section-card-desc {
-    font-size: 0.85rem;
-    opacity: 0.6;
-    margin: 0 0 1.25rem;
-  }
-
-  .section-card :global(form) {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.375rem;
-  }
-
-  .form-label {
-    font-size: 0.85rem;
-    font-weight: 500;
-    opacity: 0.8;
-  }
-
   .input-readonly input:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-  }
-
-  .success-alert {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    background-color: rgba(34, 197, 94, 0.1);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    color: #22c55e;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-
-  .form-alert {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-
-  .form-alert-error {
-    background-color: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    color: #ef4444;
   }
 
   .verify-email-wrap {
@@ -416,40 +326,35 @@
     color: var(--color-primary-green);
   }
 
-  .verify-success {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    font-size: 0.8rem;
-    color: #22c55e;
+  .btn-text {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
   }
 
+  .btn-text:hover {
+    text-decoration: underline;
+  }
+
+  .btn-text:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .verify-success,
   .verify-verified {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
     font-size: 0.8rem;
     color: #22c55e;
-    margin-top: 0.375rem;
   }
 
-  .state-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 2.5rem 2rem;
-    border-radius: 20px;
-    text-align: center;
-  }
-
-  .state-card.error {
+  .error-text {
     color: #ef4444;
-  }
-
-  .state-card p {
-    font-size: 0.9rem;
-    margin: 0;
+    font-size: 0.8rem;
   }
 
   .info-list {
@@ -488,58 +393,8 @@
     padding-top: 0.5rem;
   }
 
-  .btn-outline {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.625rem 1rem;
-    border: 1px solid var(--color-glass-border);
-    border-radius: 10px;
-    background: transparent;
-    color: var(--color-text);
-    font-size: 0.85rem;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-  }
-
-  .btn-outline:hover:not(:disabled) {
-    background: var(--color-glass-bg);
-    border-color: var(--color-accent-green);
-  }
-
-  .btn-outline:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .dashboard-skeleton {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .skeleton-card {
-    height: 80px;
-    border-radius: 20px;
-    background: var(--color-glass-bg);
-    animation: shimmer 1.5s infinite;
-  }
-
-  .skeleton-card.tall {
+  :global(.tall) {
     height: 200px;
-  }
-
-  @keyframes shimmer {
-    0% { opacity: 0.5; }
-    50% { opacity: 0.8; }
-    100% { opacity: 0.5; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .dashboard-skeleton * {
-      animation: none;
-    }
   }
 
   @media (max-width: 640px) {

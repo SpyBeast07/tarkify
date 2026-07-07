@@ -78,7 +78,7 @@
       <nav class="breadcrumbs" aria-label="Breadcrumb">
         {#each breadcrumbs as crumb, i (crumb.href)}
           {#if i > 0}
-            <ChevronRight size={12} class="breadcrumb-sep" />
+            <ChevronRight size={12} class="breadcrumb-sep" aria-hidden="true" />
           {/if}
           {#if i < breadcrumbs.length - 1}
             <a href={crumb.href} class="breadcrumb-link">{crumb.label}</a>
@@ -170,6 +170,49 @@
     max-width: 720px;
   }
 
+  .account-content :global(input:not([type='checkbox']):not([type='radio'])),
+  .account-content :global(select) {
+    background: var(--color-glass-bg);
+    border: 1px solid var(--color-glass-border);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    color: var(--color-text);
+    font-family: var(--font-main);
+    backdrop-filter: var(--glass-blur);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    outline: none;
+  }
+
+  .account-content :global(input:not([type='checkbox']):not([type='radio']):-webkit-autofill) {
+    -webkit-box-shadow: 0 0 0 1000px var(--color-glass-bg) inset !important;
+    -webkit-text-fill-color: var(--color-text) !important;
+    caret-color: var(--color-text);
+  }
+
+  .account-content :global(input:not([type='checkbox']):not([type='radio']):focus),
+  .account-content :global(select:focus) {
+    border-color: var(--color-accent-green);
+    box-shadow: 0 0 0 3px rgba(123, 144, 75, 0.12);
+  }
+
+  .account-content :global(input.input-error:not([type='checkbox']):not([type='radio'])),
+  .account-content :global(select.input-error) {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+
+  .account-content :global(.input-with-icon input:not([type='checkbox']):not([type='radio'])),
+  .account-content :global(.input-with-icon select) {
+    padding-left: 3.25rem;
+  }
+
+  .account-content :global(.input-readonly input:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   .account-sidebar-skeleton {
     width: 220px;
     height: 300px;
@@ -188,12 +231,6 @@
     border-radius: 20px;
     background: var(--color-glass-bg);
     animation: shimmer 1.5s infinite;
-  }
-
-  @keyframes shimmer {
-    0% { opacity: 0.5; }
-    50% { opacity: 0.8; }
-    100% { opacity: 0.5; }
   }
 
   @media (max-width: 768px) {

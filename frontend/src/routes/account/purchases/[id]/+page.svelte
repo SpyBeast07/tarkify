@@ -10,6 +10,10 @@
   } from '$lib/api/account';
   import type { AuthState } from '$lib/context/auth.svelte';
   import type { ToastState } from '$lib/context/toast.svelte';
+  import SectionCard from '$lib/components/ui/SectionCard.svelte';
+  import StateCard from '$lib/components/ui/StateCard.svelte';
+  import Skeleton from '$lib/components/ui/Skeleton.svelte';
+  import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 
   const authState = getContext<AuthState>('auth');
   const toast = getContext<ToastState>('toast');
@@ -65,13 +69,6 @@
     return 'Pending';
   }
 
-  function statusClass(status: string): string {
-    if (status === 'paid') return 'status-paid';
-    if (status === 'refunded') return 'status-refunded';
-    if (status === 'failed') return 'status-failed';
-    return 'status-created';
-  }
-
   async function copyToClipboard(val: string, label: string) {
     try {
       await navigator.clipboard.writeText(val);
@@ -84,29 +81,22 @@
 
 <div class="detail-page">
   <a href="/account/purchases" class="back-btn">
-    <ArrowLeft size={16} />
+    <ArrowLeft size={16} aria-hidden="true" />
     Back to Purchases
   </a>
 
   {#if loading}
     <div class="skeleton-card tall" aria-hidden="true"></div>
   {:else if error}
-    <div class="state-card error" role="alert">
-      <AlertTriangle size={24} />
-      <p>{error}</p>
+    <StateCard type="error" icon={AlertTriangle} message={error}>
       <button class="btn btn-primary btn-sm" onclick={load}>
-        <RefreshCw size={16} />
+        <RefreshCw size={16} aria-hidden="true" />
         Retry
       </button>
-    </div>
+    </StateCard>
   {:else if purchase}
     {@const p = purchase}
-    <div class="section-card glass">
-      <div class="section-card-header">
-        <Receipt size={20} />
-        <h2>Purchase Details</h2>
-      </div>
-
+    <SectionCard icon={Receipt} title="Purchase Details">
       <div class="detail-grid">
         <div class="detail-field">
           <span class="detail-label">Product</span>
@@ -114,7 +104,7 @@
         </div>
         <div class="detail-field">
           <span class="detail-label">Status</span>
-          <span class="purchase-status {statusClass(p.status)}">{statusLabel(p.status)}</span>
+          <StatusBadge status={statusLabel(p.status)} />
         </div>
         <div class="detail-field">
           <span class="detail-label">Amount</span>
@@ -130,7 +120,7 @@
             <span class="detail-value mono">
               {p.razorpay_order_id}
               <button class="copy-btn" onclick={() => copyToClipboard(p.razorpay_order_id, 'Order ID')} aria-label="Copy order ID">
-                <Copy size={14} />
+                <Copy size={14} aria-hidden="true" />
               </button>
             </span>
           </div>
@@ -141,7 +131,7 @@
             <span class="detail-value mono">
               {p.razorpay_payment_id}
               <button class="copy-btn" onclick={() => { if (p.razorpay_payment_id) copyToClipboard(p.razorpay_payment_id, 'Payment ID'); }} aria-label="Copy payment ID">
-                <Copy size={14} />
+                <Copy size={14} aria-hidden="true" />
               </button>
             </span>
           </div>
@@ -159,12 +149,12 @@
       {#if p.status === 'paid'}
         <div class="detail-actions">
           <a href="/account/downloads" class="btn btn-primary">
-            <Download size={16} />
+            <Download size={16} aria-hidden="true" />
             Go to Downloads
           </a>
         </div>
       {/if}
-    </div>
+    </SectionCard>
   {/if}
 </div>
 
@@ -178,65 +168,54 @@
   .back-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    background: none;
-    border: none;
+    gap: 0.5rem;
+    background: var(--color-glass-bg);
+    border: 1px solid var(--color-glass-border);
+    border-radius: 10px;
     color: var(--color-text);
-    opacity: 0.6;
+    opacity: 0.65;
     cursor: pointer;
     font-size: 0.85rem;
     font-family: inherit;
-    padding: 0;
+    padding: 0.5rem 1rem;
     text-decoration: none;
-    transition: opacity 0.2s;
+    transition: var(--transition-smooth);
+    align-self: flex-start;
   }
 
   .back-btn:hover {
     opacity: 1;
-  }
-
-  .section-card {
-    padding: 1.5rem;
-    border-radius: 20px;
-  }
-
-  .section-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    color: var(--color-primary-green);
-  }
-
-  .section-card-header h2 {
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin: 0;
-    color: var(--color-text);
+    border-color: rgba(123, 144, 75, 0.2);
+    transform: translateX(-2px);
   }
 
   .detail-grid {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
   }
 
   .detail-field {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0;
+    padding: 0.75rem 0;
     border-bottom: 1px solid var(--color-glass-border);
+    gap: 1rem;
+  }
+
+  .detail-field:first-child {
+    padding-top: 0;
   }
 
   .detail-field:last-child {
     border-bottom: none;
+    padding-bottom: 0;
   }
 
   .detail-label {
     font-size: 0.85rem;
-    opacity: 0.6;
+    opacity: 0.55;
+    flex-shrink: 0;
   }
 
   .detail-value {
@@ -244,7 +223,8 @@
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 0.375rem;
+    gap: 0.5rem;
+    text-align: right;
   }
 
   .detail-value.mono {
@@ -253,84 +233,35 @@
   }
 
   .copy-btn {
-    background: none;
-    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-glass-bg);
+    border: 1px solid var(--color-glass-border);
+    border-radius: 6px;
     color: var(--color-text);
     opacity: 0.4;
     cursor: pointer;
-    padding: 2px;
-    transition: opacity 0.2s;
+    padding: 0.25rem;
+    transition: var(--transition-smooth);
   }
 
   .copy-btn:hover {
     opacity: 1;
-  }
-
-  .purchase-status {
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.125rem 0.5rem;
-    border-radius: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-
-  .status-paid {
-    background: rgba(34, 197, 94, 0.15);
-    color: #22c55e;
-  }
-
-  .status-refunded {
-    background: rgba(251, 191, 36, 0.15);
-    color: #f59e0b;
-  }
-
-  .status-failed {
-    background: rgba(239, 68, 68, 0.15);
-    color: #ef4444;
-  }
-
-  .status-created {
-    background: rgba(99, 102, 241, 0.15);
-    color: #6366f1;
+    border-color: rgba(123, 144, 75, 0.3);
   }
 
   .detail-actions {
-    margin-top: 1.25rem;
+    margin-top: 1rem;
     padding-top: 1rem;
     border-top: 1px solid var(--color-glass-border);
   }
 
-  .state-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 2.5rem 2rem;
-    border-radius: 20px;
-    text-align: center;
-  }
-
-  .state-card.error {
-    color: #ef4444;
-  }
-
   .skeleton-card.tall {
-    height: 300px;
+    height: 320px;
     border-radius: 20px;
     background: var(--color-glass-bg);
+    border: 1px solid var(--color-glass-border);
     animation: shimmer 1.5s infinite;
-  }
-
-  @keyframes shimmer {
-    0% { opacity: 0.5; }
-    50% { opacity: 0.8; }
-    100% { opacity: 0.5; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .skeleton-card {
-      animation: none;
-    }
   }
 </style>

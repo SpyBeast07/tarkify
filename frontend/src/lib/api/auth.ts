@@ -96,17 +96,60 @@ export async function getSession(): Promise<SessionData | null> {
   }
 }
 
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+function withDevice(body: Record<string, unknown>): Record<string, unknown> {
+  if (typeof localStorage === 'undefined') return body;
+  try {
+    let raw = localStorage.getItem('tarkify_device_id');
+    if (!raw) {
+      raw = generateId();
+      localStorage.setItem('tarkify_device_id', raw);
+    }
+    const ua = navigator.userAgent;
+    let browserName = 'Unknown', osName = 'Unknown', deviceType = 'desktop';
+    if (ua.includes('Firefox')) browserName = 'Firefox';
+    else if (ua.includes('Chrome')) browserName = 'Chrome';
+    else if (ua.includes('Safari') && !ua.includes('Chrome')) browserName = 'Safari';
+    else if (ua.includes('Edge')) browserName = 'Edge';
+    if (ua.includes('Windows')) osName = 'Windows';
+    else if (ua.includes('Mac OS')) osName = 'macOS';
+    else if (ua.includes('Linux') && !ua.includes('Android')) osName = 'Linux';
+    else if (ua.includes('Android')) osName = 'Android';
+    else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) osName = 'iOS';
+    if (/Mobi|Android/i.test(ua)) deviceType = 'mobile';
+    else if (/iPad|Tablet/i.test(ua)) deviceType = 'tablet';
+    return {
+      ...body,
+      deviceId: raw,
+      deviceName: `${browserName} on ${osName}`,
+      deviceType,
+      browser: browserName,
+      os: osName,
+    };
+  } catch {
+    return body;
+  }
+}
+
 export async function signIn(email: string, password: string, rememberMe?: boolean) {
   return authFetch<{ user: User; session: Session; token: string }>("/sign-in/email", {
     method: "POST",
-    body: { email, password, rememberMe },
+    body: withDevice({ email, password, rememberMe }),
   });
 }
 
 export async function signUp(name: string, email: string, password: string) {
   return authFetch<{ user: User; session: Session; token: string }>("/sign-up/email", {
     method: "POST",
-    body: { name, email, password },
+    body: withDevice({ name, email, password }),
   });
 }
 
@@ -151,10 +194,20 @@ export interface ListedSession {
   userAgent: string | null;
   createdAt: string;
   updatedAt: string;
+  deviceId?: string;
+  deviceName?: string;
+  deviceType?: string;
+  browser?: string;
+  os?: string;
+  lastSeen?: string;
 }
 
 export async function listSessions(): Promise<ListedSession[] | ApiErrorBody> {
   return authFetch<ListedSession[]>("/list-sessions");
+}
+
+export async function touchSession() {
+  return authFetch<Record<string, unknown>>("/touch-session", { method: "POST" });
 }
 
 export async function revokeSession(sessionToken: string) {

@@ -84,27 +84,28 @@
   .sidebar-link {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
-    padding: 0.625rem 0.875rem;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
     border-radius: 12px;
     font-size: 0.9rem;
     font-weight: 500;
     color: var(--color-text);
     text-decoration: none;
-    transition: background 0.2s, color 0.2s;
-    opacity: 0.65;
+    transition: var(--transition-smooth);
+    opacity: 0.6;
   }
 
   .sidebar-link:hover {
     background: var(--color-glass-bg);
-    opacity: 0.9;
+    opacity: 0.85;
   }
 
   .sidebar-link.active {
-    background: var(--color-glass-bg);
+    background: rgba(123, 144, 75, 0.1);
     color: var(--color-primary-green);
     opacity: 1;
     font-weight: 600;
+    border: 1px solid rgba(123, 144, 75, 0.15);
   }
 
   .sidebar-overlay {

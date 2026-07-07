@@ -112,26 +112,107 @@ app.use('/api/users/*', userLimit);
 app.use('/api/account/*', accountLimit);
 app.use('/api/csp-report', cspReportLimit);
 
-// ── Better Auth handler ──────────────────────────────────────────
+// ── Device-aware sign-in ──────────────────────────────────────────
+// Intercept sign-in to extract device info, then deduplicate sessions per device.
 app.use('/api/auth/sign-in/email', async (c, next) => {
-  if (c.req.method === 'POST') {
-    try {
-      const cloned = c.req.raw.clone();
-      const body = await cloned.json();
-      const email = body?.email as string | undefined;
-      if (email) {
-        const result = await pool.query('SELECT account_status FROM users WHERE email = $1', [email]);
-        const status = result.rows[0]?.account_status;
-        if (status && status !== 'ACTIVE') {
-          return c.json({ error: 'FORBIDDEN', message: 'Account is not active', requestId: c.get('requestId') }, 403);
-        }
+  if (c.req.method !== 'POST') { await next(); return; }
+
+  let deviceId: string | undefined;
+  let deviceName: string | undefined;
+  let deviceType: string | undefined;
+  let browser: string | undefined;
+  let os: string | undefined;
+
+  try {
+    const cloned = c.req.raw.clone();
+    const body = await cloned.json();
+    deviceId = body.deviceId;
+    deviceName = body.deviceName;
+    deviceType = body.deviceType;
+    browser = body.browser;
+    os = body.os;
+
+    const email = body?.email as string | undefined;
+    if (email) {
+      const result = await pool.query('SELECT account_status FROM users WHERE email = $1', [email]);
+      const status = result.rows[0]?.account_status;
+      if (status && status !== 'ACTIVE') {
+        return c.json({ error: 'FORBIDDEN', message: 'Account is not active', requestId: c.get('requestId') }, 403);
       }
-    } catch {
-      // Ignore JSON parse errors; let Better Auth handle them
     }
+  } catch {
+    // Let Better Auth handle malformed bodies
   }
+
   await next();
+
+  if (!c.res || c.res.status !== 200 || !deviceId) return;
+
+  try {
+    const cloned = c.res.clone();
+    const data = await cloned.json() as Record<string, any>;
+    const userId = data?.user?.id as string | undefined;
+    const sessionToken = data?.session?.token as string | undefined;
+    if (userId && sessionToken) {
+      await pool.query(
+        `UPDATE session SET device_id = $1, device_name = $2, device_type = $3, browser = $4, os = $5, last_seen = NOW() WHERE token = $6`,
+        [deviceId, deviceName ?? null, deviceType ?? null, browser ?? null, os ?? null, sessionToken],
+      );
+      await pool.query(
+        `DELETE FROM session WHERE user_id = $1 AND device_id = $2 AND token != $3 AND expires_at > NOW()`,
+        [userId, deviceId, sessionToken],
+      );
+    }
+  } catch (err) {
+    console.error("Failed to update device tracking after sign-in:", err);
+  }
 });
+
+// ── Device-aware sign-up ──────────────────────────────────────────
+// Same deduplication logic for autoSignIn after registration.
+app.use('/api/auth/sign-up/email', async (c, next) => {
+  if (c.req.method !== 'POST') { await next(); return; }
+
+  let deviceId: string | undefined;
+  let deviceName: string | undefined;
+  let deviceType: string | undefined;
+  let browser: string | undefined;
+  let os: string | undefined;
+
+  try {
+    const cloned = c.req.raw.clone();
+    const body = await cloned.json();
+    deviceId = body.deviceId;
+    deviceName = body.deviceName;
+    deviceType = body.deviceType;
+    browser = body.browser;
+    os = body.os;
+  } catch {}
+
+  await next();
+
+  if (!c.res || c.res.status !== 200 || !deviceId) return;
+
+  try {
+    const cloned = c.res.clone();
+    const data = await cloned.json() as Record<string, any>;
+    const userId = data?.user?.id as string | undefined;
+    const sessionToken = data?.session?.token as string | undefined;
+    if (userId && sessionToken) {
+      await pool.query(
+        `UPDATE session SET device_id = $1, device_name = $2, device_type = $3, browser = $4, os = $5, last_seen = NOW() WHERE token = $6`,
+        [deviceId, deviceName ?? null, deviceType ?? null, browser ?? null, os ?? null, sessionToken],
+      );
+      await pool.query(
+        `DELETE FROM session WHERE user_id = $1 AND device_id = $2 AND token != $3 AND expires_at > NOW()`,
+        [userId, deviceId, sessionToken],
+      );
+    }
+  } catch (err) {
+    console.error("Failed to update device tracking after sign-up:", err);
+  }
+});
+
 app.on(['POST', 'GET'], '/api/auth/*', (c) => {
   return getAuth().handler(c.req.raw);
 });
