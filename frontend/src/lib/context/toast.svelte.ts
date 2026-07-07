@@ -11,6 +11,8 @@ export interface Toast {
 
 let toastId = 0;
 
+export type ToastState = ReturnType<typeof createToastState>;
+
 export function createToastState() {
 	let toasts = $state<Toast[]>([]);
 
