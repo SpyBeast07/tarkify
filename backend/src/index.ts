@@ -18,6 +18,7 @@ import feedback from './communication/feedback/routes.js';
 import newsletter from './communication/newsletter/routes.js';
 import careers from './communication/careers/routes.js';
 import users from './users/routes.js';
+import account from './account/routes.js';
 
 const app = new Hono<{ Variables: { requestId: string } }>();
 let migrationState: { applied: number; ok: boolean } = { applied: 0, ok: false };
@@ -96,6 +97,7 @@ const newsletterLimit = rateLimit({ windowMs: 60_000, max: 30 });
 const careersLimit = rateLimit({ windowMs: 60_000, max: 10 });
 const authLimit = rateLimit({ windowMs: 60_000, max: 10 });
 const userLimit = rateLimit({ windowMs: 60_000, max: 60 });
+const accountLimit = rateLimit({ windowMs: 60_000, max: 60 });
 const cspReportLimit = rateLimit({ windowMs: 60_000, max: 100 });
 
 app.use('/api/payments/*', paymentLimit);
@@ -107,6 +109,7 @@ app.use('/api/newsletter', newsletterLimit);
 app.use('/api/careers', careersLimit);
 app.use('/api/auth/*', authLimit);
 app.use('/api/users/*', userLimit);
+app.use('/api/account/*', accountLimit);
 app.use('/api/csp-report', cspReportLimit);
 
 // ── Better Auth handler ──────────────────────────────────────────
@@ -143,6 +146,7 @@ app.route('/api/feedback', feedback);
 app.route('/api/newsletter', newsletter);
 app.route('/api/careers', careers);
 app.route('/api/users', users);
+app.route('/api/account', account);
 
 // ── CSP Violation Report Receiver ───────────────────────────────
 app.post('/api/csp-report', async (c) => {
