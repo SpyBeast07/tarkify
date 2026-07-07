@@ -23,7 +23,8 @@
       if (authState.user) {
         ready = true;
       } else {
-        goto('/login?redirect=/account');
+        const currentPath = $page.url.pathname;
+        goto('/login?redirect=' + currentPath);
       }
     }
   });

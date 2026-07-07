@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getContext } from 'svelte';
   import { onDestroy } from 'svelte';
+  import { beforeNavigate } from '$app/navigation';
   import {
     User, MapPin, AlertTriangle, CheckCircle, RefreshCw, Undo2
   } from '@lucide/svelte';
@@ -53,7 +54,6 @@
     saveSuccess = false;
   }
 
-  let cancelTimer: ReturnType<typeof setTimeout> | undefined;
   function scheduleSaveSuccessDismiss() {
     clearTimeout(successTimer);
     successTimer = setTimeout(() => {
@@ -65,12 +65,41 @@
     clearTimeout(successTimer);
   });
 
+  function handleBeforeUnload(e: BeforeUnloadEvent) {
+    if (isDirty) {
+      e.preventDefault();
+    }
+  }
+
+  $effect(() => {
+    if (isDirty) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    } else {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  });
+
+  beforeNavigate(({ cancel }) => {
+    if (isDirty) {
+      const confirmed = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+      if (!confirmed) {
+        cancel();
+      }
+    }
+  });
+
   async function load() {
     loading = true;
     error = '';
     const result = await fetchProfile();
     if (!result) {
       error = 'Failed to load profile';
+      if (authState.loaded) {
+        authState.checkSession();
+      }
     } else {
       profile = result.user;
       displayName = result.user.displayName || '';
@@ -157,7 +186,7 @@
         <div class="form-group">
           <label for="email" class="form-label">Email</label>
           <div class="input-container-wrapper input-with-icon input-readonly">
-            <User size={18} class="input-icon" />
+            <User size={18} class="input-icon" aria-hidden="true" />
             <input id="email" type="email" value={profile.email} disabled />
           </div>
         </div>
@@ -165,7 +194,7 @@
         <div class="form-group">
           <label for="displayName" class="form-label">Display Name</label>
           <div class="input-container-wrapper input-with-icon">
-            <User size={18} class="input-icon" />
+            <User size={18} class="input-icon" aria-hidden="true" />
             <input
               id="displayName"
               type="text"
@@ -180,7 +209,7 @@
         <div class="form-group">
           <label for="timezone" class="form-label">Timezone</label>
           <div class="input-container-wrapper input-with-icon">
-            <MapPin size={18} class="input-icon" />
+            <MapPin size={18} class="input-icon" aria-hidden="true" />
             <select id="timezone" bind:value={timezone} disabled={saving}>
               <option value="">Select timezone...</option>
               {#each allTimezoneOptions as tz}
