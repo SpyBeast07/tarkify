@@ -64,10 +64,10 @@ const SECURITY_HEADERS: Record<string, string> = {
 };
 
 export async function securityHeaders(c: Context, next: Next) {
+  await next();
   for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     c.res.headers.set(key, value);
   }
-  await next();
 }
 
 // ── Rate Limiter (in-memory sliding window) ─────────────────────

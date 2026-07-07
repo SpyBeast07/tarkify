@@ -5,7 +5,7 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import * as userService from './service.js';
 import * as userRepository from './repository.js';
 import * as auditService from '../audit/service.js';
-import { query } from '../db.js';
+import { query, withTransaction } from '../db.js';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
 function userError(c: Context, error: string, message: string, status: ContentfulStatusCode) {
@@ -191,9 +191,13 @@ users.post('/delete-account', async (c) => {
       return userError(c, 'INVALID_PASSWORD', 'Current password is incorrect', 403);
     }
 
-    await userRepository.changeAccountStatus(authUser.id, 'DELETED');
-
-    await query('DELETE FROM session WHERE user_id = $1', [authUser.id]);
+    await withTransaction(async (client) => {
+      await client.query(
+        'UPDATE users SET account_status = $1, updated_at = NOW() WHERE id = $2',
+        ['DELETED', authUser.id],
+      );
+      await client.query('DELETE FROM session WHERE user_id = $1', [authUser.id]);
+    });
 
     const ip = c.req.header('x-forwarded-for') ?? c.req.header('x-real-ip') ?? undefined;
     const ua = c.req.header('user-agent') ?? undefined;

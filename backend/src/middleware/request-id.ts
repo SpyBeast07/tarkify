@@ -14,6 +14,6 @@ type AppContext = Context<{ Variables: { requestId: string } }>;
 export async function requestId(c: AppContext, next: Next) {
   const id = crypto.randomUUID();
   c.set('requestId', id);
-  c.res.headers.set('X-Request-Id', id);
   await next();
+  c.res.headers.set('X-Request-Id', id);
 }

@@ -47,9 +47,11 @@ export function createAuthState() {
 		}
 	}
 
+	let channel: BroadcastChannel | null = null;
+
 	if (browser) {
 		try {
-			const channel = new BroadcastChannel(AUTH_CHANNEL);
+			channel = new BroadcastChannel(AUTH_CHANNEL);
 			channel.onmessage = () => {
 				checkSession();
 			};
@@ -62,6 +64,14 @@ export function createAuthState() {
 				checkSession();
 			}
 		});
+	}
+
+	function destroy() {
+		if (channel) {
+			channel.onmessage = null;
+			channel.close();
+			channel = null;
+		}
 	}
 
 	return {
@@ -78,6 +88,7 @@ export function createAuthState() {
 		setUser,
 		clearUser,
 		broadcast,
+		destroy,
 	};
 }
 

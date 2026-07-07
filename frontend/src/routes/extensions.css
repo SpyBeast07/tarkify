@@ -2,15 +2,6 @@
    EXTENSIONS.CSS — Careers, Discover, Testimonials
    ===================================================== */
 
-/* ─── SHARED UTILITIES ─────────────────────────────── */
-.section-subtext {
-	font-size: 1.125rem;
-	line-height: 1.75;
-	opacity: 0.7;
-	max-width: 640px;
-	margin: 0 auto;
-}
-
 /* ─── TESTIMONIALS ──────────────────────────────────── */
 .testimonials-section {
 	padding-top: 8rem;
