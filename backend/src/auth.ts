@@ -242,7 +242,13 @@ export const auth = betterAuth({
         after: async (account) => {
           try {
             const a = accountCreateHookSchema.parse(account);
-            if (a.providerId === "email") {
+            // "credential" is the providerId Better Auth uses for
+            // built-in email/password accounts (confirmed in
+            // better-auth/dist/api/routes/sign-up.mjs:237, v1.6.23).
+            // OAuth providers (Google, GitHub, etc.) use their own
+            // providerId and are intentionally excluded here — account
+            // creation through OAuth linking is not a registration.
+            if (a.providerId === "credential") {
               await auditService.recordAccountCreated(a.userId);
             }
           } catch (err) {
