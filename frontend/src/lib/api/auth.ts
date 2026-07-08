@@ -59,6 +59,36 @@ async function authFetch<T>(path: string, opts: FetchOptions = {}): Promise<T | 
 
 export type ApiError = ApiErrorBody;
 
+export function mapEmailError(err: ApiErrorBody, context: 'verification' | 'password_reset' | 'general' = 'general'): string {
+  const { status, error } = err;
+  const message = error?.message || '';
+  const code = error?.code || '';
+
+  if (status === 0) {
+    if (code === 'TIMEOUT') return 'Email service timed out. Please try again.';
+    if (code === 'NETWORK_ERROR') return 'Network error. Please check your connection.';
+    return 'Something went wrong while sending the email.';
+  }
+
+  if (status === 429) return 'Too many email requests. Please wait before trying again.';
+  if (status === 422) return 'Email service is temporarily unavailable.';
+  if (status === 404) return 'Email service is temporarily unavailable.';
+
+  if (status >= 500) {
+    if (context === 'verification') return 'Unable to send verification email. Please try again in a few minutes.';
+    if (context === 'password_reset') return 'Unable to send reset email. Please try again in a few minutes.';
+    return 'Unable to send email. Please try again in a few minutes.';
+  }
+
+  const lower = message.toLowerCase();
+  if (lower.includes('rate limit') || lower.includes('rate_limit')) return 'Too many email requests. Please wait before trying again.';
+  if (lower.includes('domain is not verified') || lower.includes('validation_error')) return 'Email service is temporarily unavailable.';
+  if (lower.includes('timed out') || lower.includes('timeout')) return 'Email service timed out. Please try again.';
+  if (lower.includes('network') || lower.includes('fetch')) return 'Network error. Please check your connection.';
+
+  return message || 'Something went wrong while sending the email.';
+}
+
 export interface User {
   id: string;
   name: string;

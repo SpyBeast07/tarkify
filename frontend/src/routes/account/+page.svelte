@@ -4,7 +4,7 @@
     Package, Download, Clock, Calendar,
     Mail, CheckCircle, ArrowRight, RefreshCw, AlertTriangle
   } from '@lucide/svelte';
-  import { sendVerificationEmail } from '$lib/api/auth';
+  import { sendVerificationEmail, mapEmailError } from '$lib/api/auth';
   import {
     fetchDashboard,
     type DashboardData,
@@ -57,7 +57,7 @@
     try {
       const result = await sendVerificationEmail(authState.user.email);
       if ('error' in result) {
-        verificationError = (result as ApiErrorBody).error?.message || 'Failed to send verification email';
+        verificationError = mapEmailError(result as ApiErrorBody, 'verification');
         return;
       }
       verificationSent = true;
@@ -103,7 +103,7 @@
           {#if verificationSent}
             <span class="verify-sent">
               <CheckCircle size={16} aria-hidden="true" />
-              Verification email sent
+              Verification email sent successfully.
             </span>
           {:else}
             <button

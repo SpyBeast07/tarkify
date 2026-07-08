@@ -3,7 +3,7 @@
 	import Seo from '$lib/components/Seo.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import AuthLayout from '$lib/components/ui/AuthLayout.svelte';
-	import { sendForgotPassword } from '$lib/api/auth';
+	import { sendForgotPassword, mapEmailError } from '$lib/api/auth';
 	import type { ApiErrorBody } from '$lib/api/auth';
 
 	let email = $state('');
@@ -19,7 +19,7 @@
 		try {
 			const result = await sendForgotPassword(email);
 			if ('error' in result) {
-				error = (result as ApiErrorBody).error.message || 'Failed to send reset email';
+				error = mapEmailError(result as ApiErrorBody, 'password_reset');
 				return;
 			}
 			sent = true;

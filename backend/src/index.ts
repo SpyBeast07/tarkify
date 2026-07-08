@@ -137,7 +137,7 @@ app.use('/api/auth/sign-in/email', async (c, next) => {
       const result = await pool.query('SELECT account_status FROM users WHERE email = $1', [email]);
       const status = result.rows[0]?.account_status;
       if (status && status !== 'ACTIVE') {
-        return c.json({ error: 'FORBIDDEN', message: 'Account is not active', requestId: c.get('requestId') }, 403);
+        return c.json({ success: false, error: 'FORBIDDEN', message: 'Account is not active', requestId: c.get('requestId') }, 403);
       }
     }
   } catch {
@@ -239,7 +239,7 @@ app.get('/api/email-previews/:filename', async (c) => {
   const { renderPreviewPage } = await import('./email/preview.js');
   const filename = c.req.param('filename');
   const html = renderPreviewPage(filename);
-  if (!html) return c.json({ error: 'NOT_FOUND', message: `Unknown template: ${filename}` }, 404);
+  if (!html)       return c.json({ success: false, error: 'NOT_FOUND', message: `Unknown template: ${filename}` }, 404);
   return c.html(html);
 });
 
@@ -248,7 +248,7 @@ app.post('/api/test-email', async (c) => {
   try {
     const { email } = await c.req.json() as { email?: string };
     if (!email) {
-      return c.json({ error: 'VALIDATION_ERROR', message: 'email is required' }, 400);
+      return c.json({ success: false, error: 'VALIDATION_ERROR', message: 'email is required', requestId: c.get('requestId') }, 400);
     }
 
     const { emailService } = await import('./email/index.js');
@@ -262,6 +262,7 @@ app.post('/api/test-email', async (c) => {
       success: false,
       error: 'EMAIL_ERROR',
       message,
+      requestId: c.get('requestId'),
     }, 500);
   }
 });
@@ -290,7 +291,7 @@ app.post('/api/csp-report', async (c) => {
 
 // ── 404 Fallback ─────────────────────────────────────────────────
 app.notFound((c) => {
-  return c.json({ error: 'NOT_FOUND', message: 'Route not found', requestId: c.get('requestId') }, 404);
+  return c.json({ success: false, error: 'NOT_FOUND', message: 'Route not found', requestId: c.get('requestId') }, 404);
 });
 
 // ── Global Error Handler ─────────────────────────────────────────
@@ -298,7 +299,7 @@ app.onError((err, c) => {
   const rid = c.get('requestId') as string | undefined;
   console.error(`request=${rid ?? 'none'} unhandled_error=${err.message}`);
   return c.json(
-    { error: 'INTERNAL_ERROR', message: 'An unexpected error occurred', requestId: rid },
+    { success: false, error: 'INTERNAL_ERROR', message: 'An unexpected error occurred', requestId: rid },
     500
   );
 });

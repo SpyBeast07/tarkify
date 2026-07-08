@@ -7,6 +7,8 @@ import * as userRepository from "./users/repository.js";
 import { linkPurchasesToUserByEmail } from "./purchase-linking/service.js";
 import * as auditService from "./audit/service.js";
 import { emailService } from "./email/index.js";
+import { EmailProviderError, EmailConfigurationError } from "./email/errors.js";
+import { APIError } from "better-auth";
 import { pool } from "./db.js";
 
 const userHookSchema = z.object({
@@ -165,7 +167,18 @@ export function initAuth() {
           });
         } catch (error) {
           console.error('[auth] sendResetPassword failed:', error);
-          throw error;
+          let statusText: string = 'INTERNAL_SERVER_ERROR';
+          let message = 'Unable to send reset email. Please try again in a few minutes.';
+          if (error instanceof EmailProviderError) {
+            const sc = error.statusCode;
+            if (sc === 429) { statusText = 'TOO_MANY_REQUESTS'; message = 'Too many email requests. Please wait before trying again.'; }
+            else if (sc === 422) { statusText = 'UNPROCESSABLE_ENTITY'; message = 'Email service is temporarily unavailable.'; }
+            else if (sc === 408) { statusText = 'REQUEST_TIMEOUT'; message = 'Email service timed out. Please try again.'; }
+            else if (sc === 404) { message = 'Email service is temporarily unavailable.'; }
+          } else if (error instanceof EmailConfigurationError) {
+            message = 'Email service is temporarily unavailable.';
+          }
+          throw new APIError(statusText as any, { message, code: 'EMAIL_FAILED' });
         }
       },
     },
@@ -183,7 +196,18 @@ export function initAuth() {
           });
         } catch (error) {
           console.error('[auth] sendVerificationEmail failed:', error);
-          throw error;
+          let statusText: string = 'INTERNAL_SERVER_ERROR';
+          let message = 'Unable to send verification email. Please try again in a few minutes.';
+          if (error instanceof EmailProviderError) {
+            const sc = error.statusCode;
+            if (sc === 429) { statusText = 'TOO_MANY_REQUESTS'; message = 'Too many email requests. Please wait before trying again.'; }
+            else if (sc === 422) { statusText = 'UNPROCESSABLE_ENTITY'; message = 'Email service is temporarily unavailable.'; }
+            else if (sc === 408) { statusText = 'REQUEST_TIMEOUT'; message = 'Email service timed out. Please try again.'; }
+            else if (sc === 404) { message = 'Email service is temporarily unavailable.'; }
+          } else if (error instanceof EmailConfigurationError) {
+            message = 'Email service is temporarily unavailable.';
+          }
+          throw new APIError(statusText as any, { message, code: 'EMAIL_FAILED' });
         }
       },
     },

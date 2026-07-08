@@ -9,6 +9,7 @@ export function success(c: Context, message: string, status: ContentfulStatusCod
 
 export function error(c: Context, errorCode: string, message: string, status: ContentfulStatusCode) {
   const body: ApiErrorResponse = {
+    success: false,
     error: errorCode,
     message,
     requestId: c.get('requestId') as string | undefined,

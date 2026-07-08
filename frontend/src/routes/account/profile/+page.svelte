@@ -9,7 +9,7 @@
     fetchProfile, updateProfile,
     type ProfileData, type ApiErrorBody,
   } from '$lib/api/account';
-  import { sendVerificationEmail } from '$lib/api/auth';
+  import { sendVerificationEmail, mapEmailError } from '$lib/api/auth';
   import type { AuthState } from '$lib/context/auth.svelte';
   import SectionCard from '$lib/components/ui/SectionCard.svelte';
   import StateCard from '$lib/components/ui/StateCard.svelte';
@@ -160,12 +160,12 @@
     try {
       const result = await sendVerificationEmail(profile!.email);
       if ('error' in result) {
-        verifyError = (result as ApiErrorBody).error?.message || 'Failed to send verification email';
+        verifyError = mapEmailError(result as ApiErrorBody, 'verification');
       } else {
         verifySent = true;
       }
     } catch {
-      verifyError = 'Failed to send verification email';
+      verifyError = 'Unable to send verification email. Please try again in a few minutes.';
     } finally {
       verifyingEmail = false;
     }
@@ -203,7 +203,7 @@
           {#if !profile.emailVerified}
             <div class="verify-email-wrap">
               {#if verifySent}
-                <span class="verify-success"><Send size={14} aria-hidden="true" /> Verification email sent</span>
+                <span class="verify-success"><Send size={14} aria-hidden="true" /> Verification email sent successfully.</span>
               {:else}
                 <button class="btn-text btn-verify" onclick={handleVerifyEmail} disabled={verifyingEmail}>
                   <Mail size={14} aria-hidden="true" />

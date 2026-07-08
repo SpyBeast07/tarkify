@@ -17,6 +17,7 @@ export interface ApiSuccessResponse {
 }
 
 export interface ApiErrorResponse {
+  success: false;
   error: string;
   message: string;
   requestId?: string;
