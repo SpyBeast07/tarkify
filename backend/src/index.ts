@@ -229,6 +229,29 @@ app.route('/api/careers', careers);
 app.route('/api/users', users);
 app.route('/api/account', account);
 
+// ── Email Test Route (manual verification) ───────────────────────
+app.post('/api/test-email', async (c) => {
+  try {
+    const { email } = await c.req.json() as { email?: string };
+    if (!email) {
+      return c.json({ error: 'VALIDATION_ERROR', message: 'email is required' }, 400);
+    }
+
+    const { emailService } = await import('./email/index.js');
+    const result = await emailService.sendTestEmail(email);
+
+    return c.json({ success: true, data: result });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error(`[test-email] Failed: ${message}`);
+    return c.json({
+      success: false,
+      error: 'EMAIL_ERROR',
+      message,
+    }, 500);
+  }
+});
+
 // ── CSP Violation Report Receiver ───────────────────────────────
 app.post('/api/csp-report', async (c) => {
   try {

@@ -47,8 +47,10 @@ export const config = {
   },
 
   email: {
+    provider: optionalEnv('EMAIL_PROVIDER', 'resend') as 'resend',
     resendApiKey: process.env.RESEND_API_KEY,
-    defaultFrom: optionalEnv('EMAIL_FROM', 'noreply@tarkify.com'),
+    fromEmail: optionalEnv('FROM_EMAIL', 'noreply@tarkify.com'),
+    replyToEmail: optionalEnv('REPLY_TO_EMAIL', 'support@tarkify.qzz.io'),
     adminEmail: requireEnv('ADMIN_EMAIL'),
   },
 

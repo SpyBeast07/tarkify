@@ -11,7 +11,7 @@
 
 	let email = $state('');
 	let password = $state('');
-	let rememberMe = $state(true);
+	let rememberMe = $state(false);
 	let showPassword = $state(false);
 	let error = $state('');
 	let loading = $state(false);

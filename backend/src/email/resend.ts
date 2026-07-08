@@ -4,13 +4,20 @@
  * Wraps the Resend SDK behind the EmailProvider interface.
  * In non-production environments, emails are logged but not sent.
  * No route imports Resend directly — use the EmailService instead.
+ *
+ * Features:
+ * - Graceful timeout (10s)
+ * - Structured error mapping
+ * - Config-based reply-to
  */
 
 import { Resend } from 'resend';
 import { config } from '../config.js';
 import type { EmailProvider } from './provider.js';
 import type { SendEmailOptions, SendEmailResult } from './types.js';
-import { EmailProviderError, EmailConfigurationError } from './errors.js';
+import { EmailProviderError, EmailConfigurationError, EmailRateLimitError } from './errors.js';
+
+const SEND_TIMEOUT_MS = 10_000;
 
 export class ResendProvider implements EmailProvider {
   readonly name = 'resend';
@@ -60,7 +67,7 @@ export class ResendProvider implements EmailProvider {
       ? options.from.name
         ? `${options.from.name} <${options.from.email}>`
         : options.from.email
-      : config.email.defaultFrom;
+      : config.email.fromEmail;
 
     const toList = Array.isArray(options.to)
       ? options.to.map((a) => a.email)
@@ -70,7 +77,7 @@ export class ResendProvider implements EmailProvider {
       ? options.replyTo.name
         ? `${options.replyTo.name} <${options.replyTo.email}>`
         : options.replyTo.email
-      : undefined;
+      : config.email.replyToEmail || undefined;
 
     const attachments = options.attachments?.map((a) => ({
       filename: a.filename,
@@ -78,21 +85,38 @@ export class ResendProvider implements EmailProvider {
       contentType: a.contentType,
     }));
 
-    const response = await this.client.emails.send({
+    const sendPromise = this.client.emails.send({
       from,
       to: toList,
       subject: options.subject,
       html: options.html,
       ...(options.text ? { text: options.text } : {}),
-      ...(replyTo ? { replyTo } : {}),
+      ...(replyTo ? { reply_to: replyTo } : {}),
       ...(attachments && attachments.length > 0 ? { attachments } : {}),
-    });
+    } as any);
 
-    if (response.error) {
+    let response;
+
+    try {
+      response = await Promise.race([
+        sendPromise,
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new EmailProviderError(this.name, 'Request timed out', 408)),
+            SEND_TIMEOUT_MS
+          )
+        ),
+      ]);
+    } catch (err) {
+      if (err instanceof EmailProviderError) throw err;
       throw new EmailProviderError(
         this.name,
-        response.error.message
+        err instanceof Error ? err.message : 'Unknown Resend error'
       );
+    }
+
+    if (response.error) {
+      throw this.mapResendError(response.error);
     }
 
     return {
@@ -103,5 +127,25 @@ export class ResendProvider implements EmailProvider {
       subject: options.subject,
       status: 'sent',
     };
+  }
+
+  private mapResendError(error: { message: string; name?: string }): EmailProviderError {
+    const { message, name } = error;
+    switch (name) {
+      case 'rate_limit_exceeded':
+        return new EmailRateLimitError(this.name, message);
+      case 'missing_api_key':
+      case 'invalid_api_Key':
+      case 'invalid_from_address':
+      case 'validation_error':
+        return new EmailProviderError(this.name, message, 422);
+      case 'not_found':
+        return new EmailProviderError(this.name, message, 404);
+      case 'application_error':
+      case 'internal_server_error':
+        return new EmailProviderError(this.name, message, 500);
+      default:
+        return new EmailProviderError(this.name, message);
+    }
   }
 }

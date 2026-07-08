@@ -12,9 +12,9 @@ export interface RetryConfig {
 }
 
 export const defaultRetryConfig: RetryConfig = {
-  maxRetries: 3,
+  maxRetries: 1,
   baseDelayMs: 1_000,
-  maxDelayMs: 10_000,
+  maxDelayMs: 5_000,
 };
 
 export function isRetryableError(error: unknown): boolean {
