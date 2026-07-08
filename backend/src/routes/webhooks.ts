@@ -106,9 +106,9 @@ webhooks.post('/razorpay', async (c) => {
       //     finds it, and returns it to the user
       // Without this, if webhook fires first, /verify returns 500 COMPLETION_FAILED
       // because no active token exists.
-      const existingToken = await purchaseService.validateActiveTokenByPurchase(updated.id);
-      if (!existingToken) {
-        await purchaseService.generateDownloadToken(
+      let downloadTokenRecord = await purchaseService.validateActiveTokenByPurchase(updated.id);
+      if (!downloadTokenRecord) {
+        downloadTokenRecord = await purchaseService.generateDownloadToken(
           updated.id,
           updated.product_id
         );
@@ -124,16 +124,30 @@ webhooks.post('/razorpay', async (c) => {
       const buyerEmail = updated.guest_email;
       if (buyerEmail) {
         productService.getProductById(updated.product_id).then((product) => {
+          const productSlug = product?.slug;
+          const productName = product?.name ?? 'Product';
+          const accountUrl = `${config.frontendUrl}/account`;
+
           emailService.sendPurchaseReceipt({
             email: buyerEmail,
-            productName: product?.name ?? 'Product',
+            productName,
             amount: updated.amount,
             currency: updated.currency,
             razorpayPaymentId: updated.razorpay_payment_id ?? '',
             razorpayOrderId: updated.razorpay_order_id,
             purchaseDate: formatPurchaseDate(updated.updated_at ?? updated.created_at),
-            accountUrl: `${config.frontendUrl}/account`,
+            accountUrl,
           }).catch((err) => console.error('[webhook] sendPurchaseReceipt failed:', err));
+
+          if (productSlug) {
+            emailService.sendDownloadEmail({
+              email: buyerEmail,
+              productName,
+              downloadUrl: `${config.auth.url}/api/downloads/${productSlug}?token=${downloadTokenRecord.token}`,
+              expiresAt: formatPurchaseDate(downloadTokenRecord.expires_at),
+              accountUrl,
+            }).catch((err) => console.error('[webhook] sendDownloadEmail failed:', err));
+          }
         }).catch(() => {});
       }
 

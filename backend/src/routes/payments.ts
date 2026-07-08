@@ -181,20 +181,34 @@ payments.post('/verify', async (c) => {
       `Payment verified: purchase=${updatedPurchase.id} order=${razorpay_order_id} payment=${razorpay_payment_id}`
     );
 
-    // Fire-and-forget purchase receipt email.
+    // Fire-and-forget purchase receipt + download emails.
     const buyerEmail = updatedPurchase.guest_email;
     if (buyerEmail) {
       productService.getProductById(updatedPurchase.product_id).then((product) => {
+        const productSlug = product?.slug;
+        const productName = product?.name ?? 'Product';
+        const accountUrl = `${config.frontendUrl}/account`;
+
         emailService.sendPurchaseReceipt({
           email: buyerEmail,
-          productName: product?.name ?? 'Product',
+          productName,
           amount: updatedPurchase.amount,
           currency: updatedPurchase.currency,
           razorpayPaymentId: updatedPurchase.razorpay_payment_id ?? '',
           razorpayOrderId: updatedPurchase.razorpay_order_id,
           purchaseDate: formatPurchaseDate(updatedPurchase.updated_at ?? updatedPurchase.created_at),
-          accountUrl: `${config.frontendUrl}/account`,
+          accountUrl,
         }).catch((err) => console.error('[payment] sendPurchaseReceipt failed:', err));
+
+        if (productSlug) {
+          emailService.sendDownloadEmail({
+            email: buyerEmail,
+            productName,
+            downloadUrl: `${config.auth.url}/api/downloads/${productSlug}?token=${downloadTokenRecord.token}`,
+            expiresAt: formatPurchaseDate(downloadTokenRecord.expires_at),
+            accountUrl,
+          }).catch((err) => console.error('[payment] sendDownloadEmail failed:', err));
+        }
       }).catch(() => {});
     }
 

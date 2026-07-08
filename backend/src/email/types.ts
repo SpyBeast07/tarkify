@@ -62,6 +62,8 @@ export interface DownloadEmailData {
   userName?: string;
   productName: string;
   downloadUrl: string;
+  expiresAt: string;
+  accountUrl: string;
 }
 
 export interface ContactNotificationEmailData {
