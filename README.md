@@ -73,8 +73,20 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 ### Frontend Configuration (`frontend/.env`)
 
 | Variable | Required | Default | Purpose | Production Note |
-|---|---|---|---|---|
+|---|---|---|---|---|---|
 | `VITE_API_URL` | Required | `http://localhost:3009` | Backend base API URL. | Set to `https://backend.tarkify.qzz.io`. |
+
+### Email Configuration (`backend/.env`)
+
+| Variable | Required | Default | Purpose | Production Note |
+|---|---|---|---|---|
+| `RESEND_API_KEY` | Production only | — | Resend API key for sending emails. | Create at https://resend.com/api-keys. Optional in dev (emails are logged). |
+| `FROM_EMAIL` | Optional | `noreply@tarkify.com` | Sender address displayed to recipients. | Must use a domain verified in the Resend dashboard. |
+| `REPLY_TO_EMAIL` | Optional | `support@tarkify.qzz.io` | Reply-to header on all outgoing emails. | Set to a monitored support mailbox. |
+| `ADMIN_EMAIL` | Required | — | Recipient for admin notifications (contact forms, career applications). | Set to a monitored administrator mailbox. |
+| `EMAIL_PROVIDER` | Optional | `resend` | Email provider name. | Only `resend` is implemented. |
+
+> **Resend sandbox restriction**: Without a verified domain, `onboarding@resend.dev` can only send to the account owner's email. See [docs/EMAIL_SYSTEM.md](docs/EMAIL_SYSTEM.md) for setup instructions.
 
 ---
 
@@ -112,6 +124,10 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 - [ ] Set `NODE_ENV=production`
 - [ ] Set `BETTER_AUTH_URL` to the production backend URL
 - [ ] Set `FRONTEND_URL` to the production frontend URL
+- [ ] Set `RESEND_API_KEY` to a live Resend API key
+- [ ] Set `FROM_EMAIL` to an address on a domain verified in Resend
+- [ ] Set `ADMIN_EMAIL` to a monitored production mailbox
+- [ ] Set `REPLY_TO_EMAIL` to a monitored support mailbox
 
 ---
 
@@ -276,3 +292,13 @@ The SvelteKit frontend deploys to Vercel dynamically:
 ### 6. Razorpay Callback Failure
 * **Cause**: The webhook secret configured in Razorpay dashboard does not match `RAZORPAY_WEBHOOK_SECRET`.
 * **Fix**: Signature validation will fail. Verify matching secrets in Razorpay dashboard and VPS `backend/.env`. Check `docker compose logs api` for validation signature mismatches.
+
+### 7. Email Delivery Failure
+* **Cause**: Resend domain is not verified. The sandbox sender (`onboarding@resend.dev`) can only deliver to the account owner.
+* **Fix**: Verify a domain in the Resend dashboard, update `FROM_EMAIL`, and rebuild: `docker compose up --build -d`.
+* **Cause**: `RESEND_API_KEY` is missing or invalid.
+* **Fix**: Verify the key with `docker compose exec api echo $RESEND_API_KEY` and regenerate from the Resend dashboard if needed.
+* **Cause**: Resend rate limit exceeded.
+* **Fix**: The system retries once automatically. If repeated, check Resend usage dashboard.
+
+> For comprehensive email documentation including architecture, template system, and troubleshooting, see [docs/EMAIL_SYSTEM.md](docs/EMAIL_SYSTEM.md).

@@ -46,6 +46,43 @@ Start the dev server:
 bun run dev
 ```
 
+## Email System
+
+The backend sends transactional and marketing emails via **Resend**. All email logic lives under `src/email/`.
+
+### Quick Start
+
+1. Set `RESEND_API_KEY` in `.env` (optional in dev — emails are logged instead of sent)
+2. Set `FROM_EMAIL` to an address on a domain verified in the Resend dashboard
+3. Set `ADMIN_EMAIL` to receive admin notifications
+
+### Key Files
+
+| File | Purpose |
+|---|---|
+| `src/email/service.ts` | `EmailService` — 11 send methods with logging, retry, preference checks |
+| `src/email/resend.ts` | `ResendProvider` — wraps the Resend SDK with timeout and structured errors |
+| `src/email/errors.ts` | Error hierarchy: `EmailError`, `EmailProviderError`, `EmailRateLimitError`, etc. |
+| `src/email/logger.ts` | In-memory logger (last 1000 entries) |
+| `src/email/retry.ts` | Exponential backoff with full jitter |
+| `src/email/preferences/` | User opt-in/opt-out per category (`security` is mandatory) |
+| `src/email/templates/` | 10 email templates built from components |
+| `src/email/preview.ts` | Preview dashboard at `GET /api/email-previews` |
+
+### Testing
+
+```bash
+# Test with the debug endpoint
+curl -X POST http://localhost:3009/api/test-email \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"your@email.com"}'
+
+# Preview templates in browser
+open http://localhost:3009/api/email-previews
+```
+
+See [docs/EMAIL_SYSTEM.md](../docs/EMAIL_SYSTEM.md) for full documentation.
+
 ## Better Auth
 
 Better Auth provides email/password authentication with session management.
