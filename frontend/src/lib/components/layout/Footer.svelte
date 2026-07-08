@@ -16,6 +16,7 @@
 					<li><a href="/">Home</a></li>
 					<li><a href="/solutions">Solutions</a></li>
 					<li><a href="/careers">Careers</a></li>
+					<li><a href="/account">Customer Portal</a></li>
 				</ul>
 			</div>
 			<div class="footer-col">

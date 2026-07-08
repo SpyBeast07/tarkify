@@ -18,7 +18,8 @@
 		{ name: 'Home', href: '/' },
 		{ name: 'Solutions', href: '/solutions' },
 		{ name: 'Discover', href: '/discover' },
-		{ name: 'Careers', href: '/careers' }
+		{ name: 'Careers', href: '/careers' },
+		{ name: 'Contact', href: '/contact' }
 	];
 
 	async function handleLogout() {
@@ -125,7 +126,6 @@
 					<a href="/login" class="btn btn-primary btn-sm">Sign In</a>
 				{/if}
 
-				<a href="/contact" class="btn btn-primary btn-sm" style="display: none;">Contact Us</a>
 			</div>
 		</div>
 
@@ -172,11 +172,6 @@
 							Sign In
 						</a>
 					{/if}
-				</li>
-				<li>
-					<a href="/contact" class="btn btn-primary btn-full" onclick={closeMobileMenu}>
-						Contact Us
-					</a>
 				</li>
 			</ul>
 		</div>
