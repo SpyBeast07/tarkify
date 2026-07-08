@@ -41,11 +41,11 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 
 ### Components
 
-* **Frontend (SvelteKit 5 + Tailwind CSS v4)**: Hosted on **Vercel** utilizing `@sveltejs/adapter-vercel` for server-side rendering (SSR) and static prerendering. It initiates orders, mounts the Razorpay checkout overlay, receives verification tokens, and triggers downloads.
-* **Backend (Bun + Hono)**: Deployed inside a **Docker container** on a VPS. Bun executes the fast Hono server. The backend is the single source of truth for product catalog items, prices, user entitlements, and download tokens.
-* **Database (PostgreSQL 15)**: Runs inside a Docker container. Manages users, products, purchases, active entitlements, and download keys.
-* **Storage Directory**: Mounts the host folder `./storage` to the container path `/app/storage`, securing files (located in `/app/storage/products/{download_key}/`) across restarts.
-* **Cloudflare Tunnel**: Exposes VPS port `3009` securely under `https://backend.tarkify.qzz.io` without opening public host ports.
+- **Frontend (SvelteKit 5 + Tailwind CSS v4)**: Hosted on **Vercel** utilizing `@sveltejs/adapter-vercel` for server-side rendering (SSR) and static prerendering. It initiates orders, mounts the Razorpay checkout overlay, receives verification tokens, and triggers downloads.
+- **Backend (Bun + Hono)**: Deployed inside a **Docker container** on a VPS. Bun executes the fast Hono server. The backend is the single source of truth for product catalog items, prices, user entitlements, and download tokens.
+- **Database (PostgreSQL 15)**: Runs inside a Docker container. Manages users, products, purchases, active entitlements, and download keys.
+- **Storage Directory**: Mounts the host folder `./storage` to the container path `/app/storage`, securing files (located in `/app/storage/products/{download_key}/`) across restarts.
+- **Cloudflare Tunnel**: Exposes VPS port `3009` securely under `https://backend.tarkify.qzz.io` without opening public host ports.
 
 ---
 
@@ -54,7 +54,7 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 ### Backend Configuration (`backend/.env`)
 
 | Variable | Required | Default | Purpose | Production Note |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `PORT` | Optional | `3001` | Server listening port inside the container. | Overridden to `3001` in Docker. |
 | `NODE_ENV` | Optional | `development` | Runtime environment mode. | Enforce `production` on VPS. |
 | `DATABASE_URL` | Required | — | Database connection string. | **Ignored in Docker Compose**, which builds it from Postgres parameters. |
@@ -68,25 +68,23 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 | `BETTER_AUTH_SECRET` | Required | — | Encryption secret for Better Auth sessions. | Generate with `openssl rand -base64 32`. |
 | `BETTER_AUTH_URL` | Required | — | Backend API base URL for auth redirects. | Set to the backend API base url (e.g. `http://localhost:3001` or `https://backend.tarkify.qzz.io`). |
 | `STORAGE_PATH` | Optional | `./storage` | Folder storing zip packages. | Set to `/app/storage` in Docker. |
-| `DOWNLOAD_TOKEN_TTL_SECONDS`| Optional | `600` | Expiration (s) of download links. | Default is 10 minutes. |
+| `DOWNLOAD_TOKEN_TTL_SECONDS` | Optional | `600` | Expiration (s) of download links. | Default is 10 minutes. |
 
 ### Frontend Configuration (`frontend/.env`)
 
-| Variable | Required | Default | Purpose | Production Note |
-|---|---|---|---|---|---|
-| `VITE_API_URL` | Required | `http://localhost:3009` | Backend base API URL. | Set to `https://backend.tarkify.qzz.io`. |
+| Variable | Required | Default | Purpose | Production Note | |---|---|---|---|---|---| | `VITE_API_URL` | Required | `http://localhost:3009` | Backend base API URL. | Set to `https://backend.tarkify.qzz.io`. |
 
 ### Email Configuration (`backend/.env`)
 
 | Variable | Required | Default | Purpose | Production Note |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | `RESEND_API_KEY` | Production only | — | Resend API key for sending emails. | Create at https://resend.com/api-keys. Optional in dev (emails are logged). |
 | `FROM_EMAIL` | Optional | `noreply@tarkify.com` | Sender address displayed to recipients. | Must use a domain verified in the Resend dashboard. |
 | `REPLY_TO_EMAIL` | Optional | `support@tarkify.qzz.io` | Reply-to header on all outgoing emails. | Set to a monitored support mailbox. |
 | `ADMIN_EMAIL` | Required | — | Recipient for admin notifications (contact forms, career applications). | Set to a monitored administrator mailbox. |
 | `EMAIL_PROVIDER` | Optional | `resend` | Email provider name. | Only `resend` is implemented. |
 
-> **Resend sandbox restriction**: Without a verified domain, `onboarding@resend.dev` can only send to the account owner's email. See [docs/EMAIL_SYSTEM.md](docs/EMAIL_SYSTEM.md) for setup instructions.
+> **Resend sandbox restriction**: Without a verified domain, `onboarding@resend.dev` can only send to the account owner's email. See docs/EMAIL_SYSTEM.md for setup instructions.
 
 ---
 
@@ -95,7 +93,7 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 ### Environment File Policy
 
 | File | Tracked by Git | Purpose |
-|------|---------------|---------|
+| --- | --- | --- |
 | `backend/.env.example` | ✅ Yes | Documented template with placeholder values |
 | `frontend/.env.example` | ✅ Yes | Documented template with placeholder values |
 | `backend/.env` | ❌ No | Local/production secrets per environment |
@@ -106,8 +104,11 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 ### How Secrets Are Managed
 
 1. **All secrets come from environment variables only.** The backend config (`config.ts`) enforces this with `requireEnv()` — the process crashes at startup if a required variable is missing.
+
 2. **No production secret exists in source code.** All `.env` files are gitignored. Never commit a `.env` file.
+
 3. **Docker images do not contain secrets.** The Dockerfile copies no `.env` file, and `docker-compose.yml` references all secrets via `${VARIABLE}` syntax — values come from the host environment at runtime.
+
 4. **Don't repeat yourself.** Each deployment environment (local dev, staging, production) has its own `.env` file. Template files (`.env.example`) contain placeholder values only — copy them to create your environment files:
 
    ```bash
@@ -118,15 +119,25 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 ### Production Secret Checklist
 
 - [ ] Generate a strong `BETTER_AUTH_SECRET`: `openssl rand -base64 32`
+
 - [ ] Set `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` to live keys (start with `rzp_live_`)
+
 - [ ] Set `RAZORPAY_WEBHOOK_SECRET` matching your Razorpay dashboard
+
 - [ ] Set a strong unique `PG_PASSWORD` (never use the local dev default `tarkifyPassword`)
+
 - [ ] Set `NODE_ENV=production`
+
 - [ ] Set `BETTER_AUTH_URL` to the production backend URL
+
 - [ ] Set `FRONTEND_URL` to the production frontend URL
+
 - [ ] Set `RESEND_API_KEY` to a live Resend API key
+
 - [ ] Set `FROM_EMAIL` to an address on a domain verified in Resend
+
 - [ ] Set `ADMIN_EMAIL` to a monitored production mailbox
+
 - [ ] Set `REPLY_TO_EMAIL` to a monitored support mailbox
 
 ---
@@ -134,37 +145,45 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 ## 4. Local Development Setup
 
 ### Prerequisites
-* [Bun](https://bun.sh) runtime installed.
-* [Docker Desktop](https://www.docker.com/products/docker-desktop/) running.
+
+- [Bun](https://bun.sh) runtime installed.
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) running.
 
 ### Step-by-Step Setup
 
 1. **Configure Environment Variables**:
-   * Create backend config:
+
+   - Create backend config:
+
      ```bash
      cp backend/.env.example backend/.env
      ```
-   * Create frontend config:
+   - Create frontend config:
+
      ```bash
      cp frontend/.env.example frontend/.env
      ```
-   * Populate credentials in `backend/.env` (Razorpay test keys starting with `rzp_test_`).
+   - Populate credentials in `backend/.env` (Razorpay test keys starting with `rzp_test_`).
 
 2. **Launch Database & Migrations**:
-   * Navigate to `/backend` and start Postgres:
+
+   - Navigate to `/backend` and start Postgres:
+
      ```bash
      cd backend
      npm run db:start
      ```
-   * This command automatically downloads Postgres, binds host port `5439`, waits until database readiness, runs database migrations (`scripts/migrate.ts`), and initiates the backend Hono API at `http://localhost:3009`.
+   - This command automatically downloads Postgres, binds host port `5439`, waits until database readiness, runs database migrations (`scripts/migrate.ts`), and initiates the backend Hono API at `http://localhost:3009`.
 
 3. **Launch Frontend Development Server**:
-   * Navigate to `/frontend` and run:
+
+   - Navigate to `/frontend` and run:
+
      ```bash
      cd frontend
      npm run dev
      ```
-   * Open [http://localhost:5173](http://localhost:5173) in your browser.
+   - Open <http://localhost:5173> in your browser.
 
 ---
 
@@ -173,19 +192,22 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 Our backend stack runs fully containerized under a zero-touch, self-healing configuration.
 
 ### Initial Server Setup
+
 1. Clone the repository to your VPS directory (e.g. `/opt/tarkify`).
 2. Create the production environment configurations:
-   * Populate `backend/.env` with your **live production keys** (`rzp_live_...`), strong database passwords, and the frontend URL (`FRONTEND_URL=https://tarkify.qzz.io`).
-   * Populate `frontend/.env.production` with your backend URL (`VITE_API_URL=https://backend.tarkify.qzz.io`).
+   - Populate `backend/.env` with your **live production keys** (`rzp_live_...`), strong database passwords, and the frontend URL (`FRONTEND_URL=https://tarkify.qzz.io`).
+   - Populate `frontend/.env.production` with your backend URL (`VITE_API_URL=https://backend.tarkify.qzz.io`).
 
 ### Deployment Executions
 
 Run the following command in `/backend` on your VPS to build and start the server:
+
 ```bash
 docker compose up --build -d
 ```
 
 #### Automatic Lifecycle Actions:
+
 1. **Database Starts**: PostgreSQL launches on port `5432` internally.
 2. **Health Gate**: The API container blocks execution until Postgres passes the database connection probe.
 3. **Automatic Migrations**: The entrypoint script (`docker-entrypoint.sh`) runs `bun run scripts/migrate.ts` before starting the server. This applies any missing migration files inside transactions and writes status logs.
@@ -194,20 +216,23 @@ docker compose up --build -d
 
 ### Data Persistence Scenarios
 
-* **Database Records**: Persistent data resides inside the named volume `pgdata` (`/var/lib/postgresql/data` internally).
-* **Product Zip Packages**: Persisted via bind-mount `./storage:/app/storage`. Place your product zip files inside `backend/storage/products/{download_key}/` on the VPS host machine.
-* **Volume Persistence Summary**:
-  * `docker compose down` -> data survives.
-  * Rebuilding API images -> data survives.
-  * VPS Host reboot -> Docker restarts both containers automatically, data survives.
-  * `docker compose down -v` -> **Destroys DB data** (clears named volume).
+- **Database Records**: Persistent data resides inside the named volume `pgdata` (`/var/lib/postgresql/data` internally).
+- **Product Zip Packages**: Persisted via bind-mount `./storage:/app/storage`. Place your product zip files inside `backend/storage/products/{download_key}/` on the VPS host machine.
+- **Volume Persistence Summary**:
+  - `docker compose down` -&gt; data survives.
+  - Rebuilding API images -&gt; data survives.
+  - VPS Host reboot -&gt; Docker restarts both containers automatically, data survives.
+  - `docker compose down -v` -&gt; **Destroys DB data** (clears named volume).
 
 ### Application Updates
+
 To fetch updates and deploy a new version:
+
 ```bash
 git pull
 docker compose up --build -d
 ```
+
 *Migrations will execute automatically. If a migration fails, the container stops and does not launch the new server version, protecting the database state (Rollback safety).*
 
 ---
@@ -216,16 +241,17 @@ docker compose up --build -d
 
 We distinguish between liveness and readiness:
 
-* **Liveness Endpoint (`GET /api/health`)**:
-  * Used for basic uptime trackers.
-  * Always returns HTTP `200` with uptime and timestamp if the Node process is running.
-* **Readiness Endpoint (`GET /api/ready`)**:
-  * Used for container probes and load balancers.
-  * Returns HTTP `200 OK` only when the database is active and all migrations are applied.
-  * Returns HTTP `503 Service Unavailable` if the DB is offline or migrations are missing.
-* **Docker Health Check**:
-  * Docker checks `/api/ready` every 15 seconds. If the endpoint returns `503`, the container is marked as `unhealthy`, prompting orchestrators to restart it or route traffic away.
-  * Verify health status via:
+- **Liveness Endpoint (**`GET /api/health`**)**:
+  - Used for basic uptime trackers.
+  - Always returns HTTP `200` with uptime and timestamp if the Node process is running.
+- **Readiness Endpoint (**`GET /api/ready`**)**:
+  - Used for container probes and load balancers.
+  - Returns HTTP `200 OK` only when the database is active and all migrations are applied.
+  - Returns HTTP `503 Service Unavailable` if the DB is offline or migrations are missing.
+- **Docker Health Check**:
+  - Docker checks `/api/ready` every 15 seconds. If the endpoint returns `503`, the container is marked as `unhealthy`, prompting orchestrators to restart it or route traffic away.
+  - Verify health status via:
+
     ```bash
     docker compose ps
     ```
@@ -237,9 +263,9 @@ We distinguish between liveness and readiness:
 Cloudflare Tunnel provides secure public access to your backend without exposing raw VPS ports to the internet.
 
 1. **Domain Route Mapping**:
-   * Map your public domain `backend.tarkify.qzz.io` to local VPS service `http://localhost:3009`.
+   - Map your public domain `backend.tarkify.qzz.io` to local VPS service `http://localhost:3009`.
 2. **CORS Enforcement**:
-   * The Hono API CORS middleware whitelists `https://tarkify.qzz.io` (and Vercel preview environments). Any non-whitelisted cross-origin request is rejected.
+   - The Hono API CORS middleware whitelists `https://tarkify.qzz.io` (and Vercel preview environments). Any non-whitelisted cross-origin request is rejected.
 
 ---
 
@@ -247,16 +273,16 @@ Cloudflare Tunnel provides secure public access to your backend without exposing
 
 The SvelteKit frontend deploys to Vercel dynamically:
 
-* **Build Command**: `vite build`
-* **Output Adapter**: `@sveltejs/adapter-vercel`
-* **Vercel Environment Settings**: Add `VITE_API_URL=https://backend.tarkify.qzz.io` under Vercel project environment settings.
+- **Build Command**: `vite build`
+- **Output Adapter**: `@sveltejs/adapter-vercel`
+- **Vercel Environment Settings**: Add `VITE_API_URL=https://backend.tarkify.qzz.io` under Vercel project environment settings.
 
 ---
 
 ## 9. Database Migrations
 
-* **System Structure**: Migration SQL files reside under [backend/migrations/](file:///Users/kushagra/Documents/Tarkify/tarkify/backend/migrations/). They execute sequentially and record their application history in the `_migrations` database table. Currently, 13 migrations exist (from `001_create_users.sql` up to `013_create_audit_logs.sql`).
-* **Adding a New Migration**:
+- **System Structure**: Migration SQL files reside under \[backend/migrations/\](file:///Users/kushagra/Documents/Tarkify/tarkify/backend/migrations/). They execute sequentially and record their application history in the `_migrations` database table. Currently, 13 migrations exist (from `001_create_users.sql` up to `013_create_audit_logs.sql`).
+- **Adding a New Migration**:
   1. Create a SQL file with a sequential prefix: `backend/migrations/014_my_new_table.sql`.
   2. Write DDL statements inside it. Ensure statements are safe and idempotent.
   3. Deploy: On VPS push, `docker compose up --build -d` will detect and run the new migration script automatically on startup.
@@ -266,39 +292,46 @@ The SvelteKit frontend deploys to Vercel dynamically:
 ## 10. Troubleshooting Guide
 
 ### 1. Backend API Container Won't Start
-* **Cause**: Environment variables are missing or incorrect.
-* **Fix**: Check `docker compose logs api`. Ensure `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET` are defined.
-* **Cause**: Database is cold-starting.
-* **Fix**: The API waits up to 45s for Postgres to start. Check if Postgres is running: `docker compose logs postgres`.
+
+- **Cause**: Environment variables are missing or incorrect.
+- **Fix**: Check `docker compose logs api`. Ensure `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, and `RAZORPAY_WEBHOOK_SECRET` are defined.
+- **Cause**: Database is cold-starting.
+- **Fix**: The API waits up to 45s for Postgres to start. Check if Postgres is running: `docker compose logs postgres`.
 
 ### 2. Database Connection Failure
-* **Cause**: Docker Compose is using container networks, but you defined `localhost` in `DATABASE_URL`.
-* **Fix**: Remember that `DATABASE_URL` is ignored inside the container. Verify that the variables `PG_USER`, `PG_PASSWORD`, and `PG_DB` in `backend/.env` match the credentials.
+
+- **Cause**: Docker Compose is using container networks, but you defined `localhost` in `DATABASE_URL`.
+- **Fix**: Remember that `DATABASE_URL` is ignored inside the container. Verify that the variables `PG_USER`, `PG_PASSWORD`, and `PG_DB` in `backend/.env` match the credentials.
 
 ### 3. Migration Failures
-* **Cause**: Syntax error or structural collision in a new SQL file.
-* **Fix**: Check logs: `docker compose logs api`. If a migration fails, the transaction rolls back. Fix the SQL file and run `docker compose up --build -d` to retry.
+
+- **Cause**: Syntax error or structural collision in a new SQL file.
+- **Fix**: Check logs: `docker compose logs api`. If a migration fails, the transaction rolls back. Fix the SQL file and run `docker compose up --build -d` to retry.
 
 ### 4. CORS Violation Errors
-* **Cause**: The frontend URL does not match `FRONTEND_URL` in `backend/.env`.
-* **Fix**: Inspect the response headers of your failed request. Ensure `FRONTEND_URL` matches your frontend origin (no trailing slash).
+
+- **Cause**: The frontend URL does not match `FRONTEND_URL` in `backend/.env`.
+- **Fix**: Inspect the response headers of your failed request. Ensure `FRONTEND_URL` matches your frontend origin (no trailing slash).
 
 ### 5. Content Security Policy (CSP) Failures
-* **Cause**: Google Fonts, Lucide icons, or Razorpay checkout script is blocked.
-* **Fix**: Check browser console logs. Standard allowed domains are configured in `svelte.config.js`. If you add external scripts/images, add them to `svelte.config.js` directives under the appropriate section.
-* **Cause**: Flash of incorrect theme or theme selector script block.
-* **Fix**: Ensure `/js/theme.js` is loaded correctly from the static folder and matches `src="/js/theme.js"` in `app.html`.
+
+- **Cause**: Google Fonts, Lucide icons, or Razorpay checkout script is blocked.
+- **Fix**: Check browser console logs. Standard allowed domains are configured in `svelte.config.js`. If you add external scripts/images, add them to `svelte.config.js` directives under the appropriate section.
+- **Cause**: Flash of incorrect theme or theme selector script block.
+- **Fix**: Ensure `/js/theme.js` is loaded correctly from the static folder and matches `src="/js/theme.js"` in `app.html`.
 
 ### 6. Razorpay Callback Failure
-* **Cause**: The webhook secret configured in Razorpay dashboard does not match `RAZORPAY_WEBHOOK_SECRET`.
-* **Fix**: Signature validation will fail. Verify matching secrets in Razorpay dashboard and VPS `backend/.env`. Check `docker compose logs api` for validation signature mismatches.
+
+- **Cause**: The webhook secret configured in Razorpay dashboard does not match `RAZORPAY_WEBHOOK_SECRET`.
+- **Fix**: Signature validation will fail. Verify matching secrets in Razorpay dashboard and VPS `backend/.env`. Check `docker compose logs api` for validation signature mismatches.
 
 ### 7. Email Delivery Failure
-* **Cause**: Resend domain is not verified. The sandbox sender (`onboarding@resend.dev`) can only deliver to the account owner.
-* **Fix**: Verify a domain in the Resend dashboard, update `FROM_EMAIL`, and rebuild: `docker compose up --build -d`.
-* **Cause**: `RESEND_API_KEY` is missing or invalid.
-* **Fix**: Verify the key with `docker compose exec api echo $RESEND_API_KEY` and regenerate from the Resend dashboard if needed.
-* **Cause**: Resend rate limit exceeded.
-* **Fix**: The system retries once automatically. If repeated, check Resend usage dashboard.
 
-> For comprehensive email documentation including architecture, template system, and troubleshooting, see [docs/EMAIL_SYSTEM.md](docs/EMAIL_SYSTEM.md).
+- **Cause**: Resend domain is not verified. The sandbox sender (`onboarding@resend.dev`) can only deliver to the account owner.
+- **Fix**: Verify a domain in the Resend dashboard, update `FROM_EMAIL`, and rebuild: `docker compose up --build -d`.
+- **Cause**: `RESEND_API_KEY` is missing or invalid.
+- **Fix**: Verify the key with `docker compose exec api echo $RESEND_API_KEY` and regenerate from the Resend dashboard if needed.
+- **Cause**: Resend rate limit exceeded.
+- **Fix**: The system retries once automatically. If repeated, check Resend usage dashboard.
+
+> For comprehensive email documentation including architecture, template system, and troubleshooting, see docs/EMAIL_SYSTEM.md.
