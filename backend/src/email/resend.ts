@@ -2,7 +2,8 @@
  * Resend email provider.
  *
  * Wraps the Resend SDK behind the EmailProvider interface.
- * In non-production environments, emails are logged but not sent.
+ * In non-production environments without an API key, emails are silently
+ * returned with status 'logged' — no actual send occurs.
  * No route imports Resend directly — use the EmailService instead.
  *
  * Features:
@@ -46,13 +47,6 @@ export class ResendProvider implements EmailProvider {
         : options.to.email;
 
     if (!this.ready || !this.client) {
-      console.info(
-        `[ResendProvider] Dev mode — email logged:\n` +
-        `  To:      ${to}\n` +
-        `  Subject: ${options.subject}\n` +
-        `  HTML:    ${options.html.slice(0, 200)}${options.html.length > 200 ? '...' : ''}`
-      );
-
       return {
         id: crypto.randomUUID(),
         provider: this.name,

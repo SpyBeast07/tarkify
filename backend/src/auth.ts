@@ -157,11 +157,15 @@ export function initAuth() {
       minPasswordLength: 8,
       maxPasswordLength: 128,
       sendResetPassword: async ({ user, url }) => {
-        await emailService.sendPasswordResetEmail({
-          email: user.email,
-          resetUrl: url,
-          userName: user.name ?? undefined,
-        });
+        try {
+          await emailService.sendPasswordResetEmail({
+            email: user.email,
+            resetUrl: url,
+            userName: user.name ?? undefined,
+          });
+        } catch (err) {
+          console.error('[auth] sendResetPassword failed:', err);
+        }
       },
     },
 
@@ -170,11 +174,15 @@ export function initAuth() {
       autoSignInAfterVerification: true,
       expiresIn: 86400,
       sendVerificationEmail: async ({ user, url }) => {
-        await emailService.sendVerificationEmail({
-          email: user.email,
-          verificationUrl: url,
-          userName: user.name ?? undefined,
-        });
+        try {
+          await emailService.sendVerificationEmail({
+            email: user.email,
+            verificationUrl: url,
+            userName: user.name ?? undefined,
+          });
+        } catch (err) {
+          console.error('[auth] sendVerificationEmail failed:', err);
+        }
       },
     },
 

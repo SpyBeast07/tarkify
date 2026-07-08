@@ -29,7 +29,7 @@ function parsePositiveInt(raw: string, name: string, max: number): number {
 export const config = {
   port: parsePort(optionalEnv('PORT', '3001')),
 
-  nodeEnv: optionalEnv('NODE_ENV', 'development'),
+  nodeEnv: optionalEnv('NODE_ENV', 'production'),
 
   database: {
     url: requireEnv('DATABASE_URL'),

@@ -1,6 +1,7 @@
 /**
  * Email logger.
- * Records email delivery attempts for observability.
+ * Records email delivery attempts in memory for observability.
+ * No console output — clients read the log via the API or direct access.
  */
 
 export type EmailLogLevel = 'info' | 'warn' | 'error';
@@ -48,11 +49,6 @@ export class EmailLogger {
     if (this.entries.length > this.maxEntries) {
       this.entries = this.entries.slice(-this.maxEntries);
     }
-
-    const prefix = `[Email:${level.toUpperCase()}]`;
-    console[level === 'error' ? 'error' : level === 'warn' ? 'warn' : 'info'](
-      `${prefix} provider=${provider} to=${to} subject="${subject}" duration=${durationMs}ms message="${message}"`
-    );
   }
 
   info(to: string, subject: string, provider: string, message: string, durationMs: number): void {
