@@ -50,3 +50,7 @@ export { buildNewsletterEmail } from './templates/newsletter-email.js';
 export { buildNewsletterConfirmationEmail } from './templates/newsletter-confirmation.js';
 export { buildNewsletterUnsubscribedEmail } from './templates/newsletter-unsubscribed.js';
 export { buildAdminNotificationEmail } from './templates/admin-notification.js';
+
+export { canSendEmail, getEmailPreferences, updateEmailPreferences, extractEmailPreferences } from './preferences/service.js';
+export type { EmailCategory, EmailPreferences } from './preferences/types.js';
+export { EMAIL_CATEGORIES, DEFAULT_EMAIL_PREFERENCES } from './preferences/types.js';

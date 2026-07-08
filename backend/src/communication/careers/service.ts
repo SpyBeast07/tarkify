@@ -2,6 +2,7 @@ import { sanitizeText, sanitizeUrl, normalizeEmail } from '../shared/sanitizers.
 import { Limits } from '../shared/validators.js';
 import { validateCareerForm, toCareerFormData } from './validation.js';
 import { insertCareerApplication } from './repository.js';
+import { emailService } from '../../email/index.js';
 import type { CareerApplication } from './types.js';
 
 export interface CareerServiceResult {
@@ -41,6 +42,18 @@ export async function submitCareerApplication(
     ip,
     userAgent
   );
+
+  emailService.sendAdminNotification({
+    subject: 'New career application received',
+    message: `${sanitized.name} has applied for a position.`,
+    metadata: {
+      name: sanitized.name,
+      email: sanitized.email,
+      phone: sanitized.phone,
+      resume_url: sanitized.resumeUrl,
+      portfolio_url: sanitized.portfolioUrl,
+    },
+  }).catch((err) => console.error('[careers] sendAdminNotification failed:', err));
 
   return { success: true, data: record };
 }

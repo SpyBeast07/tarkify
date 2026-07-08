@@ -137,7 +137,14 @@ webhooks.post('/razorpay', async (c) => {
             razorpayOrderId: updated.razorpay_order_id,
             purchaseDate: formatPurchaseDate(updated.updated_at ?? updated.created_at),
             accountUrl,
-          }).catch((err) => console.error('[webhook] sendPurchaseReceipt failed:', err));
+          }).catch((err) => {
+            console.error('[webhook] sendPurchaseReceipt failed:', err);
+            emailService.sendAdminNotification({
+              subject: 'Email send failure — purchase receipt',
+              message: `Failed to send purchase receipt email to ${buyerEmail}.`,
+              metadata: { email: buyerEmail, error: String(err), orderId: updated.razorpay_order_id },
+            }).catch(() => {});
+          });
 
           if (productSlug) {
             emailService.sendDownloadEmail({
@@ -146,7 +153,14 @@ webhooks.post('/razorpay', async (c) => {
               downloadUrl: `${config.auth.url}/api/downloads/${productSlug}?token=${downloadTokenRecord.token}`,
               expiresAt: formatPurchaseDate(downloadTokenRecord.expires_at),
               accountUrl,
-            }).catch((err) => console.error('[webhook] sendDownloadEmail failed:', err));
+            }).catch((err) => {
+              console.error('[webhook] sendDownloadEmail failed:', err);
+              emailService.sendAdminNotification({
+                subject: 'Email send failure — download email',
+                message: `Failed to send download email to ${buyerEmail}.`,
+                metadata: { email: buyerEmail, error: String(err), orderId: updated.razorpay_order_id },
+              }).catch(() => {});
+            });
           }
         }).catch(() => {});
       }
@@ -154,6 +168,11 @@ webhooks.post('/razorpay', async (c) => {
       return c.json({ status: 'processed' });
     } catch (error) {
       console.error(`Webhook payment.captured: error for order ${orderId}`, error);
+      emailService.sendAdminNotification({
+        subject: 'Webhook processing error — payment.captured',
+        message: `Failed to process payment.captured webhook for order ${orderId}.`,
+        metadata: { orderId, paymentId, error: String(error) },
+      }).catch(() => {});
       return webhookError(c, 'WEBHOOK_PROCESSING_FAILED', 'Failed to process payment capture', 500);
     }
   }
@@ -191,6 +210,19 @@ webhooks.post('/razorpay', async (c) => {
       console.info(
         `Webhook payment.refunded: purchase=${updated.id} order=${orderId}`
       );
+
+      emailService.sendAdminNotification({
+        subject: 'Payment refunded',
+        message: `A refund has been processed for order ${orderId}.`,
+        metadata: {
+          purchaseId: updated.id,
+          orderId,
+          amount: updated.amount,
+          currency: updated.currency,
+          email: updated.guest_email,
+        },
+      }).catch((err) => console.error('[webhook] sendAdminNotification failed:', err));
+
       return c.json({ status: 'refund_processed' });
     } catch (error) {
       console.error(`Webhook payment.refunded: error for order ${orderId}`, error);

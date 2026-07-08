@@ -2,7 +2,10 @@ import { config } from '../config.js';
 import { ResendProvider } from './resend.js';
 import { emailLogger } from './logger.js';
 import { withRetry, defaultRetryConfig } from './retry.js';
+import { insertEmailLog } from './log-repository.js';
+import { canSendEmail } from './preferences/service.js';
 import type { EmailProvider } from './provider.js';
+import type { EmailCategory } from './preferences/types.js';
 import type {
   SendEmailResult,
   VerificationEmailData,
@@ -25,6 +28,20 @@ import { buildNewsletterEmail } from './templates/newsletter-email.js';
 import { buildNewsletterConfirmationEmail } from './templates/newsletter-confirmation.js';
 import { buildNewsletterUnsubscribedEmail } from './templates/newsletter-unsubscribed.js';
 import { buildAdminNotificationEmail } from './templates/admin-notification.js';
+
+const TEMPLATE_CATEGORIES: Record<string, EmailCategory | null> = {
+  sendVerificationEmail: null,        // security — always send
+  sendPasswordResetEmail: null,       // security — always send
+  sendPurchaseReceipt: 'billing',
+  sendDownloadEmail: 'billing',
+  sendContactNotification: null,      // goes to admin, not user
+  sendContactAcknowledgement: 'product',
+  sendNewsletterConfirmation: null,   // transactional — just subscribed
+  sendNewsletterUnsubscribed: null,   // transactional — just unsubscribed
+  sendNewsletterEmail: 'newsletter',
+  sendAdminNotification: null,        // internal — skip
+  sendTestEmail: null,                // dev — skip
+};
 
 export class EmailService {
   private provider: EmailProvider;
@@ -114,6 +131,24 @@ export class EmailService {
     html: string,
     methodName: string,
   ): Promise<SendEmailResult> {
+    const category = TEMPLATE_CATEGORIES[methodName] ?? null;
+    if (category !== null) {
+      const allowed = await canSendEmail(to, category);
+      if (!allowed) {
+        emailLogger.info(to, subject, this.provider.name, `${methodName} skipped (${category} opted out)`, 0);
+        insertEmailLog(to, methodName, this.provider.name, null, 'skipped', null, { subject, category })
+          .catch(() => {});
+        return {
+          id: crypto.randomUUID(),
+          provider: this.provider.name,
+          timestamp: new Date(),
+          to,
+          subject,
+          status: 'skipped',
+        };
+      }
+    }
+
     const start = performance.now();
 
     try {
@@ -129,11 +164,15 @@ export class EmailService {
 
       const duration = Math.round(performance.now() - start);
       emailLogger.info(to, subject, this.provider.name, `${methodName} succeeded`, duration);
+      insertEmailLog(to, methodName, this.provider.name, result.id, result.status, null, { subject })
+        .catch(() => {});
       return result;
     } catch (error) {
       const duration = Math.round(performance.now() - start);
       const message = error instanceof Error ? error.message : 'Unknown error';
       emailLogger.error(to, subject, this.provider.name, `${methodName} failed: ${message}`, duration);
+      insertEmailLog(to, methodName, this.provider.name, null, 'failed', message, { subject })
+        .catch(() => {});
       throw error;
     }
   }

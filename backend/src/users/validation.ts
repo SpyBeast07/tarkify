@@ -15,11 +15,20 @@ export const updateProfileSchema = z.object({
     .optional(),
 });
 
+const emailPreferencesSchema = z.object({
+  marketing: z.boolean(),
+  newsletter: z.boolean(),
+  product: z.boolean(),
+  security: z.literal(true),
+  billing: z.boolean(),
+});
+
 export const preferencesSchema = z
   .object({
     theme: z.enum(['light', 'dark', 'system']).optional(),
     locale: z.string().min(2).max(10).optional(),
     emailNotifications: z.boolean().optional(),
+    email: emailPreferencesSchema.optional(),
   })
   .catch({})
   .default({});

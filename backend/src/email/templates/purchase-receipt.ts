@@ -43,7 +43,7 @@ export function buildPurchaseReceiptEmail(data: PurchaseReceiptEmailData): strin
         <tr>
           <td style="padding:0 ${theme.spacing.lg};font-family:${theme.text.body.fontFamily};font-size:${theme.text.body.fontSize};color:${theme.text.body.color};line-height:${theme.text.body.lineHeight};">
             <p style="margin:0 0 ${theme.spacing.md} 0;">
-              <a href="${escapeAttr(data.receiptUrl)}" style="color:${theme.link.color};text-decoration:${theme.link.decoration};">View your receipt on Razorpay</a>
+              <a href="${escapeAttr(data.receiptUrl)}" target="_blank" rel="noopener noreferrer" style="color:${theme.link.color};text-decoration:${theme.link.decoration};">View your receipt on Razorpay</a>
             </p>
           </td>
         </tr>

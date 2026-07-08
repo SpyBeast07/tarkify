@@ -44,7 +44,7 @@ export function buildDownloadEmail(data: DownloadEmailData): string {
               If the button doesn't work, copy and paste this URL into your browser:
             </p>
             <p style="margin:0;word-break:break-all;">
-              <a href="${escapeAttr(data.downloadUrl)}" style="color:${theme.link.color};font-size:${theme.link.fontSize};">${escapeHtml(data.downloadUrl)}</a>
+              <a href="${escapeAttr(data.downloadUrl)}" target="_blank" rel="noopener noreferrer" style="color:${theme.link.color};font-size:${theme.link.fontSize};">${escapeHtml(data.downloadUrl)}</a>
             </p>
           </td>
         </tr>

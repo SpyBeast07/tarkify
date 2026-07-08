@@ -55,7 +55,7 @@ export function buildPasswordResetEmail(data: PasswordResetEmailData): string {
               If the button doesn't work, copy and paste this URL into your browser:
             </p>
             <p style="margin:0;word-break:break-all;">
-              <a href="${escapeAttr(data.resetUrl)}" style="color:${theme.link.color};font-size:${theme.link.fontSize};">${escapeHtml(data.resetUrl)}</a>
+              <a href="${escapeAttr(data.resetUrl)}" target="_blank" rel="noopener noreferrer" style="color:${theme.link.color};font-size:${theme.link.fontSize};">${escapeHtml(data.resetUrl)}</a>
             </p>
           </td>
         </tr>

@@ -29,7 +29,7 @@ export interface SendEmailResult {
   timestamp: Date;
   to: string;
   subject: string;
-  status: 'sent' | 'logged' | 'failed';
+  status: 'sent' | 'logged' | 'failed' | 'skipped';
 }
 
 export interface VerificationEmailData {

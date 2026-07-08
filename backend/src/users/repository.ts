@@ -60,6 +60,21 @@ export async function updatePreferences(
   return result.rows[0] ?? null;
 }
 
+export async function updateEmailPreferences(
+  id: string,
+  emailPrefs: Record<string, boolean>,
+): Promise<TarkifyUser | null> {
+  const result = await query<TarkifyUser>(
+    `UPDATE users
+     SET preferences = jsonb_set(preferences, '{email}', $1::jsonb, true),
+         updated_at = NOW()
+     WHERE id = $2
+     RETURNING *`,
+    [JSON.stringify(emailPrefs), id],
+  );
+  return result.rows[0] ?? null;
+}
+
 export async function updateLastActivity(id: string): Promise<void> {
   await query(
     'UPDATE users SET last_activity_at = NOW() WHERE id = $1',

@@ -142,6 +142,11 @@ payments.post('/verify', async (c) => {
 
   if (!isValid) {
     console.error('Payment signature verification failed for order:', razorpay_order_id);
+    emailService.sendAdminNotification({
+      subject: 'Payment verification failed',
+      message: `Payment signature verification failed for order ${razorpay_order_id}. Possible tampering.`,
+      metadata: { orderId: razorpay_order_id, paymentId: razorpay_payment_id },
+    }).catch(() => {});
     return payError(c, 'VERIFICATION_FAILED', 'Payment verification failed. Contact support if payment was deducted.', 400);
   }
 
@@ -198,7 +203,14 @@ payments.post('/verify', async (c) => {
           razorpayOrderId: updatedPurchase.razorpay_order_id,
           purchaseDate: formatPurchaseDate(updatedPurchase.updated_at ?? updatedPurchase.created_at),
           accountUrl,
-        }).catch((err) => console.error('[payment] sendPurchaseReceipt failed:', err));
+        }).catch((err) => {
+          console.error('[payment] sendPurchaseReceipt failed:', err);
+          emailService.sendAdminNotification({
+            subject: 'Email send failure — purchase receipt',
+            message: `Failed to send purchase receipt email to ${buyerEmail}.`,
+            metadata: { email: buyerEmail, error: String(err), orderId: updatedPurchase.razorpay_order_id },
+          }).catch(() => {});
+        });
 
         if (productSlug) {
           emailService.sendDownloadEmail({
@@ -207,7 +219,14 @@ payments.post('/verify', async (c) => {
             downloadUrl: `${config.auth.url}/api/downloads/${productSlug}?token=${downloadTokenRecord.token}`,
             expiresAt: formatPurchaseDate(downloadTokenRecord.expires_at),
             accountUrl,
-          }).catch((err) => console.error('[payment] sendDownloadEmail failed:', err));
+          }).catch((err) => {
+            console.error('[payment] sendDownloadEmail failed:', err);
+            emailService.sendAdminNotification({
+              subject: 'Email send failure — download email',
+              message: `Failed to send download email to ${buyerEmail}.`,
+              metadata: { email: buyerEmail, error: String(err), orderId: updatedPurchase.razorpay_order_id },
+            }).catch(() => {});
+          });
         }
       }).catch(() => {});
     }

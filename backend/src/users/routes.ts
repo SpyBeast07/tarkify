@@ -5,6 +5,9 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import * as userService from './service.js';
 import * as userRepository from './repository.js';
 import * as auditService from '../audit/service.js';
+import * as emailPrefsService from '../email/preferences/service.js';
+import type { EmailCategory } from '../email/preferences/types.js';
+import { EMAIL_CATEGORIES } from '../email/preferences/types.js';
 import { query, withTransaction } from '../db.js';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 
@@ -142,6 +145,57 @@ users.put('/preferences', async (c) => {
     }
     throw err;
   }
+});
+
+users.get('/email-preferences', async (c) => {
+  const authUser = c.get('user');
+  if (!authUser) {
+    return userError(c, 'UNAUTHORIZED', 'Authentication required', 401);
+  }
+
+  const prefs = await emailPrefsService.getEmailPreferences(authUser.id);
+  if (!prefs) {
+    return userError(c, 'NOT_FOUND', 'User not found', 404);
+  }
+
+  return c.json({ emailPreferences: prefs });
+});
+
+users.put('/email-preferences', async (c) => {
+  const authUser = c.get('user');
+  if (!authUser) {
+    return userError(c, 'UNAUTHORIZED', 'Authentication required', 401);
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await c.req.json();
+  } catch {
+    return userError(c, 'BAD_REQUEST', 'Invalid JSON in request body', 400);
+  }
+
+  const unknownKeys = Object.keys(body).filter((k) => !(EMAIL_CATEGORIES as readonly string[]).includes(k));
+  if (unknownKeys.length > 0) {
+    return userError(c, 'VALIDATION_ERROR', `Unknown categories: ${unknownKeys.join(', ')}`, 400);
+  }
+
+  const input: Partial<Record<EmailCategory, boolean>> = {};
+  for (const cat of EMAIL_CATEGORIES) {
+    if (typeof body[cat] === 'boolean') {
+      input[cat] = body[cat] as boolean;
+    }
+  }
+
+  if (Object.keys(input).length === 0) {
+    return userError(c, 'VALIDATION_ERROR', 'At least one valid preference is required', 400);
+  }
+
+  const prefs = await emailPrefsService.updateEmailPreferences(authUser.id, input);
+  if (!prefs) {
+    return userError(c, 'NOT_FOUND', 'User not found', 404);
+  }
+
+  return c.json({ message: 'Email preferences updated', emailPreferences: prefs });
 });
 
 users.get('/touch', async (c) => {

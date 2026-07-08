@@ -31,7 +31,7 @@ export function Footer(props?: FooterProps): string {
           </p>
           ${unsubscribeUrl ? `
             <p style="margin:${theme.spacing.sm} 0 0 0;">
-              <a href="${escapeAttr(unsubscribeUrl)}" style="
+              <a href="${escapeAttr(unsubscribeUrl)}" target="_blank" style="
                 font-family:${theme.fonts.body};
                 font-size:${theme.fontSizes.xs};
                 color:${theme.colors.textMuted};

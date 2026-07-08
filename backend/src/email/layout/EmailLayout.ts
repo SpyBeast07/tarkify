@@ -19,6 +19,16 @@ export function EmailLayout({ title, previewText, children }: EmailLayoutProps):
       .email-container{width:100%!important}
       .email-padding{padding-left:${theme.layout.responsivePadding}!important;padding-right:${theme.layout.responsivePadding}!important}
     }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
   </style>
   <!--[if !mso]><!-->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -35,7 +45,7 @@ export function EmailLayout({ title, previewText, children }: EmailLayoutProps):
   </noscript>
   <![endif]-->
 </head>
-<body style="
+<body class="email-body-bg" style="
   margin:0;
   padding:0;
   background:${theme.layout.bodyBg};
@@ -47,11 +57,11 @@ export function EmailLayout({ title, previewText, children }: EmailLayoutProps):
   </div>
   ` : ''}
 
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${theme.layout.bodyBg};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:${theme.layout.bodyBg};">
     <tr>
       <td align="center" style="padding:${theme.layout.bodyPadding};">
 
-        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container" style="
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
           max-width:${theme.layout.maxWidth};
           width:100%;
           background:${theme.layout.cardBg};

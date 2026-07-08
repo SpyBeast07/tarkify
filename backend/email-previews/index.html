@@ -1,0 +1,2576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Template Previews</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 32px 16px; color: #1a1a1a; }
+    h1 { font-size: 24px; margin-bottom: 8px; }
+    p.subtitle { color: #6b7280; margin-bottom: 32px; }
+    .nav { position: sticky; top: 0; background: #f3f4f6; padding: 12px 0; z-index: 10; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; border-bottom: 1px solid #e5e7eb; }
+    .nav a { color: #273b09; text-decoration: none; font-size: 13px; padding: 4px 12px; border-radius: 4px; background: #fff; border: 1px solid #e5e7eb; }
+    .nav a:hover { background: #f0fdf4; border-color: #273b09; }
+    .template-section { scroll-margin-top: 60px; }
+    footer { margin-top: 48px; padding: 24px 0; border-top: 1px solid #e5e7eb; color: #6b7280; font-size: 13px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>Email Template Previews</h1>
+  <p class="subtitle">10 templates — rendered with sample data. Use browser DevTools to toggle dark mode and test responsiveness.</p>
+
+  <nav class="nav">
+    <a href="#verification-email">Verification Email</a>
+    <a href="#password-reset">Password Reset</a>
+    <a href="#purchase-receipt">Purchase Receipt</a>
+    <a href="#download-email">Download Email</a>
+    <a href="#contact-notification-admin">Contact Notification (Admin)</a>
+    <a href="#contact-acknowledgement">Contact Acknowledgement</a>
+    <a href="#newsletter-broadcast">Newsletter Broadcast</a>
+    <a href="#newsletter-confirmation">Newsletter Confirmation</a>
+    <a href="#newsletter-unsubscribed">Newsletter Unsubscribed</a>
+    <a href="#admin-notification">Admin Notification</a>
+  </nav>
+
+  
+  <section id="verification-email" class="template-section">
+    <h2 style="font-size:18px;margin-bottom:12px;color:#273b09;">Verification Email</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 48px;overflow:hidden;">
+    <div style="background:#f9fafb;padding:8px 16px;border-bottom:1px solid #e5e7eb;font-family:monospace;font-size:12px;color:#6b7280;">
+      Rendered in browser — send to Litmus/Email on Acid for real client screenshots
+    </div>
+    <div style="max-width:640px;margin:0 auto;"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Verify your email address</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .email-container{width:100%!important}
+      .email-padding{padding-left:16px!important;padding-right:16px!important}
+    }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
+  </style>
+  <!--[if !mso]><!-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!--<![endif]-->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body class="email-body-bg" style="
+  margin:0;
+  padding:0;
+  background:#dbd2e0;
+  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+">
+  
+  <div style="display:none;font-size:1px;color:#6b7280;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Welcome, Jane! Please verify your email address to get started.
+  </div>
+  
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:#dbd2e0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
+          max-width:600px;
+          width:100%;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        ">
+          <tr>
+            <td class="email-padding">
+              
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:32px 24px;text-align:center;">
+          <span style="
+            font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+            font-size:26px;
+            font-weight:700;
+            color:#002400;
+            letter-spacing:-0.5px;
+          ">Tarkify</span>
+          
+            <h1 style="
+              font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+              font-size:22px;
+              font-weight:700;
+              color:#1a1a1a;
+              margin:24px 0 0 0;
+              line-height:1.3;
+            ">Verify your email address</h1>
+          
+          
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px 0;">Hi Jane,</p>
+            <p style="margin:0 0 16px 0;">
+              Thanks for joining Tarkify! Please verify your email address by clicking the button below to activate your account and start exploring.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+      <tr>
+        <td align="center" style="border-radius:8px;background:#273b09;none;">
+          <a href="https://tarkify.com/verify?token=abc123"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="
+               display:inline-block;
+               padding:8px 24px;
+               font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+               font-size:15px;
+               font-weight:600;
+               color:#ffffff;
+               text-decoration:none;
+               line-height:24px;
+             ">
+            Verify Email Address
+          </a>
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:13px;color:#6b7280;line-height:1.5;">
+            <p style="margin:0 0 8px 0;">
+              If the button above doesn't work, copy and paste this URL into your browser:
+            </p>
+            <p style="margin:0;word-break:break-all;">
+              <a href="https://tarkify.com/verify?token=abc123" target="_blank" rel="noopener noreferrer" style="color:#7b904b;font-size:13px;">https://tarkify.com/verify?token=abc123</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;">
+            
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:16px 0;">
+      <tr>
+        <td style="
+          padding:16px;
+          background:#fffbeb;
+          border-left:4px solid #d97706;
+          border-radius:4px;
+          font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+          font-size:14px;
+          color:#1a1a1a;
+          line-height:1.5;
+        ">This verification link expires in 24 hours. If you didn't create an account, you can safely ignore this email.</td>
+      </tr>
+    </table>
+  
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:13px;color:#6b7280;line-height:1.5;">
+            <p style="margin:0;">
+              Need help? Contact us at
+              <a href="mailto:support@tarkify.com" style="color:#7b904b;text-decoration:underline;">support@tarkify.com</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;">
+      <tr>
+        <td style="padding:16px 0;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:14px;
+            color:#1a1a1a;
+            margin:0;
+            line-height:1.5;
+          ">
+            Best regards,
+          </p>
+          <p style="
+            font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+            font-size:15px;
+            font-weight:600;
+            color:#002400;
+            margin:4px 0 0 0;
+            line-height:1.5;
+          ">
+            The Tarkify Team
+          </p>
+          
+        </td>
+      </tr>
+    </table>
+  
+    
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html></div>
+  </div>
+  </section>
+  
+  
+  <section id="password-reset" class="template-section">
+    <h2 style="font-size:18px;margin-bottom:12px;color:#273b09;">Password Reset</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 48px;overflow:hidden;">
+    <div style="background:#f9fafb;padding:8px 16px;border-bottom:1px solid #e5e7eb;font-family:monospace;font-size:12px;color:#6b7280;">
+      Rendered in browser — send to Litmus/Email on Acid for real client screenshots
+    </div>
+    <div style="max-width:640px;margin:0 auto;"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Reset your password</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .email-container{width:100%!important}
+      .email-padding{padding-left:16px!important;padding-right:16px!important}
+    }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
+  </style>
+  <!--[if !mso]><!-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!--<![endif]-->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body class="email-body-bg" style="
+  margin:0;
+  padding:0;
+  background:#dbd2e0;
+  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+">
+  
+  <div style="display:none;font-size:1px;color:#6b7280;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Click the link below to reset your Tarkify password.
+  </div>
+  
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:#dbd2e0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
+          max-width:600px;
+          width:100%;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        ">
+          <tr>
+            <td class="email-padding">
+              
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:32px 24px;text-align:center;">
+          <span style="
+            font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+            font-size:26px;
+            font-weight:700;
+            color:#002400;
+            letter-spacing:-0.5px;
+          ">Tarkify</span>
+          
+            <h1 style="
+              font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+              font-size:22px;
+              font-weight:700;
+              color:#1a1a1a;
+              margin:24px 0 0 0;
+              line-height:1.3;
+            ">Reset your password</h1>
+          
+          
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px 0;">Hi Jane,</p>
+            <p style="margin:0 0 16px 0;">
+              We received a request to reset the password for your Tarkify account. Click the button below to choose a new password.
+            </p>
+            <p style="margin:0 0 16px 0;">
+              If you didn't request this, you can safely ignore this email. Your password will remain unchanged.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+      <tr>
+        <td align="center" style="border-radius:8px;background:#273b09;none;">
+          <a href="https://tarkify.com/reset-password?token=xyz789"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="
+               display:inline-block;
+               padding:8px 24px;
+               font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+               font-size:15px;
+               font-weight:600;
+               color:#ffffff;
+               text-decoration:none;
+               line-height:24px;
+             ">
+            Reset Password
+          </a>
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;">
+            
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:16px 0;">
+      <tr>
+        <td style="
+          padding:16px;
+          background:#fffbeb;
+          border-left:4px solid #d97706;
+          border-radius:4px;
+          font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+          font-size:14px;
+          color:#1a1a1a;
+          line-height:1.5;
+        ">This password reset link will expire in 24 hours.</td>
+      </tr>
+    </table>
+  
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;">
+            
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:16px 0;">
+      <tr>
+        <td style="
+          padding:16px;
+          background:#eff6ff;
+          border-left:4px solid #2563eb;
+          border-radius:4px;
+          font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+          font-size:14px;
+          color:#1a1a1a;
+          line-height:1.5;
+        ">Security notice — If you didn't request this password reset, please ignore this email. Tarkify will never ask for your password via email. For your security, never share this link with anyone.</td>
+      </tr>
+    </table>
+  
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:13px;color:#6b7280;line-height:1.5;">
+            <p style="margin:0 0 8px 0;">
+              If the button doesn't work, copy and paste this URL into your browser:
+            </p>
+            <p style="margin:0;word-break:break-all;">
+              <a href="https://tarkify.com/reset-password?token=xyz789" target="_blank" rel="noopener noreferrer" style="color:#7b904b;font-size:13px;">https://tarkify.com/reset-password?token=xyz789</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:13px;color:#6b7280;line-height:1.5;">
+            <p style="margin:0 0 8px 0;">
+              Need help?
+              <a href="mailto:support@tarkify.com" style="color:#7b904b;text-decoration:underline;">Contact support</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;">
+      <tr>
+        <td style="padding:16px 0;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:14px;
+            color:#1a1a1a;
+            margin:0;
+            line-height:1.5;
+          ">
+            Best regards,
+          </p>
+          <p style="
+            font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+            font-size:15px;
+            font-weight:600;
+            color:#002400;
+            margin:4px 0 0 0;
+            line-height:1.5;
+          ">
+            The Tarkify Team
+          </p>
+          
+        </td>
+      </tr>
+    </table>
+  
+    
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html></div>
+  </div>
+  </section>
+  
+  
+  <section id="purchase-receipt" class="template-section">
+    <h2 style="font-size:18px;margin-bottom:12px;color:#273b09;">Purchase Receipt</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 48px;overflow:hidden;">
+    <div style="background:#f9fafb;padding:8px 16px;border-bottom:1px solid #e5e7eb;font-family:monospace;font-size:12px;color:#6b7280;">
+      Rendered in browser — send to Litmus/Email on Acid for real client screenshots
+    </div>
+    <div style="max-width:640px;margin:0 auto;"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Receipt for Premium Course Bundle</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .email-container{width:100%!important}
+      .email-padding{padding-left:16px!important;padding-right:16px!important}
+    }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
+  </style>
+  <!--[if !mso]><!-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!--<![endif]-->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body class="email-body-bg" style="
+  margin:0;
+  padding:0;
+  background:#dbd2e0;
+  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+">
+  
+  <div style="display:none;font-size:1px;color:#6b7280;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Thank you for purchasing Premium Course Bundle! Your receipt is below.
+  </div>
+  
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:#dbd2e0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
+          max-width:600px;
+          width:100%;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        ">
+          <tr>
+            <td class="email-padding">
+              
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:32px 24px;text-align:center;">
+          <span style="
+            font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+            font-size:26px;
+            font-weight:700;
+            color:#002400;
+            letter-spacing:-0.5px;
+          ">Tarkify</span>
+          
+            <h1 style="
+              font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+              font-size:22px;
+              font-weight:700;
+              color:#1a1a1a;
+              margin:24px 0 0 0;
+              line-height:1.3;
+            ">Thank you for your purchase!</h1>
+          
+          
+            <p style="
+              font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+              font-size:15px;
+              color:#6b7280;
+              margin:8px 0 0 0;
+              line-height:1.5;
+            ">Receipt for Premium Course Bundle</p>
+          
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px 0;">Hi Jane,</p>
+            <p style="margin:0 0 16px 0;">
+              Your payment was successful. Below are the details of your purchase.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:16px 0;">
+      <tr>
+        <td style="padding:16px;border:1px solid #e5e7eb;border-radius:8px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+                font-size:16px;
+                font-weight:600;
+                color:#1a1a1a;
+                padding-bottom:4px;
+              ">Premium Course Bundle</td>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:16px;
+                font-weight:600;
+                color:#273b09;
+                text-align:right;
+                white-space:nowrap;
+              ">29.99 USD</td>
+            </tr>
+            
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">Razorpay Payment ID</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">pay_ABC123XYZ</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">Order ID</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">order_DEF456UVW</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">Purchase Date</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">2026-07-08T12:38:33.675Z</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">Amount Paid</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">29.99 USD</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">Email</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">user@example.com</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+      
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px 0;">
+              <a href="https://razorpay.com/receipt/abc" target="_blank" rel="noopener noreferrer" style="color:#7b904b;text-decoration:underline;">View your receipt on Razorpay</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+      
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px 0;">
+              You can view all your purchases and manage your account from your account page.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+      <tr>
+        <td align="center" style="border-radius:8px;background:#273b09;none;">
+          <a href="https://tarkify.com/account"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="
+               display:inline-block;
+               padding:8px 24px;
+               font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+               font-size:15px;
+               font-weight:600;
+               color:#ffffff;
+               text-decoration:none;
+               line-height:24px;
+             ">
+            Go to your account
+          </a>
+        </td>
+      </tr>
+    </table>
+  
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;">
+      <tr>
+        <td style="padding:16px 0;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:14px;
+            color:#1a1a1a;
+            margin:0;
+            line-height:1.5;
+          ">
+            Best regards,
+          </p>
+          <p style="
+            font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+            font-size:15px;
+            font-weight:600;
+            color:#002400;
+            margin:4px 0 0 0;
+            line-height:1.5;
+          ">
+            The Tarkify Team
+          </p>
+          
+            <p style="
+              font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+              font-size:13px;
+              color:#6b7280;
+              margin:0;
+              line-height:1.5;
+            ">Tarkify Support</p>
+          
+        </td>
+      </tr>
+    </table>
+  
+    
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html></div>
+  </div>
+  </section>
+  
+  
+  <section id="download-email" class="template-section">
+    <h2 style="font-size:18px;margin-bottom:12px;color:#273b09;">Download Email</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 48px;overflow:hidden;">
+    <div style="background:#f9fafb;padding:8px 16px;border-bottom:1px solid #e5e7eb;font-family:monospace;font-size:12px;color:#6b7280;">
+      Rendered in browser — send to Litmus/Email on Acid for real client screenshots
+    </div>
+    <div style="max-width:640px;margin:0 auto;"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Download Premium Course Bundle</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .email-container{width:100%!important}
+      .email-padding{padding-left:16px!important;padding-right:16px!important}
+    }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
+  </style>
+  <!--[if !mso]><!-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!--<![endif]-->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body class="email-body-bg" style="
+  margin:0;
+  padding:0;
+  background:#dbd2e0;
+  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+">
+  
+  <div style="display:none;font-size:1px;color:#6b7280;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Your download for Premium Course Bundle is ready.
+  </div>
+  
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:#dbd2e0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
+          max-width:600px;
+          width:100%;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        ">
+          <tr>
+            <td class="email-padding">
+              
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:32px 24px;text-align:center;">
+          <span style="
+            font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+            font-size:26px;
+            font-weight:700;
+            color:#002400;
+            letter-spacing:-0.5px;
+          ">Tarkify</span>
+          
+            <h1 style="
+              font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+              font-size:22px;
+              font-weight:700;
+              color:#1a1a1a;
+              margin:24px 0 0 0;
+              line-height:1.3;
+            ">Your download is ready!</h1>
+          
+          
+            <p style="
+              font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+              font-size:15px;
+              color:#6b7280;
+              margin:8px 0 0 0;
+              line-height:1.5;
+            ">Premium Course Bundle</p>
+          
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px 0;">Hi Jane,</p>
+            <p style="margin:0 0 16px 0;">
+              Your download for <strong>Premium Course Bundle</strong> is ready. Click the button below to get your files.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+      <tr>
+        <td align="center" style="border-radius:8px;background:#273b09;none;">
+          <a href="https://tarkify.com/download?token=dl_abc123"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="
+               display:inline-block;
+               padding:8px 24px;
+               font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+               font-size:15px;
+               font-weight:600;
+               color:#ffffff;
+               text-decoration:none;
+               line-height:24px;
+             ">
+            Download Now
+          </a>
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;">
+            
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:16px 0;">
+      <tr>
+        <td style="
+          padding:16px;
+          background:#fffbeb;
+          border-left:4px solid #d97706;
+          border-radius:4px;
+          font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+          font-size:14px;
+          color:#1a1a1a;
+          line-height:1.5;
+        ">This download link expires on 2026-07-15T12:38:33.675Z. After expiry, you can download again from your account page.</td>
+      </tr>
+    </table>
+  
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:13px;color:#6b7280;line-height:1.5;">
+            <p style="margin:0 0 8px 0;">
+              If the button doesn't work, copy and paste this URL into your browser:
+            </p>
+            <p style="margin:0;word-break:break-all;">
+              <a href="https://tarkify.com/download?token=dl_abc123" target="_blank" rel="noopener noreferrer" style="color:#7b904b;font-size:13px;">https://tarkify.com/download?token=dl_abc123</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px 0;">
+              You can also access all your purchases and re-download files from your account page.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">
+      <tr>
+        <td align="center" style="border-radius:8px;background:#ffffff;1px solid #273b09;">
+          <a href="https://tarkify.com/account"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="
+               display:inline-block;
+               padding:8px 24px;
+               font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+               font-size:15px;
+               font-weight:600;
+               color:#273b09;
+               text-decoration:none;
+               line-height:24px;
+             ">
+            Go to your account
+          </a>
+        </td>
+      </tr>
+    </table>
+  
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;">
+      <tr>
+        <td style="padding:16px 0;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:14px;
+            color:#1a1a1a;
+            margin:0;
+            line-height:1.5;
+          ">
+            Best regards,
+          </p>
+          <p style="
+            font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+            font-size:15px;
+            font-weight:600;
+            color:#002400;
+            margin:4px 0 0 0;
+            line-height:1.5;
+          ">
+            The Tarkify Team
+          </p>
+          
+        </td>
+      </tr>
+    </table>
+  
+    
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html></div>
+  </div>
+  </section>
+  
+  
+  <section id="contact-notification-admin" class="template-section">
+    <h2 style="font-size:18px;margin-bottom:12px;color:#273b09;">Contact Notification (Admin)</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 48px;overflow:hidden;">
+    <div style="background:#f9fafb;padding:8px 16px;border-bottom:1px solid #e5e7eb;font-family:monospace;font-size:12px;color:#6b7280;">
+      Rendered in browser — send to Litmus/Email on Acid for real client screenshots
+    </div>
+    <div style="max-width:640px;margin:0 auto;"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Contact form: Question about Premium Course Bundle</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .email-container{width:100%!important}
+      .email-padding{padding-left:16px!important;padding-right:16px!important}
+    }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
+  </style>
+  <!--[if !mso]><!-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!--<![endif]-->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body class="email-body-bg" style="
+  margin:0;
+  padding:0;
+  background:#dbd2e0;
+  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+">
+  
+  <div style="display:none;font-size:1px;color:#6b7280;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    New contact form submission from Jane Doe.
+  </div>
+  
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:#dbd2e0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
+          max-width:600px;
+          width:100%;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        ">
+          <tr>
+            <td class="email-padding">
+              
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:32px 24px;text-align:center;">
+          <span style="
+            font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+            font-size:26px;
+            font-weight:700;
+            color:#002400;
+            letter-spacing:-0.5px;
+          ">Tarkify</span>
+          
+            <h1 style="
+              font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+              font-size:22px;
+              font-weight:700;
+              color:#1a1a1a;
+              margin:24px 0 0 0;
+              line-height:1.3;
+            ">New Contact Form Submission</h1>
+          
+          
+            <p style="
+              font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+              font-size:15px;
+              color:#6b7280;
+              margin:8px 0 0 0;
+              line-height:1.5;
+            ">From Jane Doe</p>
+          
+        </td>
+      </tr>
+    </table>
+  
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">Name</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">Jane Doe</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">Email</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">jane@example.com</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">Subject</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">Question about Premium Course Bundle</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:8px 24px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td style="
+                  padding:8px 16px;
+                  background:#dbd2e0;
+                  border-radius:4px;
+                  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                  font-size:14px;
+                  color:#1a1a1a;
+                  line-height:1.6;
+                  white-space:pre-wrap;
+                ">Hi, I'm interested in the Premium Course Bundle but I have a few questions about the curriculum. Specifically, does it cover TypeScript generics in depth? Also, are there any discounts for students?
+
+Thanks,
+Jane</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;">
+      <tr>
+        <td style="padding:16px 0;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:14px;
+            color:#1a1a1a;
+            margin:0;
+            line-height:1.5;
+          ">
+            Best regards,
+          </p>
+          <p style="
+            font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+            font-size:15px;
+            font-weight:600;
+            color:#002400;
+            margin:4px 0 0 0;
+            line-height:1.5;
+          ">
+            The Tarkify Team
+          </p>
+          
+            <p style="
+              font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+              font-size:13px;
+              color:#6b7280;
+              margin:0;
+              line-height:1.5;
+            ">Tarkify System</p>
+          
+        </td>
+      </tr>
+    </table>
+  
+    
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html></div>
+  </div>
+  </section>
+  
+  
+  <section id="contact-acknowledgement" class="template-section">
+    <h2 style="font-size:18px;margin-bottom:12px;color:#273b09;">Contact Acknowledgement</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 48px;overflow:hidden;">
+    <div style="background:#f9fafb;padding:8px 16px;border-bottom:1px solid #e5e7eb;font-family:monospace;font-size:12px;color:#6b7280;">
+      Rendered in browser — send to Litmus/Email on Acid for real client screenshots
+    </div>
+    <div style="max-width:640px;margin:0 auto;"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>We received your message</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .email-container{width:100%!important}
+      .email-padding{padding-left:16px!important;padding-right:16px!important}
+    }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
+  </style>
+  <!--[if !mso]><!-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!--<![endif]-->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body class="email-body-bg" style="
+  margin:0;
+  padding:0;
+  background:#dbd2e0;
+  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+">
+  
+  <div style="display:none;font-size:1px;color:#6b7280;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Thank you for contacting Tarkify, Jane Doe. We'll get back to you soon.
+  </div>
+  
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:#dbd2e0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
+          max-width:600px;
+          width:100%;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        ">
+          <tr>
+            <td class="email-padding">
+              
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:32px 24px;text-align:center;">
+          <span style="
+            font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+            font-size:26px;
+            font-weight:700;
+            color:#002400;
+            letter-spacing:-0.5px;
+          ">Tarkify</span>
+          
+            <h1 style="
+              font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+              font-size:22px;
+              font-weight:700;
+              color:#1a1a1a;
+              margin:24px 0 0 0;
+              line-height:1.3;
+            ">We received your message</h1>
+          
+          
+            <p style="
+              font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+              font-size:15px;
+              color:#6b7280;
+              margin:8px 0 0 0;
+              line-height:1.5;
+            ">Thank you, Jane Doe</p>
+          
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px 0;">Hi Jane Doe,</p>
+            <p style="margin:0 0 16px 0;">
+              Thank you for reaching out! We've received your message and will get back to you within 24 hours.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">Subject</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">Question about Premium Course Bundle</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td style="
+                  padding:8px 16px;
+                  background:#dbd2e0;
+                  border-radius:4px;
+                  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                  font-size:14px;
+                  color:#1a1a1a;
+                  line-height:1.6;
+                  white-space:pre-wrap;
+                ">Hi, I'm interested in the Premium Course Bundle but I have a few questions about the curriculum.</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:13px;color:#6b7280;line-height:1.5;">
+            <p style="margin:0 0 16px 0;">
+              If you have additional information to share, simply reply to this email.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;">
+      <tr>
+        <td style="padding:16px 0;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:14px;
+            color:#1a1a1a;
+            margin:0;
+            line-height:1.5;
+          ">
+            Best regards,
+          </p>
+          <p style="
+            font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+            font-size:15px;
+            font-weight:600;
+            color:#002400;
+            margin:4px 0 0 0;
+            line-height:1.5;
+          ">
+            The Tarkify Team
+          </p>
+          
+            <p style="
+              font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+              font-size:13px;
+              color:#6b7280;
+              margin:0;
+              line-height:1.5;
+            ">Tarkify Support</p>
+          
+        </td>
+      </tr>
+    </table>
+  
+    
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html></div>
+  </div>
+  </section>
+  
+  
+  <section id="newsletter-broadcast" class="template-section">
+    <h2 style="font-size:18px;margin-bottom:12px;color:#273b09;">Newsletter Broadcast</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 48px;overflow:hidden;">
+    <div style="background:#f9fafb;padding:8px 16px;border-bottom:1px solid #e5e7eb;font-family:monospace;font-size:12px;color:#6b7280;">
+      Rendered in browser — send to Litmus/Email on Acid for real client screenshots
+    </div>
+    <div style="max-width:640px;margin:0 auto;"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>March 2026 — New Courses &amp; Updates</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .email-container{width:100%!important}
+      .email-padding{padding-left:16px!important;padding-right:16px!important}
+    }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
+  </style>
+  <!--[if !mso]><!-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!--<![endif]-->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body class="email-body-bg" style="
+  margin:0;
+  padding:0;
+  background:#dbd2e0;
+  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+">
+  
+  <div style="display:none;font-size:1px;color:#6b7280;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    March 2026 — New Courses &amp; Updates
+  </div>
+  
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:#dbd2e0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
+          max-width:600px;
+          width:100%;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        ">
+          <tr>
+            <td class="email-padding">
+              
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:32px 24px;text-align:center;">
+          <span style="
+            font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+            font-size:26px;
+            font-weight:700;
+            color:#002400;
+            letter-spacing:-0.5px;
+          ">Tarkify</span>
+          
+            <h1 style="
+              font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+              font-size:22px;
+              font-weight:700;
+              color:#1a1a1a;
+              margin:24px 0 0 0;
+              line-height:1.3;
+            ">March 2026 — New Courses &amp; Updates</h1>
+          
+          
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:0 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td>
+            
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter','Helvetica Neue',Arial,sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px;">Hello there,</p>
+            <p style="margin:0 0 16px;">We've got some exciting updates this month:</p>
+            <ul style="margin:0 0 16px;padding-left:20px;">
+              <li style="margin-bottom:8px;"><strong>New Course:</strong> Advanced TypeScript Patterns</li>
+              <li style="margin-bottom:8px;"><strong>Coming Soon:</strong> React Server Components Deep Dive</li>
+              <li style="margin-bottom:8px;"><strong>Community Spotlight:</strong> Featured student projects</li>
+            </ul>
+            <p style="margin:0 0 16px;">Stay tuned for more great content!</p>
+          </td>
+        </tr>
+      </table>
+    
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;text-align:center;border-top:1px solid #e5e7eb;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:12px;
+            color:#6b7280;
+            margin:0 0 4px 0;
+            line-height:1.5;
+          ">
+            Tarkify &mdash; Beautiful digital products
+          </p>
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:12px;
+            color:#6b7280;
+            margin:0 0 4px 0;
+            line-height:1.5;
+          ">
+            If you have any questions, reply to this email or contact us at
+            <a href="mailto:support@tarkify.com" style="color:#7b904b;text-decoration:underline;">support@tarkify.com</a>
+          </p>
+          
+        </td>
+      </tr>
+    </table>
+  
+    
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html></div>
+  </div>
+  </section>
+  
+  
+  <section id="newsletter-confirmation" class="template-section">
+    <h2 style="font-size:18px;margin-bottom:12px;color:#273b09;">Newsletter Confirmation</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 48px;overflow:hidden;">
+    <div style="background:#f9fafb;padding:8px 16px;border-bottom:1px solid #e5e7eb;font-family:monospace;font-size:12px;color:#6b7280;">
+      Rendered in browser — send to Litmus/Email on Acid for real client screenshots
+    </div>
+    <div style="max-width:640px;margin:0 auto;"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Subscription confirmed</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .email-container{width:100%!important}
+      .email-padding{padding-left:16px!important;padding-right:16px!important}
+    }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
+  </style>
+  <!--[if !mso]><!-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!--<![endif]-->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body class="email-body-bg" style="
+  margin:0;
+  padding:0;
+  background:#dbd2e0;
+  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+">
+  
+  <div style="display:none;font-size:1px;color:#6b7280;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    You're now subscribed to the Tarkify newsletter.
+  </div>
+  
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:#dbd2e0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
+          max-width:600px;
+          width:100%;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        ">
+          <tr>
+            <td class="email-padding">
+              
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:32px 24px;text-align:center;">
+          <span style="
+            font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+            font-size:26px;
+            font-weight:700;
+            color:#002400;
+            letter-spacing:-0.5px;
+          ">Tarkify</span>
+          
+            <h1 style="
+              font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+              font-size:22px;
+              font-weight:700;
+              color:#1a1a1a;
+              margin:24px 0 0 0;
+              line-height:1.3;
+            ">Subscription confirmed</h1>
+          
+          
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px 0;">Hi Jane,</p>
+            <p style="margin:0 0 16px 0;">
+              You're now subscribed to the Tarkify newsletter! We'll send you updates about new products, exclusive offers, and more.
+            </p>
+            <p style="margin:0 0 16px 0;">
+              If you ever change your mind, you can unsubscribe at any time using the link at the bottom of any email.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;">
+      <tr>
+        <td style="padding:16px 0;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:14px;
+            color:#1a1a1a;
+            margin:0;
+            line-height:1.5;
+          ">
+            Best regards,
+          </p>
+          <p style="
+            font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+            font-size:15px;
+            font-weight:600;
+            color:#002400;
+            margin:4px 0 0 0;
+            line-height:1.5;
+          ">
+            The Tarkify Team
+          </p>
+          
+            <p style="
+              font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+              font-size:13px;
+              color:#6b7280;
+              margin:0;
+              line-height:1.5;
+            ">Tarkify Updates</p>
+          
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;text-align:center;border-top:1px solid #e5e7eb;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:12px;
+            color:#6b7280;
+            margin:0 0 4px 0;
+            line-height:1.5;
+          ">
+            Tarkify &mdash; Beautiful digital products
+          </p>
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:12px;
+            color:#6b7280;
+            margin:0 0 4px 0;
+            line-height:1.5;
+          ">
+            If you have any questions, reply to this email or contact us at
+            <a href="mailto:support@tarkify.com" style="color:#7b904b;text-decoration:underline;">support@tarkify.com</a>
+          </p>
+          
+            <p style="margin:8px 0 0 0;">
+              <a href="https://tarkify.com/newsletter/unsubscribe?token=sub_abc123" target="_blank" style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:12px;
+                color:#6b7280;
+                text-decoration:underline;
+              ">Unsubscribe</a>
+            </p>
+          
+        </td>
+      </tr>
+    </table>
+  
+    
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html></div>
+  </div>
+  </section>
+  
+  
+  <section id="newsletter-unsubscribed" class="template-section">
+    <h2 style="font-size:18px;margin-bottom:12px;color:#273b09;">Newsletter Unsubscribed</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 48px;overflow:hidden;">
+    <div style="background:#f9fafb;padding:8px 16px;border-bottom:1px solid #e5e7eb;font-family:monospace;font-size:12px;color:#6b7280;">
+      Rendered in browser — send to Litmus/Email on Acid for real client screenshots
+    </div>
+    <div style="max-width:640px;margin:0 auto;"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Subscription removed</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .email-container{width:100%!important}
+      .email-padding{padding-left:16px!important;padding-right:16px!important}
+    }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
+  </style>
+  <!--[if !mso]><!-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!--<![endif]-->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body class="email-body-bg" style="
+  margin:0;
+  padding:0;
+  background:#dbd2e0;
+  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+">
+  
+  <div style="display:none;font-size:1px;color:#6b7280;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    You've been unsubscribed from the Tarkify newsletter.
+  </div>
+  
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:#dbd2e0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
+          max-width:600px;
+          width:100%;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        ">
+          <tr>
+            <td class="email-padding">
+              
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:32px 24px;text-align:center;">
+          <span style="
+            font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+            font-size:26px;
+            font-weight:700;
+            color:#002400;
+            letter-spacing:-0.5px;
+          ">Tarkify</span>
+          
+            <h1 style="
+              font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+              font-size:22px;
+              font-weight:700;
+              color:#1a1a1a;
+              margin:24px 0 0 0;
+              line-height:1.3;
+            ">Subscription removed</h1>
+          
+          
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;">
+            <p style="margin:0 0 16px 0;">Hi Jane,</p>
+            <p style="margin:0 0 16px 0;">
+              You've been unsubscribed from the Tarkify newsletter. You won't receive any more marketing emails from us.
+            </p>
+            <p style="margin:0 0 16px 0;">
+              If you change your mind, you're welcome to subscribe again anytime.
+            </p>
+          </td>
+        </tr>
+      </table>
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;">
+      <tr>
+        <td style="padding:16px 0;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:14px;
+            color:#1a1a1a;
+            margin:0;
+            line-height:1.5;
+          ">
+            Best regards,
+          </p>
+          <p style="
+            font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+            font-size:15px;
+            font-weight:600;
+            color:#002400;
+            margin:4px 0 0 0;
+            line-height:1.5;
+          ">
+            The Tarkify Team
+          </p>
+          
+            <p style="
+              font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+              font-size:13px;
+              color:#6b7280;
+              margin:0;
+              line-height:1.5;
+            ">Tarkify Updates</p>
+          
+        </td>
+      </tr>
+    </table>
+  
+    
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html></div>
+  </div>
+  </section>
+  
+  
+  <section id="admin-notification" class="template-section">
+    <h2 style="font-size:18px;margin-bottom:12px;color:#273b09;">Admin Notification</h2>
+    <div style="border:1px solid #e5e7eb;border-radius:8px;margin:0 0 48px;overflow:hidden;">
+    <div style="background:#f9fafb;padding:8px 16px;border-bottom:1px solid #e5e7eb;font-family:monospace;font-size:12px;color:#6b7280;">
+      Rendered in browser — send to Litmus/Email on Acid for real client screenshots
+    </div>
+    <div style="max-width:640px;margin:0 auto;"><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>New career application received</title>
+  <style>
+    @media only screen and (max-width:600px){
+      .email-container{width:100%!important}
+      .email-padding{padding-left:16px!important;padding-right:16px!important}
+    }
+    @media (prefers-color-scheme:dark){
+      .email-body-bg{background:#0f0f12!important}
+      .email-card-bg{background:#1a1a2e!important}
+      .email-text{color:#e4e4e7!important}
+      .email-muted{color:#a1a1aa!important}
+    }
+    [data-ogsc] .email-body-bg{background:#0f0f12!important}
+    [data-ogsc] .email-card-bg{background:#1a1a2e!important}
+    [data-ogsc] .email-text{color:#e4e4e7!important}
+    [data-ogsc] .email-muted{color:#a1a1aa!important}
+  </style>
+  <!--[if !mso]><!-->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@400;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!--<![endif]-->
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+</head>
+<body class="email-body-bg" style="
+  margin:0;
+  padding:0;
+  background:#dbd2e0;
+  font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+">
+  
+  <div style="display:none;font-size:1px;color:#6b7280;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    A new career application has been submitted.
+  </div>
+  
+
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="email-body-bg" style="background:#dbd2e0;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container email-card-bg" style="
+          max-width:600px;
+          width:100%;
+          background:#ffffff;
+          border-radius:12px;
+          overflow:hidden;
+        ">
+          <tr>
+            <td class="email-padding">
+              
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:32px 24px;text-align:center;">
+          <span style="
+            font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+            font-size:26px;
+            font-weight:700;
+            color:#002400;
+            letter-spacing:-0.5px;
+          ">Tarkify</span>
+          
+            <h1 style="
+              font-family:'Sora', 'Helvetica Neue', Arial, sans-serif;
+              font-size:22px;
+              font-weight:700;
+              color:#1a1a1a;
+              margin:24px 0 0 0;
+              line-height:1.3;
+            ">New career application received</h1>
+          
+          
+        </td>
+      </tr>
+    </table>
+  
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 24px;font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;font-size:15px;color:#1a1a1a;line-height:1.6;white-space:pre-wrap;">
+            A new career application has been submitted.
+          </td>
+        </tr>
+      </table>
+
+      
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td style="padding:16px 24px;">
+              
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">name</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">John Smith</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">email</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">john@example.com</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">phone</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">+1-555-0123</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">resume_url</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">https://storage.tarkify.com/uploads/resume.pdf</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0;">
+      <tr>
+        <td style="padding:8px 16px;background:#dbd2e0;border-radius:4px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="
+                font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+                font-size:13px;
+                color:#6b7280;
+                padding-bottom:4px;
+              ">portfolio_url</td>
+            </tr>
+            <tr>
+              <td style="
+                font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+                font-size:15px;
+                font-weight:600;
+                color:#1a1a1a;
+              ">https://johnsmith.dev</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+            </td>
+          </tr>
+        </table>
+      
+
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td style="padding:24px 24px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="border-top:1px solid #e5e7eb;height:1px;line-height:1px;font-size:1px;">&nbsp;</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  
+      
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:24px 0;">
+      <tr>
+        <td style="padding:16px 0;">
+          <p style="
+            font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+            font-size:14px;
+            color:#1a1a1a;
+            margin:0;
+            line-height:1.5;
+          ">
+            Best regards,
+          </p>
+          <p style="
+            font-family:'Manrope', 'Helvetica Neue', Arial, sans-serif;
+            font-size:15px;
+            font-weight:600;
+            color:#002400;
+            margin:4px 0 0 0;
+            line-height:1.5;
+          ">
+            The Tarkify Team
+          </p>
+          
+            <p style="
+              font-family:'Inter', 'Helvetica Neue', Arial, sans-serif;
+              font-size:13px;
+              color:#6b7280;
+              margin:0;
+              line-height:1.5;
+            ">Tarkify System</p>
+          
+        </td>
+      </tr>
+    </table>
+  
+    
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html></div>
+  </div>
+  </section>
+  
+
+  <footer>
+    Generated on 2026-07-08T12:38:33.676Z · View with DevTools device emulation for mobile · Toggle dark mode in OS settings
+  </footer>
+</body>
+</html>

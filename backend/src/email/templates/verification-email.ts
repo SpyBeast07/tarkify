@@ -36,7 +36,7 @@ export function buildVerificationEmail(data: VerificationEmailData): string {
               If the button above doesn't work, copy and paste this URL into your browser:
             </p>
             <p style="margin:0;word-break:break-all;">
-              <a href="${escapeAttr(data.verificationUrl)}" style="color:${theme.link.color};font-size:${theme.link.fontSize};">${escapeHtml(data.verificationUrl)}</a>
+              <a href="${escapeAttr(data.verificationUrl)}" target="_blank" rel="noopener noreferrer" style="color:${theme.link.color};font-size:${theme.link.fontSize};">${escapeHtml(data.verificationUrl)}</a>
             </p>
           </td>
         </tr>

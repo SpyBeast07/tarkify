@@ -16,6 +16,8 @@ export function Button({ href, text, variant = 'primary' }: ButtonProps): string
       <tr>
         <td align="center" style="border-radius:${theme.borderRadius.md};background:${bg};${border};">
           <a href="${escapeAttr(href)}"
+             target="_blank"
+             rel="noopener noreferrer"
              style="
                display:inline-block;
                padding:${theme.button.padding};

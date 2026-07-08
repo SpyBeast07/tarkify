@@ -229,6 +229,20 @@ app.route('/api/careers', careers);
 app.route('/api/users', users);
 app.route('/api/account', account);
 
+// ── Email Preview Dashboard ──────────────────────────────────────
+app.get('/api/email-previews', async (c) => {
+  const { renderPreviewDashboard } = await import('./email/preview.js');
+  return c.html(renderPreviewDashboard());
+});
+
+app.get('/api/email-previews/:filename', async (c) => {
+  const { renderPreviewPage } = await import('./email/preview.js');
+  const filename = c.req.param('filename');
+  const html = renderPreviewPage(filename);
+  if (!html) return c.json({ error: 'NOT_FOUND', message: `Unknown template: ${filename}` }, 404);
+  return c.html(html);
+});
+
 // ── Email Test Route (manual verification) ───────────────────────
 app.post('/api/test-email', async (c) => {
   try {
