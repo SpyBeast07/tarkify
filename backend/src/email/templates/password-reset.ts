@@ -42,6 +42,14 @@ export function buildPasswordResetEmail(data: PasswordResetEmailData): string {
 
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>
+          <td style="padding:0 ${theme.spacing.lg};">
+            ${Alert({ type: 'info', message: 'Security notice — If you didn\'t request this password reset, please ignore this email. Tarkify will never ask for your password via email. For your security, never share this link with anyone.' })}
+          </td>
+        </tr>
+      </table>
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
           <td style="padding:0 ${theme.spacing.lg};font-family:${theme.text.muted.fontFamily};font-size:${theme.text.muted.fontSize};color:${theme.text.muted.color};line-height:${theme.text.muted.lineHeight};">
             <p style="margin:0 0 ${theme.spacing.sm} 0;">
               If the button doesn't work, copy and paste this URL into your browser:
@@ -54,6 +62,18 @@ export function buildPasswordResetEmail(data: PasswordResetEmailData): string {
       </table>
 
       ${Divider()}
+
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+        <tr>
+          <td style="padding:0 ${theme.spacing.lg};font-family:${theme.text.muted.fontFamily};font-size:${theme.text.muted.fontSize};color:${theme.text.muted.color};line-height:${theme.text.muted.lineHeight};">
+            <p style="margin:0 0 ${theme.spacing.sm} 0;">
+              Need help?
+              <a href="mailto:support@tarkify.com" style="color:${theme.link.color};text-decoration:${theme.link.decoration};">Contact support</a>
+            </p>
+          </td>
+        </tr>
+      </table>
+
       ${Signature()}
     `,
   });

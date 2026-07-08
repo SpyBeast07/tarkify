@@ -10,6 +10,7 @@ import type { Context } from 'hono';
 import * as productService from '../services/product.service.js';
 import * as razorpayService from '../services/razorpay.service.js';
 import * as purchaseService from '../services/purchase.service.js';
+import { emailService } from '../email/index.js';
 import { config } from '../config.js';
 import { validateEmail } from '../communication/shared/validators.js';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
@@ -180,6 +181,23 @@ payments.post('/verify', async (c) => {
       `Payment verified: purchase=${updatedPurchase.id} order=${razorpay_order_id} payment=${razorpay_payment_id}`
     );
 
+    // Fire-and-forget purchase receipt email.
+    const buyerEmail = updatedPurchase.guest_email;
+    if (buyerEmail) {
+      productService.getProductById(updatedPurchase.product_id).then((product) => {
+        emailService.sendPurchaseReceipt({
+          email: buyerEmail,
+          productName: product?.name ?? 'Product',
+          amount: updatedPurchase.amount,
+          currency: updatedPurchase.currency,
+          razorpayPaymentId: updatedPurchase.razorpay_payment_id ?? '',
+          razorpayOrderId: updatedPurchase.razorpay_order_id,
+          purchaseDate: formatPurchaseDate(updatedPurchase.updated_at ?? updatedPurchase.created_at),
+          accountUrl: `${config.frontendUrl}/account`,
+        }).catch((err) => console.error('[payment] sendPurchaseReceipt failed:', err));
+      }).catch(() => {});
+    }
+
     return c.json({
       success: true,
       message: 'Payment verified and purchase completed successfully',
@@ -192,5 +210,16 @@ payments.post('/verify', async (c) => {
     return payError(c, 'COMPLETION_FAILED', 'Failed to complete purchase. Please contact support.', 500);
   }
 });
+
+function formatPurchaseDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  });
+}
 
 export default payments;

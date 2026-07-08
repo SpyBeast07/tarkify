@@ -50,7 +50,11 @@ export interface PurchaseReceiptEmailData {
   productName: string;
   amount: number;
   currency: string;
+  razorpayPaymentId: string;
+  razorpayOrderId: string;
+  purchaseDate: string;
   receiptUrl?: string;
+  accountUrl: string;
 }
 
 export interface DownloadEmailData {

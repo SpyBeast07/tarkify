@@ -17,7 +17,10 @@
 import { Hono } from 'hono';
 import type { Context } from 'hono';
 import * as razorpayService from '../services/razorpay.service.js';
+import * as productService from '../services/product.service.js';
 import * as purchaseService from '../services/purchase.service.js';
+import { emailService } from '../email/index.js';
+import { config } from '../config.js';
 import { razorpayWebhookPayloadSchema } from '../razorpay.validation.js';
 import type { RazorpayWebhookPayload } from '../types/index.js';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
@@ -117,6 +120,23 @@ webhooks.post('/razorpay', async (c) => {
       console.info(
         `Webhook payment.captured: purchase=${updated.id} order=${orderId} payment=${paymentId}`
       );
+
+      const buyerEmail = updated.guest_email;
+      if (buyerEmail) {
+        productService.getProductById(updated.product_id).then((product) => {
+          emailService.sendPurchaseReceipt({
+            email: buyerEmail,
+            productName: product?.name ?? 'Product',
+            amount: updated.amount,
+            currency: updated.currency,
+            razorpayPaymentId: updated.razorpay_payment_id ?? '',
+            razorpayOrderId: updated.razorpay_order_id,
+            purchaseDate: formatPurchaseDate(updated.updated_at ?? updated.created_at),
+            accountUrl: `${config.frontendUrl}/account`,
+          }).catch((err) => console.error('[webhook] sendPurchaseReceipt failed:', err));
+        }).catch(() => {});
+      }
+
       return c.json({ status: 'processed' });
     } catch (error) {
       console.error(`Webhook payment.captured: error for order ${orderId}`, error);
@@ -167,5 +187,16 @@ webhooks.post('/razorpay', async (c) => {
   // Unhandled event — acknowledge to prevent Razorpay retry spam.
   return c.json({ status: 'ignored', event });
 });
+
+function formatPurchaseDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  });
+}
 
 export default webhooks;
