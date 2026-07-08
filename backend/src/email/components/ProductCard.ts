@@ -10,20 +10,20 @@ export function ProductCard({ name, description, price }: ProductCardProps): str
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:${theme.spacing.md} 0;">
       <tr>
-        <td style="padding:${theme.spacing.md};border:1px solid ${theme.colors.border};border-radius:${theme.borderRadius.md};">
+        <td style="padding:${theme.card.padding};border:1px solid ${theme.card.borderColor};border-radius:${theme.card.borderRadius};">
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             <tr>
               <td style="
                 font-family:${theme.fonts.heading};
-                font-size:16px;
-                font-weight:600;
+                font-size:${theme.fontSizes.lg};
+                font-weight:${theme.fontWeights.semibold};
                 color:${theme.colors.text};
                 padding-bottom:${theme.spacing.xs};
               ">${escapeHtml(name)}</td>
               <td style="
                 font-family:${theme.fonts.accent};
-                font-size:16px;
-                font-weight:600;
+                font-size:${theme.fontSizes.lg};
+                font-weight:${theme.fontWeights.semibold};
                 color:${theme.colors.primaryGreen};
                 text-align:right;
                 white-space:nowrap;
@@ -33,10 +33,10 @@ export function ProductCard({ name, description, price }: ProductCardProps): str
               <tr>
                 <td colspan="2" style="
                   font-family:${theme.fonts.body};
-                  font-size:14px;
+                  font-size:${theme.fontSizes.base};
                   color:${theme.colors.textMuted};
                   padding-top:${theme.spacing.xs};
-                  line-height:1.5;
+                  line-height:${theme.lineHeights.base};
                 ">${escapeHtml(description)}</td>
               </tr>
             ` : ''}

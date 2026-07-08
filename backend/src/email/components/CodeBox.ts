@@ -12,7 +12,7 @@ export function CodeBox({ code, label }: CodeBoxProps): string {
         <tr>
           <td style="
             font-family:${theme.fonts.body};
-            font-size:13px;
+            font-size:${theme.fontSizes.sm};
             color:${theme.colors.textMuted};
             padding-bottom:${theme.spacing.sm};
             text-align:center;
@@ -24,11 +24,11 @@ export function CodeBox({ code, label }: CodeBoxProps): string {
           padding:${theme.spacing.md} ${theme.spacing.lg};
           background:${theme.colors.lightBg};
           border-radius:${theme.borderRadius.md};
-          font-family:'Courier New',Courier,monospace;
-          font-size:28px;
-          font-weight:700;
+          font-family:${theme.fonts.mono};
+          font-size:${theme.code.fontSize};
+          font-weight:${theme.code.fontWeight};
           color:${theme.colors.darkGreen};
-          letter-spacing:6px;
+          letter-spacing:${theme.code.letterSpacing};
         ">${escapeHtml(code)}</td>
       </tr>
     </table>

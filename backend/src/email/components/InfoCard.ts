@@ -14,7 +14,7 @@ export function InfoCard({ label, value }: InfoCardProps): string {
             <tr>
               <td style="
                 font-family:${theme.fonts.body};
-                font-size:13px;
+                font-size:${theme.fontSizes.sm};
                 color:${theme.colors.textMuted};
                 padding-bottom:${theme.spacing.xs};
               ">${escapeHtml(label)}</td>
@@ -22,8 +22,8 @@ export function InfoCard({ label, value }: InfoCardProps): string {
             <tr>
               <td style="
                 font-family:${theme.fonts.accent};
-                font-size:15px;
-                font-weight:600;
+                font-size:${theme.fontSizes.md};
+                font-weight:${theme.fontWeights.semibold};
                 color:${theme.colors.text};
               ">${escapeHtml(value)}</td>
             </tr>

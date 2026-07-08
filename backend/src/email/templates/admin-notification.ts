@@ -22,7 +22,7 @@ export function buildAdminNotificationEmail(data: AdminNotificationEmailData): s
 
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>
-          <td style="padding:0 ${theme.spacing.lg};font-family:${theme.fonts.body};font-size:15px;color:${theme.colors.text};line-height:1.6;white-space:pre-wrap;">
+          <td style="padding:0 ${theme.spacing.lg};font-family:${theme.text.body.fontFamily};font-size:${theme.text.body.fontSize};color:${theme.text.body.color};line-height:${theme.text.body.lineHeight};white-space:pre-wrap;">
             ${escapeHtml(data.message)}
           </td>
         </tr>

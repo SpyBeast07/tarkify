@@ -18,7 +18,7 @@ export function buildPasswordResetEmail(data: PasswordResetEmailData): string {
 
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>
-          <td style="padding:0 ${theme.spacing.lg};font-family:${theme.fonts.body};font-size:15px;color:${theme.colors.text};line-height:1.6;">
+          <td style="padding:0 ${theme.spacing.lg};font-family:${theme.text.body.fontFamily};font-size:${theme.text.body.fontSize};color:${theme.text.body.color};line-height:${theme.text.body.lineHeight};">
             <p style="margin:0 0 ${theme.spacing.md} 0;">Hi ${escapeHtml(name)},</p>
             <p style="margin:0 0 ${theme.spacing.md} 0;">
               We received a request to reset the password for your Tarkify account. Click the button below to choose a new password.
@@ -42,12 +42,12 @@ export function buildPasswordResetEmail(data: PasswordResetEmailData): string {
 
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>
-          <td style="padding:0 ${theme.spacing.lg};font-family:${theme.fonts.body};font-size:13px;color:${theme.colors.textMuted};line-height:1.5;">
+          <td style="padding:0 ${theme.spacing.lg};font-family:${theme.text.muted.fontFamily};font-size:${theme.text.muted.fontSize};color:${theme.text.muted.color};line-height:${theme.text.muted.lineHeight};">
             <p style="margin:0 0 ${theme.spacing.sm} 0;">
               If the button doesn't work, copy and paste this URL into your browser:
             </p>
             <p style="margin:0;word-break:break-all;">
-              <a href="${escapeAttr(data.resetUrl)}" style="color:${theme.colors.accentGreen};font-size:13px;">${escapeHtml(data.resetUrl)}</a>
+              <a href="${escapeAttr(data.resetUrl)}" style="color:${theme.link.color};font-size:${theme.link.fontSize};">${escapeHtml(data.resetUrl)}</a>
             </p>
           </td>
         </tr>

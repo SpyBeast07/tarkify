@@ -13,30 +13,30 @@ export function Signature(props?: SignatureProps): string {
         <td style="padding:${theme.spacing.md} 0;">
           <p style="
             font-family:${theme.fonts.body};
-            font-size:14px;
+            font-size:${theme.fontSizes.base};
             color:${theme.colors.text};
             margin:0;
-            line-height:1.5;
+            line-height:${theme.lineHeights.base};
           ">
             Best regards,
           </p>
           <p style="
             font-family:${theme.fonts.accent};
-            font-size:15px;
-            font-weight:600;
+            font-size:${theme.fontSizes.md};
+            font-weight:${theme.fontWeights.semibold};
             color:${theme.colors.darkGreen};
             margin:${theme.spacing.xs} 0 0 0;
-            line-height:1.5;
+            line-height:${theme.lineHeights.base};
           ">
             ${escapeHtml(name)}
           </p>
           ${role ? `
             <p style="
               font-family:${theme.fonts.body};
-              font-size:13px;
+              font-size:${theme.fontSizes.sm};
               color:${theme.colors.textMuted};
               margin:0;
-              line-height:1.5;
+              line-height:${theme.lineHeights.base};
             ">${escapeHtml(role)}</p>
           ` : ''}
         </td>

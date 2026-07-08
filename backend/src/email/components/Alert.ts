@@ -13,15 +13,8 @@ export function Alert({ type, message }: AlertProps): string {
     error: theme.colors.error,
   };
 
-  const bgMap: Record<AlertProps['type'], string> = {
-    info: '#eff6ff',
-    success: '#f0fdf4',
-    warning: '#fffbeb',
-    error: '#fef2f2',
-  };
-
   const color = colorMap[type];
-  const bg = bgMap[type];
+  const bg = theme.alertBg[type];
 
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:${theme.spacing.md} 0;">
@@ -32,9 +25,9 @@ export function Alert({ type, message }: AlertProps): string {
           border-left:4px solid ${color};
           border-radius:${theme.borderRadius.sm};
           font-family:${theme.fonts.body};
-          font-size:14px;
+          font-size:${theme.fontSizes.base};
           color:${theme.colors.text};
-          line-height:1.5;
+          line-height:${theme.lineHeights.base};
         ">${escapeHtml(message)}</td>
       </tr>
     </table>

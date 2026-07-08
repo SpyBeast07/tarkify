@@ -17,7 +17,7 @@ export function EmailLayout({ title, previewText, children }: EmailLayoutProps):
   <style>
     @media only screen and (max-width:600px){
       .email-container{width:100%!important}
-      .email-padding{padding-left:16px!important;padding-right:16px!important}
+      .email-padding{padding-left:${theme.layout.responsivePadding}!important;padding-right:${theme.layout.responsivePadding}!important}
     }
   </style>
   <!--[if !mso]><!-->
@@ -38,7 +38,7 @@ export function EmailLayout({ title, previewText, children }: EmailLayoutProps):
 <body style="
   margin:0;
   padding:0;
-  background:${theme.colors.lightBg};
+  background:${theme.layout.bodyBg};
   font-family:${theme.fonts.body};
 ">
   ${previewText ? `
@@ -47,15 +47,15 @@ export function EmailLayout({ title, previewText, children }: EmailLayoutProps):
   </div>
   ` : ''}
 
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${theme.colors.lightBg};">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:${theme.layout.bodyBg};">
     <tr>
-      <td align="center" style="padding:${theme.spacing.xl} ${theme.spacing.md};">
+      <td align="center" style="padding:${theme.layout.bodyPadding};">
 
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" class="email-container" style="
-          max-width:600px;
+          max-width:${theme.layout.maxWidth};
           width:100%;
-          background:${theme.colors.white};
-          border-radius:${theme.borderRadius.lg};
+          background:${theme.layout.cardBg};
+          border-radius:${theme.layout.cardBorderRadius};
           overflow:hidden;
         ">
           <tr>

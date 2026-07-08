@@ -27,9 +27,9 @@ export function buildContactNotificationEmail(data: ContactNotificationEmailData
                   background:${theme.colors.lightBg};
                   border-radius:${theme.borderRadius.sm};
                   font-family:${theme.fonts.body};
-                  font-size:14px;
+                  font-size:${theme.fontSizes.base};
                   color:${theme.colors.text};
-                  line-height:1.6;
+                  line-height:${theme.lineHeights.relaxed};
                   white-space:pre-wrap;
                 ">${escapeHtml(data.message)}</td>
               </tr>

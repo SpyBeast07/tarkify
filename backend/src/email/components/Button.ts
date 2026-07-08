@@ -18,13 +18,13 @@ export function Button({ href, text, variant = 'primary' }: ButtonProps): string
           <a href="${escapeAttr(href)}"
              style="
                display:inline-block;
-               padding:${theme.spacing.sm} ${theme.spacing.lg};
+               padding:${theme.button.padding};
                font-family:${theme.fonts.accent};
-               font-size:15px;
-               font-weight:600;
+               font-size:${theme.button.fontSize};
+               font-weight:${theme.button.fontWeight};
                color:${textColor};
                text-decoration:none;
-               line-height:24px;
+               line-height:${theme.button.lineHeight};
              ">
             ${escapeHtml(text)}
           </a>

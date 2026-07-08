@@ -6,6 +6,7 @@ export interface DividerProps {
 
 export function Divider(props?: DividerProps): string {
   const spacing = props?.spacing ?? theme.spacing.lg;
+
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
       <tr>

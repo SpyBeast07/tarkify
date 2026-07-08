@@ -17,10 +17,7 @@ export function buildPurchaseReceiptEmail(data: PurchaseReceiptEmailData): strin
     children: `
       ${Header({ title: 'Thank you for your purchase!', subtitle: `Your receipt for ${data.productName}` })}
 
-      ${ProductCard({
-        name: data.productName,
-        price,
-      })}
+      ${ProductCard({ name: data.productName, price })}
 
       ${InfoCard({ label: 'Amount Paid', value: price })}
       ${InfoCard({ label: 'Email', value: data.email })}
@@ -28,9 +25,9 @@ export function buildPurchaseReceiptEmail(data: PurchaseReceiptEmailData): strin
       ${data.receiptUrl ? `
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
-            <td style="padding:0 ${theme.spacing.lg};font-family:${theme.fonts.body};font-size:13px;color:${theme.colors.textMuted};line-height:1.5;">
+            <td style="padding:0 ${theme.spacing.lg};font-family:${theme.text.muted.fontFamily};font-size:${theme.text.muted.fontSize};color:${theme.text.muted.color};line-height:${theme.text.muted.lineHeight};">
               <p style="margin:0 0 ${theme.spacing.sm} 0;">
-                <a href="${escapeAttr(data.receiptUrl)}" style="color:${theme.colors.accentGreen};text-decoration:underline;">View full receipt</a>
+                <a href="${escapeAttr(data.receiptUrl)}" style="color:${theme.link.color};text-decoration:${theme.link.decoration};">View full receipt</a>
               </p>
             </td>
           </tr>

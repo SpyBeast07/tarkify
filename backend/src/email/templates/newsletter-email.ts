@@ -2,6 +2,7 @@ import { EmailLayout } from '../layout/EmailLayout.js';
 import { Header } from '../components/Header.js';
 import { Footer } from '../components/Footer.js';
 import { Divider } from '../components/Divider.js';
+
 import type { NewsletterEmailData } from '../types.js';
 
 export function buildNewsletterEmail(data: NewsletterEmailData): string {
@@ -14,7 +15,7 @@ export function buildNewsletterEmail(data: NewsletterEmailData): string {
 
       <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
         <tr>
-          <td style="padding:0 ${data.htmlContent ? '0' : '24px'};">
+          <td>
             ${data.htmlContent}
           </td>
         </tr>
