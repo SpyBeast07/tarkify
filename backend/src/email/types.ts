@@ -80,6 +80,17 @@ export interface NewsletterEmailData {
   htmlContent: string;
 }
 
+export interface NewsletterConfirmationEmailData {
+  email: string;
+  userName?: string;
+  unsubscribeUrl: string;
+}
+
+export interface NewsletterUnsubscribedEmailData {
+  email: string;
+  userName?: string;
+}
+
 export interface AdminNotificationEmailData {
   subject: string;
   message: string;

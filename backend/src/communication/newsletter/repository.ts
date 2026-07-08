@@ -26,3 +26,13 @@ export async function tryInsertSubscriber(
   );
   return result.rows[0] ?? null;
 }
+
+export async function archiveSubscriber(email: string): Promise<boolean> {
+  const result = await query(
+    `UPDATE newsletter_subscribers
+     SET archived_at = NOW(), updated_at = NOW()
+     WHERE email = $1 AND archived_at IS NULL`,
+    [email]
+  );
+  return (result.rowCount ?? 0) > 0;
+}

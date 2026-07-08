@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { subscribeToNewsletter } from './service.js';
+import { subscribeToNewsletter, unsubscribeFromNewsletter } from './service.js';
 import { success, badRequest } from '../shared/response.js';
 
 const newsletter = new Hono();
@@ -29,6 +29,46 @@ newsletter.post('/', async (c) => {
     }
     throw err;
   }
+});
+
+newsletter.post('/unsubscribe', async (c) => {
+  try {
+    const body = await c.req.json<{ email: string }>();
+    const { email } = body;
+
+    if (!email) {
+      return badRequest(c, 'Email is required');
+    }
+
+    const result = await unsubscribeFromNewsletter(email);
+
+    if (result.wasSubscribed) {
+      return success(c, 'You have been unsubscribed from our newsletter.');
+    }
+
+    return success(c, 'This email is not subscribed to our newsletter.');
+  } catch (err) {
+    if (err instanceof SyntaxError) {
+      return badRequest(c, 'Invalid JSON in request body');
+    }
+    throw err;
+  }
+});
+
+newsletter.get('/unsubscribe', async (c) => {
+  const email = c.req.query('email');
+
+  if (!email) {
+    return badRequest(c, 'Email is required');
+  }
+
+  const result = await unsubscribeFromNewsletter(email);
+
+  if (result.wasSubscribed) {
+    return success(c, 'You have been unsubscribed from our newsletter.');
+  }
+
+  return success(c, 'This email is not subscribed to our newsletter.');
 });
 
 export default newsletter;

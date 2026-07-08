@@ -2,6 +2,7 @@ import { sanitizeText, normalizeEmail } from '../shared/sanitizers.js';
 import { Limits } from '../shared/validators.js';
 import { validateContactForm, toContactFormData } from './validation.js';
 import { insertContactMessage } from './repository.js';
+import { emailService } from '../../email/index.js';
 import type { ContactMessage } from './types.js';
 
 export interface ContactServiceResult {
@@ -39,6 +40,20 @@ export async function submitContact(
     ip,
     userAgent
   );
+
+  // Fire-and-forget both emails — don't block the response.
+  const emailData = {
+    name: sanitized.name,
+    email: sanitized.email,
+    subject: sanitized.subject,
+    message: sanitized.message,
+  };
+
+  emailService.sendContactAcknowledgement(emailData)
+    .catch((err) => console.error('[contact] sendContactAcknowledgement failed:', err));
+
+  emailService.sendContactNotification(emailData)
+    .catch((err) => console.error('[contact] sendContactNotification failed:', err));
 
   return { success: true, data: record };
 }

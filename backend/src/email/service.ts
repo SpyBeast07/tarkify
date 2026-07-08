@@ -11,6 +11,8 @@ import type {
   DownloadEmailData,
   ContactNotificationEmailData,
   NewsletterEmailData,
+  NewsletterConfirmationEmailData,
+  NewsletterUnsubscribedEmailData,
   AdminNotificationEmailData,
 } from './types.js';
 import { buildVerificationEmail } from './templates/verification-email.js';
@@ -18,7 +20,10 @@ import { buildPasswordResetEmail } from './templates/password-reset.js';
 import { buildPurchaseReceiptEmail } from './templates/purchase-receipt.js';
 import { buildDownloadEmail } from './templates/download-email.js';
 import { buildContactNotificationEmail } from './templates/contact-notification.js';
+import { buildContactAcknowledgementEmail } from './templates/contact-acknowledgement.js';
 import { buildNewsletterEmail } from './templates/newsletter-email.js';
+import { buildNewsletterConfirmationEmail } from './templates/newsletter-confirmation.js';
+import { buildNewsletterUnsubscribedEmail } from './templates/newsletter-unsubscribed.js';
 import { buildAdminNotificationEmail } from './templates/admin-notification.js';
 
 export class EmailService {
@@ -58,15 +63,35 @@ export class EmailService {
     const html = buildContactNotificationEmail(data);
     return this.sendWithLogging(
       config.email.adminEmail,
-      `Contact form: ${data.subject}`,
+      `New contact request: ${data.subject}`,
       html,
       'sendContactNotification',
+    );
+  }
+
+  async sendContactAcknowledgement(data: ContactNotificationEmailData): Promise<SendEmailResult> {
+    const html = buildContactAcknowledgementEmail(data);
+    return this.sendWithLogging(
+      data.email,
+      'We received your message',
+      html,
+      'sendContactAcknowledgement',
     );
   }
 
   async sendNewsletterEmail(data: NewsletterEmailData): Promise<SendEmailResult> {
     const html = buildNewsletterEmail(data);
     return this.sendWithLogging(data.email, data.subject, html, 'sendNewsletterEmail');
+  }
+
+  async sendNewsletterConfirmation(data: NewsletterConfirmationEmailData): Promise<SendEmailResult> {
+    const html = buildNewsletterConfirmationEmail(data);
+    return this.sendWithLogging(data.email, 'Subscription confirmed', html, 'sendNewsletterConfirmation');
+  }
+
+  async sendNewsletterUnsubscribed(data: NewsletterUnsubscribedEmailData): Promise<SendEmailResult> {
+    const html = buildNewsletterUnsubscribedEmail(data);
+    return this.sendWithLogging(data.email, 'Subscription removed', html, 'sendNewsletterUnsubscribed');
   }
 
   async sendAdminNotification(data: AdminNotificationEmailData): Promise<SendEmailResult> {

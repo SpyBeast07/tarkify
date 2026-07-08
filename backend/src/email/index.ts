@@ -21,6 +21,8 @@ export type {
   DownloadEmailData,
   ContactNotificationEmailData,
   NewsletterEmailData,
+  NewsletterConfirmationEmailData,
+  NewsletterUnsubscribedEmailData,
   AdminNotificationEmailData,
 } from './types.js';
 
@@ -43,5 +45,8 @@ export { buildPasswordResetEmail } from './templates/password-reset.js';
 export { buildPurchaseReceiptEmail } from './templates/purchase-receipt.js';
 export { buildDownloadEmail } from './templates/download-email.js';
 export { buildContactNotificationEmail } from './templates/contact-notification.js';
+export { buildContactAcknowledgementEmail } from './templates/contact-acknowledgement.js';
 export { buildNewsletterEmail } from './templates/newsletter-email.js';
+export { buildNewsletterConfirmationEmail } from './templates/newsletter-confirmation.js';
+export { buildNewsletterUnsubscribedEmail } from './templates/newsletter-unsubscribed.js';
 export { buildAdminNotificationEmail } from './templates/admin-notification.js';
