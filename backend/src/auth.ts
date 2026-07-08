@@ -163,8 +163,9 @@ export function initAuth() {
             resetUrl: url,
             userName: user.name ?? undefined,
           });
-        } catch (err) {
-          console.error('[auth] sendResetPassword failed:', err);
+        } catch (error) {
+          console.error('[auth] sendResetPassword failed:', error);
+          throw error;
         }
       },
     },
@@ -180,8 +181,9 @@ export function initAuth() {
             verificationUrl: url,
             userName: user.name ?? undefined,
           });
-        } catch (err) {
-          console.error('[auth] sendVerificationEmail failed:', err);
+        } catch (error) {
+          console.error('[auth] sendVerificationEmail failed:', error);
+          throw error;
         }
       },
     },

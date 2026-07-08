@@ -146,7 +146,7 @@ payments.post('/verify', async (c) => {
       subject: 'Payment verification failed',
       message: `Payment signature verification failed for order ${razorpay_order_id}. Possible tampering.`,
       metadata: { orderId: razorpay_order_id, paymentId: razorpay_payment_id },
-    }).catch(() => {});
+    }).catch((err) => console.error('[payment] sendAdminNotification failed:', err));
     return payError(c, 'VERIFICATION_FAILED', 'Payment verification failed. Contact support if payment was deducted.', 400);
   }
 
@@ -209,7 +209,7 @@ payments.post('/verify', async (c) => {
             subject: 'Email send failure — purchase receipt',
             message: `Failed to send purchase receipt email to ${buyerEmail}.`,
             metadata: { email: buyerEmail, error: String(err), orderId: updatedPurchase.razorpay_order_id },
-          }).catch(() => {});
+          }).catch((adminErr) => console.error('[payment] sendAdminNotification (receipt failure) failed:', adminErr));
         });
 
         if (productSlug) {
@@ -225,10 +225,10 @@ payments.post('/verify', async (c) => {
               subject: 'Email send failure — download email',
               message: `Failed to send download email to ${buyerEmail}.`,
               metadata: { email: buyerEmail, error: String(err), orderId: updatedPurchase.razorpay_order_id },
-            }).catch(() => {});
+            }).catch((adminErr) => console.error('[payment] sendAdminNotification (download failure) failed:', adminErr));
           });
         }
-      }).catch(() => {});
+      }).catch((err) => console.error('[payment] getProductById failed:', err));
     }
 
     return c.json({
