@@ -46,6 +46,12 @@ export const config = {
     url: requireEnv('BETTER_AUTH_URL'),
   },
 
+  email: {
+    resendApiKey: process.env.RESEND_API_KEY,
+    defaultFrom: optionalEnv('EMAIL_FROM', 'noreply@tarkify.com'),
+    adminEmail: requireEnv('ADMIN_EMAIL'),
+  },
+
   frontendUrl: optionalEnv('FRONTEND_URL', 'http://localhost:5173'),
 
   storagePath: optionalEnv('STORAGE_PATH', './storage'),

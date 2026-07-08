@@ -1,0 +1,81 @@
+/**
+ * Email system types and interfaces.
+ */
+
+export interface EmailAddress {
+  name?: string;
+  email: string;
+}
+
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer | string;
+  contentType?: string;
+}
+
+export interface SendEmailOptions {
+  to: EmailAddress | EmailAddress[];
+  from?: EmailAddress;
+  replyTo?: EmailAddress;
+  subject: string;
+  html: string;
+  text?: string;
+  attachments?: EmailAttachment[];
+}
+
+export interface SendEmailResult {
+  id: string;
+  provider: string;
+  timestamp: Date;
+  to: string;
+  subject: string;
+  status: 'sent' | 'logged' | 'failed';
+}
+
+export interface VerificationEmailData {
+  email: string;
+  verificationUrl: string;
+  userName?: string;
+}
+
+export interface PasswordResetEmailData {
+  email: string;
+  resetUrl: string;
+  userName?: string;
+}
+
+export interface PurchaseReceiptEmailData {
+  email: string;
+  userName?: string;
+  productName: string;
+  amount: number;
+  currency: string;
+  receiptUrl?: string;
+}
+
+export interface DownloadEmailData {
+  email: string;
+  userName?: string;
+  productName: string;
+  downloadUrl: string;
+}
+
+export interface ContactNotificationEmailData {
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+export interface NewsletterEmailData {
+  email: string;
+  userName?: string;
+  subject: string;
+  htmlContent: string;
+}
+
+export interface AdminNotificationEmailData {
+  subject: string;
+  message: string;
+  metadata?: Record<string, unknown>;
+}

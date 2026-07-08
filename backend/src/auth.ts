@@ -6,7 +6,7 @@ import { config } from "./config.js";
 import * as userRepository from "./users/repository.js";
 import { linkPurchasesToUserByEmail } from "./purchase-linking/service.js";
 import * as auditService from "./audit/service.js";
-import * as emailService from "./email/service.js";
+import { emailService } from "./email/index.js";
 import { pool } from "./db.js";
 
 const userHookSchema = z.object({
@@ -157,10 +157,10 @@ export function initAuth() {
       minPasswordLength: 8,
       maxPasswordLength: 128,
       sendResetPassword: async ({ user, url }) => {
-        await emailService.send({
-          to: user.email,
-          subject: "Reset your Tarkify password",
-          html: `<p>Click <a href="${url}">here</a> to reset your password.</p>`,
+        await emailService.sendPasswordResetEmail({
+          email: user.email,
+          resetUrl: url,
+          userName: user.name ?? undefined,
         });
       },
     },
@@ -170,10 +170,10 @@ export function initAuth() {
       autoSignInAfterVerification: true,
       expiresIn: 86400,
       sendVerificationEmail: async ({ user, url }) => {
-        await emailService.send({
-          to: user.email,
-          subject: "Verify your Tarkify email",
-          html: `<p>Click <a href="${url}">here</a> to verify your email.</p>`,
+        await emailService.sendVerificationEmail({
+          email: user.email,
+          verificationUrl: url,
+          userName: user.name ?? undefined,
         });
       },
     },
