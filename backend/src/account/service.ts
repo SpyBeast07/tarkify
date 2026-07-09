@@ -184,6 +184,14 @@ export async function getUserDownloads(userId: string): Promise<DownloadRow[]> {
   return result.rows as unknown as DownloadRow[];
 }
 
+export async function hasPassword(userId: string): Promise<boolean> {
+  const result = await query<{ count: string }>(
+    `SELECT COUNT(*) as count FROM account WHERE user_id = $1 AND provider_id = 'credential' AND password IS NOT NULL`,
+    [userId]
+  );
+  return parseInt(result.rows[0]?.count ?? '0', 10) > 0;
+}
+
 export async function getBillingHistory(
   userId: string,
   page: number,

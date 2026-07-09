@@ -280,7 +280,57 @@ export async function revokeOtherSessions() {
   return authFetch<Record<string, unknown>>("/revoke-other-sessions", { method: "POST" });
 }
 
+const ACCOUNT_BASE = `${API_BASE}/api/account`;
 const USERS_BASE = `${API_BASE}/api/users`;
+
+async function accountFetch<T>(path: string, opts: FetchOptions = {}): Promise<T | ApiErrorBody> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`${ACCOUNT_BASE}${path}`, {
+      method: opts.method || "GET",
+      headers: {
+        "Accept": "application/json",
+        ...(opts.body ? { "Content-Type": "application/json" } : {}),
+      },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+      credentials: "include",
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({ message: "Request failed" }));
+      return { error: errorBody, status: response.status };
+    }
+
+    return response.json();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err instanceof Error && err.name === "AbortError") {
+      return { error: { message: "Request timed out", code: "TIMEOUT" }, status: 0 };
+    }
+    if (err instanceof TypeError) {
+      return { error: { message: "Network error", code: "NETWORK_ERROR" }, status: 0 };
+    }
+    if (err instanceof SyntaxError) {
+      return { error: { message: "Invalid server response", code: "PARSE_ERROR" }, status: 0 };
+    }
+    return { error: { message: "Request failed", code: "UNKNOWN" }, status: 0 };
+  }
+}
+
+export async function checkHasPassword(): Promise<{ hasPassword: boolean } | ApiErrorBody> {
+  return accountFetch<{ hasPassword: boolean }>("/has-password");
+}
+
+export async function setPassword(newPassword: string) {
+  return accountFetch<{ status: boolean }>("/set-password", {
+    method: "POST",
+    body: { newPassword },
+  });
+}
 
 async function usersFetch<T>(path: string, opts: FetchOptions = {}): Promise<T | ApiErrorBody> {
   const controller = new AbortController();

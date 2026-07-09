@@ -7,7 +7,7 @@
     AlertTriangle, CheckCircle, Trash2, Settings as SettingsIcon,
     KeyRound
   } from '@lucide/svelte';
-  import { changePassword, listSessions, revokeSession, revokeOtherSessions, deleteAccount } from '$lib/api/auth';
+  import { changePassword, listSessions, revokeSession, revokeOtherSessions, deleteAccount, checkHasPassword, setPassword } from '$lib/api/auth';
   import type { ApiErrorBody, ListedSession } from '$lib/api/auth';
   import type { AuthState } from '$lib/context/auth.svelte';
   import type { ToastState } from '$lib/context/toast.svelte';
@@ -74,6 +74,66 @@
       passwordError = err?.message || 'An unexpected error occurred';
     } finally {
       changingPassword = false;
+    }
+  }
+
+  // ── Set Password (OAuth users) ──
+  let setNewPassword = $state('');
+  let setConfirmPassword = $state('');
+  let setShowPasswords = $state(false);
+  let setPasswordError = $state('');
+  let setPasswordSuccess = $state(false);
+  let settingPassword = $state(false);
+  let hasPassword = $state<boolean | null>(null);
+
+  let setPwValidationError = $derived(
+    setNewPassword.length > 0 && setNewPassword.length < 8 ? 'Password must be at least 8 characters' : ''
+  );
+  let setConfirmError = $derived(
+    setConfirmPassword.length > 0 && setNewPassword !== setConfirmPassword ? 'Passwords do not match' : ''
+  );
+
+  async function handleSetPassword(e: Event) {
+    e.preventDefault();
+    setPasswordError = '';
+    setPasswordSuccess = false;
+
+    if (setNewPassword !== setConfirmPassword) {
+      setPasswordError = 'Passwords do not match';
+      return;
+    }
+    if (setNewPassword.length < 8) {
+      setPasswordError = 'Password must be at least 8 characters';
+      return;
+    }
+
+    settingPassword = true;
+    try {
+      const result = await setPassword(setNewPassword);
+      if ('error' in result) {
+        const err = result as ApiErrorBody;
+        if (err.status === 401) {
+          settingPassword = false;
+          authState.clearUser();
+          return;
+        }
+        if (err.status === 409) {
+          setPasswordError = 'Password already set. Use the Change Password section below.';
+          hasPassword = true;
+          return;
+        }
+        setPasswordError = err.error?.message || 'Failed to set password';
+        return;
+      }
+      setPasswordSuccess = true;
+      hasPassword = true;
+      setNewPassword = '';
+      setConfirmPassword = '';
+      toast.addToast('Password set successfully', 'success');
+    } catch (err: any) {
+      setPasswordError = err?.message || 'An unexpected error occurred';
+    } finally {
+      settingPassword = false;
     }
   }
 
@@ -221,91 +281,171 @@
   $effect(() => {
     if (authState.loaded && authState.user) {
       loadSessions();
+      checkHasPassword().then(r => {
+        if (!('error' in r)) hasPassword = r.hasPassword;
+      });
     }
   });
 </script>
 
 <div class="settings-page">
-  <SectionCard icon={Lock} title="Change Password" description="Update your password. Choose a strong, unique password.">
-    {#if passwordError}
-      <Alert type="error">{passwordError}</Alert>
-    {/if}
+  {#if hasPassword === false}
+    <SectionCard icon={Lock} title="Set Password" description="You signed in with Google. Set a password to also sign in with email and password.">
+      {#if setPasswordError}
+        <Alert type="error">{setPasswordError}</Alert>
+      {/if}
 
-    <form onsubmit={handleChangePassword} novalidate>
-      <div class="form-group">
-        <label for="currentPassword" class="form-label">Current Password</label>
-        <div class="input-container-wrapper input-with-icon">
-          <Lock size={18} class="input-icon" aria-hidden="true" />
-          <input
-            id="currentPassword"
-            type={showPasswords ? 'text' : 'password'}
-            bind:value={currentPassword}
-            required
-            autocomplete="current-password"
-            disabled={changingPassword}
-            placeholder="Enter current password"
-          />
+      {#if setPasswordSuccess}
+        <Alert type="success">Password set successfully! You can now sign in with email and password.</Alert>
+      {:else}
+        <form onsubmit={handleSetPassword} novalidate>
+          <div class="form-group">
+            <label for="setNewPassword" class="form-label">New Password</label>
+            <div class="input-container-wrapper input-with-icon">
+              <Lock size={18} class="input-icon" aria-hidden="true" />
+              <input
+                id="setNewPassword"
+                type={setShowPasswords ? 'text' : 'password'}
+                bind:value={setNewPassword}
+                required
+                autocomplete="new-password"
+                disabled={settingPassword}
+                placeholder="At least 8 characters"
+              />
+            </div>
+            {#if setPwValidationError}
+              <span class="error-text">{setPwValidationError}</span>
+            {/if}
+          </div>
+
+          <div class="form-group">
+            <label for="setConfirmPassword" class="form-label">Confirm Password</label>
+            <div class="input-container-wrapper input-with-icon">
+              <Lock size={18} class="input-icon" aria-hidden="true" />
+              <input
+                id="setConfirmPassword"
+                type={setShowPasswords ? 'text' : 'password'}
+                bind:value={setConfirmPassword}
+                required
+                autocomplete="new-password"
+                disabled={settingPassword}
+                placeholder="Repeat password"
+              />
+            </div>
+            {#if setConfirmError}
+              <span class="error-text">{setConfirmError}</span>
+            {/if}
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-text" onclick={() => (setShowPasswords = !setShowPasswords)}>
+              {#if setShowPasswords}
+                <EyeOff size={16} aria-hidden="true" />
+              {:else}
+                <Eye size={16} aria-hidden="true" />
+              {/if}
+              {setShowPasswords ? 'Hide' : 'Show'} passwords
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            disabled={settingPassword || !!setPwValidationError || !!setConfirmError || !setNewPassword || !setConfirmPassword}
+          >
+            {settingPassword ? 'Setting...' : 'Set Password'}
+          </button>
+        </form>
+      {/if}
+    </SectionCard>
+  {/if}
+
+  {#if hasPassword}
+    <SectionCard icon={Lock} title="Change Password" description="Update your password. Choose a strong, unique password.">
+      {#if passwordError}
+        <Alert type="error">{passwordError}</Alert>
+      {/if}
+
+      <form onsubmit={handleChangePassword} novalidate>
+        <div class="form-group">
+          <label for="currentPassword" class="form-label">Current Password</label>
+          <div class="input-container-wrapper input-with-icon">
+            <Lock size={18} class="input-icon" aria-hidden="true" />
+            <input
+              id="currentPassword"
+              type={showPasswords ? 'text' : 'password'}
+              bind:value={currentPassword}
+              required
+              autocomplete="current-password"
+              disabled={changingPassword}
+              placeholder="Enter current password"
+            />
+          </div>
         </div>
-      </div>
 
-      <div class="form-group">
-        <label for="newPassword" class="form-label">New Password</label>
-        <div class="input-container-wrapper input-with-icon">
-          <Lock size={18} class="input-icon" aria-hidden="true" />
-          <input
-            id="newPassword"
-            type={showPasswords ? 'text' : 'password'}
-            bind:value={newPassword}
-            required
-            autocomplete="new-password"
-            disabled={changingPassword}
-            placeholder="At least 8 characters"
-          />
-        </div>
-        {#if pwValidationError}
-          <span class="error-text">{pwValidationError}</span>
-        {/if}
-      </div>
-
-      <div class="form-group">
-        <label for="confirmPassword" class="form-label">Confirm New Password</label>
-        <div class="input-container-wrapper input-with-icon">
-          <Lock size={18} class="input-icon" aria-hidden="true" />
-          <input
-            id="confirmPassword"
-            type={showPasswords ? 'text' : 'password'}
-            bind:value={confirmPassword}
-            required
-            autocomplete="new-password"
-            disabled={changingPassword}
-            placeholder="Repeat new password"
-          />
-        </div>
-        {#if confirmError}
-          <span class="error-text">{confirmError}</span>
-        {/if}
-      </div>
-
-      <div class="form-actions">
-        <button type="button" class="btn-text" onclick={() => (showPasswords = !showPasswords)}>
-          {#if showPasswords}
-            <EyeOff size={16} aria-hidden="true" />
-          {:else}
-            <Eye size={16} aria-hidden="true" />
+        <div class="form-group">
+          <label for="newPassword" class="form-label">New Password</label>
+          <div class="input-container-wrapper input-with-icon">
+            <Lock size={18} class="input-icon" aria-hidden="true" />
+            <input
+              id="newPassword"
+              type={showPasswords ? 'text' : 'password'}
+              bind:value={newPassword}
+              required
+              autocomplete="new-password"
+              disabled={changingPassword}
+              placeholder="At least 8 characters"
+            />
+          </div>
+          {#if pwValidationError}
+            <span class="error-text">{pwValidationError}</span>
           {/if}
-          {showPasswords ? 'Hide' : 'Show'} passwords
-        </button>
-      </div>
+        </div>
 
-      <button
-        type="submit"
-        class="btn btn-primary"
-        disabled={changingPassword || !!pwValidationError || !!confirmError || !currentPassword || !newPassword || !confirmPassword}
-      >
-        {changingPassword ? 'Updating...' : 'Update Password'}
-      </button>
-    </form>
-  </SectionCard>
+        <div class="form-group">
+          <label for="confirmPassword" class="form-label">Confirm New Password</label>
+          <div class="input-container-wrapper input-with-icon">
+            <Lock size={18} class="input-icon" aria-hidden="true" />
+            <input
+              id="confirmPassword"
+              type={showPasswords ? 'text' : 'password'}
+              bind:value={confirmPassword}
+              required
+              autocomplete="new-password"
+              disabled={changingPassword}
+              placeholder="Repeat new password"
+            />
+          </div>
+          {#if confirmError}
+            <span class="error-text">{confirmError}</span>
+          {/if}
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-text" onclick={() => (showPasswords = !showPasswords)}>
+            {#if showPasswords}
+              <EyeOff size={16} aria-hidden="true" />
+            {:else}
+              <Eye size={16} aria-hidden="true" />
+            {/if}
+            {showPasswords ? 'Hide' : 'Show'} passwords
+          </button>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          disabled={changingPassword || !!pwValidationError || !!confirmError || !currentPassword || !newPassword || !confirmPassword}
+        >
+          {changingPassword ? 'Updating...' : 'Update Password'}
+        </button>
+      </form>
+    </SectionCard>
+  {:else if hasPassword === null}
+    <SectionCard icon={Lock} title="Password" description="Loading...">
+      <div class="loading-state">Checking account type...</div>
+    </SectionCard>
+  {/if}
 
   <SectionCard icon={KeyRound} title="Active Sessions" description="Manage your active sessions. Revoke any session you don't recognize.">
     {#if sessionsError}

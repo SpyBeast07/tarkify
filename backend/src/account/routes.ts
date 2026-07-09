@@ -4,6 +4,7 @@ import { errorResponse } from '../lib/response.js';
 import * as accountService from './service.js';
 import * as purchaseService from '../services/purchase.service.js';
 import * as userService from '../users/service.js';
+import { getAuth } from '../auth.js';
 
 const account = new Hono();
 
@@ -186,6 +187,41 @@ account.put('/profile', async (c) => {
       return errorResponse(c, 'VALIDATION_ERROR', err.message, 400);
     }
     throw err;
+  }
+});
+
+account.get('/has-password', async (c) => {
+  const user = c.get('user')!;
+  const result = await accountService.hasPassword(user.id);
+  return c.json({ hasPassword: result });
+});
+
+account.post('/set-password', async (c) => {
+  let body: { newPassword?: string };
+  try {
+    body = await c.req.json();
+  } catch {
+    return errorResponse(c, 'BAD_REQUEST', 'Invalid JSON in request body', 400);
+  }
+
+  const password = body.newPassword;
+  if (!password || password.length < 8) {
+    return errorResponse(c, 'VALIDATION_ERROR', 'Password must be at least 8 characters', 400);
+  }
+
+  try {
+    const auth = getAuth();
+    await auth.api.setPassword({
+      body: { newPassword: password },
+      headers: c.req.raw.headers,
+    });
+    return c.json({ status: true });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('PASSWORD_ALREADY_SET')) {
+      return errorResponse(c, 'CONFLICT', 'Password already set. Use "Change Password" instead.', 409);
+    }
+    return errorResponse(c, 'INTERNAL_ERROR', msg, 500);
   }
 });
 
