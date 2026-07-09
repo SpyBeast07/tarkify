@@ -176,6 +176,34 @@ export async function signIn(email: string, password: string, rememberMe?: boole
   });
 }
 
+export async function signInWithGoogle(redirectTo?: string, errorRedirectTo?: string): Promise<string> {
+  const frontendOrigin = window.location.origin;
+  const returnTo = redirectTo || window.location.pathname + window.location.search;
+  const callbackURL = `${frontendOrigin}${returnTo.startsWith('/') ? '' : '/'}${returnTo}`;
+  const errorCallbackURL = errorRedirectTo
+    ? `${frontendOrigin}${errorRedirectTo.startsWith('/') ? '' : '/'}${errorRedirectTo}`
+    : undefined;
+  const apiBase = (import.meta.env.VITE_API_URL || "http://localhost:3009").replace(/\/+$/, "");
+
+  const response = await fetch(`${apiBase}/api/auth/sign-in/social`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      provider: "google",
+      callbackURL,
+      ...(errorCallbackURL ? { errorCallbackURL } : {}),
+    }),
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error?.message || body?.message || "Failed to initiate Google sign-in");
+  }
+
+  const data = await response.json();
+  return data.url;
+}
+
 export async function signUp(name: string, email: string, password: string) {
   return authFetch<{ user: User; session: Session; token: string }>("/sign-up/email", {
     method: "POST",

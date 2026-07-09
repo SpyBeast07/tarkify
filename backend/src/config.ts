@@ -44,6 +44,8 @@ export const config = {
   auth: {
     secret: requireEnv('BETTER_AUTH_SECRET'),
     url: requireEnv('BETTER_AUTH_URL'),
+    googleClientId: process.env.GOOGLE_CLIENT_ID,
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   },
 
   email: {

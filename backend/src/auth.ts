@@ -50,7 +50,11 @@ export function initAuth() {
     }),
     secret: config.auth.secret,
     baseURL: config.auth.url,
-    trustedOrigins: [config.frontendUrl],
+    trustedOrigins: [
+      config.frontendUrl,
+      "http://localhost:5173",
+      "https://tarkify.qzz.io",
+    ],
 
     user: {
       modelName: "users",
@@ -212,6 +216,13 @@ export function initAuth() {
       },
     },
 
+    socialProviders: {
+      google: {
+        clientId: config.auth.googleClientId ?? "",
+        clientSecret: config.auth.googleClientSecret ?? "",
+      },
+    },
+
     advanced: {
       useSecureCookies: config.nodeEnv === "production",
       cookiePrefix: "tarkify",
@@ -296,7 +307,9 @@ export function initAuth() {
             try {
               const a = accountCreateHookSchema.parse(account);
               if (a.providerId === "credential") {
-                await auditService.recordAccountCreated(a.userId);
+                await auditService.recordAccountCreated(a.userId, undefined, undefined, { provider: "email" });
+              } else {
+                await auditService.recordAccountCreated(a.userId, undefined, undefined, { provider: a.providerId });
               }
             } catch (err) {
               console.error("Failed to record account creation audit:", err);
