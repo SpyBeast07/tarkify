@@ -2,7 +2,7 @@
 	import { getContext } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { Mail, Lock, ArrowRight, Eye, EyeOff } from '@lucide/svelte';
+	import { Mail, Lock, ArrowRight, Eye, EyeOff, RefreshCw, X } from '@lucide/svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import AuthLayout from '$lib/components/ui/AuthLayout.svelte';
@@ -14,6 +14,7 @@
 	let rememberMe = $state(false);
 	let showPassword = $state(false);
 	let error = $state('');
+	let info = $state('');
 	let loading = $state(false);
 	let googleLoading = $state(false);
 
@@ -23,20 +24,30 @@
 
 	$effect(() => {
 		if (authState.loaded && authState.user) {
-			goto('/account');
+			goto(returnUrl);
 		}
 	});
 
 	$effect(() => {
 		const oauthMessage = parseOAuthErrorFromParams($page.url.searchParams);
-		if (oauthMessage && error === '') {
-			error = oauthMessage;
+		if (oauthMessage) {
+			const isCancel = $page.url.searchParams.get('error') === 'access_denied';
+			if (isCancel) {
+				info = oauthMessage;
+			} else if (error === '') {
+				error = oauthMessage;
+			}
 		}
 	});
+
+	function dismissInfo() {
+		info = '';
+	}
 
 	async function handleLogin(e: Event) {
 		e.preventDefault();
 		error = '';
+		info = '';
 		loading = true;
 
 		try {
@@ -57,6 +68,7 @@
 
 	async function handleGoogleSignIn() {
 		error = '';
+		info = '';
 		googleLoading = true;
 		try {
 			const url = await signInWithGoogle(returnUrl, '/login');
@@ -86,6 +98,21 @@
 <AuthLayout title="Welcome Back" subtitle="Sign in to access your purchases and downloads.">
 	{#if error}
 		<Alert type="error">{error}</Alert>
+		<button class="retry-btn" onclick={() => { error = ''; handleGoogleSignIn() }}>
+			<RefreshCw size={14} aria-hidden="true" />
+			Try again
+		</button>
+	{/if}
+
+	{#if info}
+		<Alert type="info">
+			<div class="info-content">
+				<span>{info}</span>
+				<button class="dismiss-btn" onclick={dismissInfo} aria-label="Dismiss">
+					<X size={14} />
+				</button>
+			</div>
+		</Alert>
 	{/if}
 
 	<button
@@ -95,7 +122,10 @@
 		disabled={googleLoading}
 	>
 		{#if googleLoading}
-			Continue with Google...
+			<svg class="spinner" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+				<circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round" />
+			</svg>
+			Redirecting to Google...
 		{:else}
 			<svg class="google-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
 				<path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/>
@@ -236,6 +266,62 @@
 		background: rgba(255, 255, 255, 0.45);
 		border-color: var(--color-accent-green);
 		transform: translateY(-2px);
+	}
+
+	.info-content {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		width: 100%;
+	}
+
+	.dismiss-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: none;
+		border: none;
+		color: inherit;
+		opacity: 0.6;
+		cursor: pointer;
+		padding: 0;
+		flex-shrink: 0;
+	}
+
+	.dismiss-btn:hover {
+		opacity: 1;
+	}
+
+	.retry-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.375rem;
+		margin-top: 0.5rem;
+		padding: 0.5rem 1rem;
+		border-radius: 10px;
+		font-size: 0.8rem;
+		font-weight: 500;
+		font-family: inherit;
+		cursor: pointer;
+		border: 1px solid var(--color-glass-border);
+		background: var(--color-glass-bg);
+		color: var(--color-text);
+		backdrop-filter: var(--glass-blur);
+		transition: var(--transition-smooth);
+	}
+
+	.retry-btn:hover {
+		border-color: var(--color-accent-green);
+	}
+
+	.spinner {
+		animation: spin 1s linear infinite;
+	}
+
+	@keyframes spin {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
 	}
 
 	.btn-google:disabled {
