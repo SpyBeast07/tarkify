@@ -5,7 +5,7 @@
 
 ---
 
-## 1. Core Principles
+## Core Principles
 
 Every piece of code should be: **simple, readable, predictable, reusable, testable, type-safe.**
 
@@ -16,7 +16,7 @@ Every piece of code should be: **simple, readable, predictable, reusable, testab
 
 ---
 
-## 2. Technology Stack
+## Technology Stack
 
 | Layer | Stack |
 |-------|-------|
@@ -26,7 +26,7 @@ Every piece of code should be: **simple, readable, predictable, reusable, testab
 
 ---
 
-## 3. Coding Standards
+## Coding Standards
 
 - **TypeScript is mandatory.** Never disable errors. Avoid `any`. Export reusable types.
 - **Svelte 5 idiomatic.** Use runes (`$state`, `$derived`, `$effect`, `$props`). Don't translate React patterns. Avoid legacy syntax unless required.
@@ -39,7 +39,7 @@ Every piece of code should be: **simple, readable, predictable, reusable, testab
 
 ---
 
-## 4. Folder Conventions
+## Folder Conventions
 
 ### Backend (`backend/src/`)
 ```
@@ -59,7 +59,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 5. Naming Conventions
+## Naming Conventions
 
 - Components: `HeroSection.svelte`, `ProductCard.svelte`.
 - Utilities: `formatPrice.ts`, `validateEmail.ts`.
@@ -69,7 +69,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 6. Error Handling
+## Error Handling
 
 - Never ignore errors. Every async op handles success / loading / failure.
 - User-friendly messages; log unexpected errors appropriately (no PII).
@@ -78,7 +78,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 7. Testing Strategy
+## Testing Strategy
 
 - **Unit tests** (Bun `bun test`) for: config validation, security middleware, email normalization, price formatting, purchase logic.
 - **Integration tests** for payment/webhook flows are not yet automated — add when touching those paths.
@@ -87,7 +87,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 8. Documentation Standards
+## Documentation Standards
 
 - One concept → one authoritative location; other docs **link**, never repeat.
 - Use Mermaid for flows/ER diagrams.
@@ -97,7 +97,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 9. Git Workflow
+## Git Workflow
 
 - Small, focused commits with clear messages.
 - Don't rewrite unrelated code.
@@ -107,7 +107,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 10. Architecture Rules
+## Architecture Rules
 
 - **Frontend**: presentation only — no secrets, no payment verification, no DB access, no auth logic.
 - **Backend**: owns all business logic, validation, security.
@@ -118,7 +118,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 11. How to Add a New Feature
+## How to Add a New Feature
 
 1. Decide the module folder (`backend/src/<feature>/`, `frontend/src/lib/components/...`).
 2. Add `types.ts` → `validation.ts` (Zod) → `repository.ts` (SQL) → `service.ts` → `routes.ts`.
@@ -129,7 +129,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 12. How to Add a New API
+## How to Add a New API
 
 - Choose the module; follow its folder layout.
 - Validate input with Zod in `validation.ts`.
@@ -140,7 +140,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 13. How to Add a New Page
+## How to Add a New Page
 
 - File-based route under `frontend/src/routes/`.
 - Use `lib/api/*` clients (no direct `fetch`).
@@ -151,7 +151,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 14. How to Add a New Email
+## How to Add a New Email
 
 1. Add a `templates/<name>.ts` using `components/*` + `EmailLayout`.
 2. Add a `send<Name>(data)` method to `EmailService` with its category.
@@ -161,7 +161,7 @@ Pages never call `fetch()` directly for reusable APIs — use `lib/api/*`.
 
 ---
 
-## 15. How to Add a New Database Table
+## How to Add a New Database Table
 
 1. Create `backend/migrations/0NN_descriptive.sql` (new table or nullable column on an existing one).
 2. Apply ownership: identity → Better Auth; business → Tarkify.

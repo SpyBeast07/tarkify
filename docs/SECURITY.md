@@ -5,7 +5,7 @@
 
 ---
 
-## 1. Authentication
+## Authentication
 
 - **Better Auth** owns identity: register, login, sessions, email verification, password reset, OAuth.
 - **Password hashing**: bcrypt / argon2 (Better Auth default). Application never sees plaintext.
@@ -16,7 +16,7 @@
 
 ---
 
-## 2. Authorization
+## Authorization
 
 - Roles in `users.role` (TEXT, CHECK): `customer`, `admin`, `super_admin`.
 - Middleware: `requireAuth` (any session), `requireCustomer`, `requireAdmin`, `requireSuperAdmin`, `requireRole(...)`.
@@ -24,7 +24,7 @@
 
 ---
 
-## 3. RBAC
+## RBAC
 
 - Coarse roles, no granular permission tables (sufficient at current scale).
 - Extensible later via a `role_permissions` table without touching business tables.
@@ -32,7 +32,7 @@
 
 ---
 
-## 4. Cookies
+## Cookies
 
 | Attribute | Value |
 |-----------|-------|
@@ -46,7 +46,7 @@ Cross-site deployments require `SameSite=None; Secure` — confirm frontend/back
 
 ---
 
-## 5. Sessions
+## Sessions
 
 - DB-backed `session` table.
 - Revocation: `revoke-session`, `revoke-other-sessions`.
@@ -55,7 +55,7 @@ Cross-site deployments require `SameSite=None; Secure` — confirm frontend/back
 
 ---
 
-## 6. OAuth
+## OAuth
 
 - Google OAuth **implemented** (migration `016_add_oauth_support.sql`, `socialProviders`).
 - **Disabled by default**: login/register OAuth buttons gated on `googleOAuthEnabled` (true only when both `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` set).
@@ -64,7 +64,7 @@ Cross-site deployments require `SameSite=None; Secure` — confirm frontend/back
 
 ---
 
-## 7. CSP
+## CSP
 
 Comprehensive `Content-Security-Policy`:
 - Allows Razorpay Checkout scripts/frames, Google Fonts, self-origin assets.
@@ -74,7 +74,7 @@ Comprehensive `Content-Security-Policy`:
 
 ---
 
-## 8. CSRF
+## CSRF
 
 - Better Auth issues `csrf_token` cookie + expects `X-CSRF-Token` header.
 - CORS uses `credentials: true` and echoes only whitelisted origins; Vercel preview patterns allowed.
@@ -82,7 +82,7 @@ Comprehensive `Content-Security-Policy`:
 
 ---
 
-## 9. Rate Limiting
+## Rate Limiting
 
 - **In-memory IP-based sliding window** (no external store).
 - Limits: auth 10/min, payments 30/min, downloads 60/min, contact 10/min, feedback 20/min, newsletter 30/min, careers 10/min.
@@ -91,7 +91,7 @@ Comprehensive `Content-Security-Policy`:
 
 ---
 
-## 10. Headers
+## Headers
 
 | Header | Value |
 |--------|-------|
@@ -105,7 +105,7 @@ Comprehensive `Content-Security-Policy`:
 
 ---
 
-## 11. Input Validation
+## Input Validation
 
 - **Parameterized SQL** everywhere (`$1`, `$2`, …); no string concatenation.
 - **Validation**: Zod schemas; email (lowercase+trimmed, alphabetic TLD), phone (digits + allowed chars, 7–20), URL (`http(s)://`, ≤2048), explicit per-field length limits.
@@ -115,7 +115,7 @@ Comprehensive `Content-Security-Policy`:
 
 ---
 
-## 12. Audit Logs
+## Audit Logs
 
 - `audit_logs` table records `account_created`, `login`, `logout`, and other account events via `src/audit/`.
 - Every response carries a `X-Request-Id` UUID for traceability.
@@ -123,7 +123,7 @@ Comprehensive `Content-Security-Policy`:
 
 ---
 
-## 13. Secrets
+## Secrets
 
 - **Startup validation** (`src/config.ts`): fails fast on missing required vars; production guardrails enforce `https://` URLs, `RESEND_API_KEY` presence, and `BETTER_AUTH_SECRET` ≥ 32 chars.
 - **OAuth**: requires both Google id+secret or neither.
@@ -133,7 +133,7 @@ Comprehensive `Content-Security-Policy`:
 
 ---
 
-## 14. Environment Variables
+## Environment Variables
 
 | Group | Required | Notes |
 |-------|----------|-------|
@@ -153,19 +153,15 @@ See `DEPLOYMENT.md#environment-variables` and `PROJECT_STATUS.md#current-authent
 
 ---
 
-## 15. Deployment Security
+## Deployment Security
 
-- Backend container runs as **non-root `appuser`**.
-- Docker `init: true` + `exec` entrypoint for signal propagation.
-- Postgres port `expose`d only (not published to host).
-- Logs rotated (json-file, 10MB × 3).
-- Cloudflare **Full (Strict)** SSL; avoid Flexible (origin sees HTTP).
-- Same-site subdomains so `SameSite=Lax` cookies work.
-- Migrations fail fast on error; `_migrations` prevents duplicates.
+Infrastructure hardening (non-root `appuser`, `init: true` + `exec`, Postgres port `expose`d only, log rotation, fail-fast migrations, `_migrations` idempotency) is detailed in `DEPLOYMENT.md#docker` and `DEPLOYMENT.md#vps`.
+
+The security-relevant rule: Cloudflare must be **Full (Strict)** and frontend/backend must be **same-site** subdomains so `SameSite=Lax` cookies are sent.
 
 ---
 
-## 16. Future Hardening
+## Future Hardening
 
 - **Redis** shared rate limiting + session dedup for multi-replica.
 - **MFA** (two-factor) for sensitive accounts.

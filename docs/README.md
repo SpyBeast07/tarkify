@@ -51,7 +51,7 @@ After `PROJECT_STATUS.md`, you can jump directly to the document for the area yo
 
 - **One concept, one authoritative location.** Other docs link to it instead of repeating it.
 - **Mermaid diagrams** are used for flows and entity relationships.
-- **Internal links** are relative (`ARCHITECTURE.md#rbac`).
+- **Internal links** are relative (`ADMIN_PORTAL_ARCHITECTURE.md#rbac`).
 - **No application code is changed** by documentation work.
 - **Historical reports** live only in `ARCHIVE/` and are never referenced as current truth.
 

@@ -83,7 +83,7 @@ See `ARCHITECTURE.md#tech-stack` for the full list.
 - Cloudflare set to **Full (Strict)** SSL.
 - Set `RESEND_API_KEY` (production email).
 
-See `DEPLOYMENT.md#production-checklist` and `SECURITY.md`.
+See `DEPLOYMENT.md#production-deployment` and `SECURITY.md`.
 
 ---
 
@@ -158,7 +158,7 @@ Full detail in `DEPLOYMENT.md`.
 - Roles: `customer`, `admin`, `super_admin` (coarse; RBAC tables not yet needed).
 - Guest purchase linking fires on email verification via a Better Auth DB hook.
 
-See `SECURITY.md` and `ARCHITECTURE.md#authentication`.
+See `SECURITY.md` and `ARCHITECTURE.md#authentication--authorization`.
 
 ---
 

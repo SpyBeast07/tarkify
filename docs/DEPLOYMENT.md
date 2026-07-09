@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Topology
+## Topology
 
 ```mermaid
 flowchart TD
@@ -22,7 +22,7 @@ Frontend and backend are **same-site** subdomains (`*.tarkify.qzz.io`) so `SameS
 
 ---
 
-## 2. Development
+## Development
 
 ```bash
 # Backend (Docker dev)
@@ -43,7 +43,7 @@ npm run dev                   # Vite dev server (:5173)
 
 ---
 
-## 3. Docker
+## Docker
 
 **Image (`Dockerfile`)**:
 - Base `oven/bun:alpine`; runs as non-root `appuser`.
@@ -76,7 +76,7 @@ exec "$@"
 
 ---
 
-## 4. VPS
+## VPS
 
 ```bash
 # One-time
@@ -93,7 +93,7 @@ docker compose up -d --build
 
 ---
 
-## 5. Cloudflare
+## Cloudflare
 
 - TLS mode: **Full (Strict)** — origin serves HTTPS; `BETTER_AUTH_URL`/`FRONTEND_URL` must be `https://`.
 - Acts as TLS proxy / tunnel exposing `backend.tarkify.qzz.io`.
@@ -101,7 +101,7 @@ docker compose up -d --build
 
 ---
 
-## 6. Resend
+## Resend
 
 1. Sign up at resend.com; verify a domain (TXT/MX/CNAME).
 2. Create API key → set `RESEND_API_KEY`.
@@ -113,7 +113,7 @@ See `EMAIL_SYSTEM.md`.
 
 ---
 
-## 7. Google OAuth
+## Google OAuth
 
 - **Opt-in**: set **both** `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` (from Google Cloud Console).
 - Omit both to disable. Partial config **throws** at startup.
@@ -122,7 +122,7 @@ See `EMAIL_SYSTEM.md`.
 
 ---
 
-## 8. Environment Variables
+## Environment Variables
 
 | Group | Variable | Required | Notes |
 |-------|----------|----------|-------|
@@ -147,7 +147,7 @@ See `EMAIL_SYSTEM.md`.
 
 ---
 
-## 9. Production Deployment
+## Production Deployment
 
 1. Set `NODE_ENV=production` (compose default).
 2. Configure `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (https), `FRONTEND_URL` (https), Razorpay keys, `ADMIN_EMAIL`.
@@ -159,7 +159,7 @@ See `EMAIL_SYSTEM.md`.
 
 ---
 
-## 10. Migration Process
+## Migration Process
 
 Runner: `scripts/migrate.ts`.
 
@@ -174,7 +174,7 @@ Runner: `scripts/migrate.ts`.
 
 ---
 
-## 11. Startup Sequence
+## Startup Sequence
 
 ```
 docker compose up -d --build
@@ -196,7 +196,7 @@ Graceful shutdown: `SIGTERM`/`SIGINT` stop server + close DB pool (10s timeout);
 
 ---
 
-## 12. Health Checks
+## Health Checks
 
 | Endpoint | Purpose | Returns |
 |-----------|---------|----------|
@@ -207,7 +207,7 @@ Used by the Docker `healthcheck` (`/api/health`, every 15s, start_period 45s).
 
 ---
 
-## 13. Rollback Process
+## Rollback Process
 
 - **Code rollback**: `git pull <previous-commit>` + `docker compose up -d --build`. Migrations are forward-only; down-migrations are not automated (by design — existing data stays valid).
 - **Data safety**: `git pull && docker compose up -d --build` preserves data; `restart api` preserves data; `compose down` + `up -d` preserves data; **`compose down -v` destroys PG data (intentional)**.
@@ -215,7 +215,7 @@ Used by the Docker `healthcheck` (`/api/health`, every 15s, start_period 45s).
 
 ---
 
-## 14. Troubleshooting
+## Troubleshooting
 
 | Symptom | Check |
 |----------|-------|

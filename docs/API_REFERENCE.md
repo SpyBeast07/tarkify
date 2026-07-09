@@ -7,7 +7,7 @@
 
 ---
 
-## 1. Authentication (`/api/auth/*`)
+## Authentication (`/api/auth/*`)
 
 Mounted directly to Better Auth (`app.on(['POST','GET'], '/api/auth/*', …)`).
 
@@ -34,7 +34,7 @@ Mounted directly to Better Auth (`app.on(['POST','GET'], '/api/auth/*', …)`).
 
 ---
 
-## 2. Customer / Account (`/api/account/*`)
+## Customer & Account
 
 All require a valid session. Client: `src/lib/api/account.ts`.
 
@@ -55,7 +55,7 @@ All require a valid session. Client: `src/lib/api/account.ts`.
 
 ---
 
-## 3. Users (`/api/users/*`)
+## Users (`/api/users/*`)
 
 | Route | Method | Auth | Purpose |
 |-------|--------|------|---------|
@@ -68,7 +68,7 @@ All require a valid session. Client: `src/lib/api/account.ts`.
 
 ---
 
-## 4. Products
+## Products
 
 | Route | Method | Auth | Purpose |
 |-------|--------|------|---------|
@@ -79,7 +79,7 @@ Price is always read from the DB (`getPrice()`); never trusted from the client.
 
 ---
 
-## 5. Payments (`/api/payments/*`)
+## Payments (`/api/payments/*`)
 
 | Route | Method | Auth | Purpose |
 |-------|--------|------|---------|
@@ -99,7 +99,7 @@ Price is always read from the DB (`getPrice()`); never trusted from the client.
 
 ---
 
-## 6. Downloads (token-authorized)
+## Downloads (token-authorized)
 
 | Route | Method | Auth | Purpose |
 |-------|--------|------|---------|
@@ -111,9 +111,9 @@ Price is always read from the DB (`getPrice()`); never trusted from the client.
 
 ---
 
-## 7. Communication (`/api/*`)
+## Communication Module Architecture
 
-All public, rate-limited, sanitized, and validated. See `ARCHITECTURE.md#communication`.
+All public, rate-limited, sanitized, and validated. See `ARCHITECTURE.md#communication-module-architecture`.
 
 | Route | Method | Rate | Request |
 |-------|--------|------|---------|
@@ -128,7 +128,7 @@ All public, rate-limited, sanitized, and validated. See `ARCHITECTURE.md#communi
 
 ---
 
-## 8. Email (dev/admin)
+## Email (dev/admin)
 
 | Route | Method | Auth | Purpose |
 |-------|--------|------|---------|
@@ -140,7 +140,7 @@ Templates and lifecycle in `EMAIL_SYSTEM.md`.
 
 ---
 
-## 9. Webhooks (`/api/webhooks/razorpay`)
+## Webhooks (`/api/webhooks/razorpay`)
 
 | Route | Method | Auth | Purpose |
 |-------|--------|------|---------|
@@ -153,7 +153,7 @@ Templates and lifecycle in `EMAIL_SYSTEM.md`.
 
 ---
 
-## 10. System
+## System
 
 | Route | Method | Auth | Purpose |
 |-------|--------|------|---------|
@@ -162,7 +162,7 @@ Templates and lifecycle in `EMAIL_SYSTEM.md`.
 
 ---
 
-## 11. Health & Readiness
+## Health & Readiness
 
 | Route | Method | Auth | Purpose |
 |-------|--------|------|---------|
@@ -173,7 +173,7 @@ Used by the Docker healthcheck.
 
 ---
 
-## 12. Admin (Planned — not implemented)
+## Admin (Planned)
 
 Reserved under `/api/admin/*`, protected by `requireRole('admin','super_admin')`:
 

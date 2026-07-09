@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Provider Abstraction
+## Provider Abstraction
 
 ```mermaid
 flowchart LR
@@ -25,7 +25,7 @@ flowchart LR
 
 ---
 
-## 2. Resend
+## Resend
 
 - SDK wrapped in `ResendProvider` with timeout + structured errors.
 - Dev fallback: if `RESEND_API_KEY` is unset, emails are **logged to console** instead of sent.
@@ -34,7 +34,7 @@ flowchart LR
 
 ---
 
-## 3. Email Lifecycle
+## Email Lifecycle
 
 ```mermaid
 sequenceDiagram
@@ -63,7 +63,7 @@ sequenceDiagram
 
 ---
 
-## 4. Retry Logic
+## Retry Logic
 
 - Config: 1 retry, 1s base, 5s max.
 - Algorithm: exponential backoff with full jitter.
@@ -72,7 +72,7 @@ sequenceDiagram
 
 ---
 
-## 5. Error Handling
+## Error Handling
 
 `EmailError` hierarchy: `EmailProviderError` (statusCode, provider), `EmailRateLimitError` (429), `EmailConfigurationError`, `EmailTemplateError`.
 
@@ -88,14 +88,14 @@ Better Auth callbacks (`sendVerificationEmail`, `sendResetPassword`) catch, log,
 
 ---
 
-## 6. Logging
+## Logging
 
 - **In-memory** `EmailLogger`: last 1000 entries (`to`, `subject`, `provider`, `level`, `message`, `durationMs`, `timestamp`).
 - **DB** `email_logs`: `recipient`, `template`, `provider`, `provider_id`, `status` (sent/logged/skipped/failed), `error`, `sent_at`, `metadata`. Insert failures are silently caught (never block a send).
 
 ---
 
-## 7. Templates
+## Templates
 
 Built from reusable components (`components/`): `Header`, `Footer`, `Button`, `Divider`, `InfoCard`, `ProductCard`, `CodeBox`, `Alert`, `Signature`. Wrapped by `EmailLayout.ts` (responsive table, dark-mode via `prefers-color-scheme`, Google Fonts/Inter, preview text).
 
@@ -103,7 +103,7 @@ Theme tokens in `styles/theme.ts`. Preview all templates at `GET /api/email-prev
 
 ---
 
-## 8. Email Types
+## Email Types
 
 | Template | Method | Category | Trigger |
 |----------|--------|----------|----------|
@@ -123,7 +123,7 @@ Theme tokens in `styles/theme.ts`. Preview all templates at `GET /api/email-prev
 
 ---
 
-## 9. Future Providers
+## Future Providers
 
 - Add a new `EmailProvider` implementation (e.g. SendGrid, SES) and register it by `EMAIL_PROVIDER` name.
 - No template or `EmailService` changes required — transport is fully abstracted.

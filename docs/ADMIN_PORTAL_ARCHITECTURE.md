@@ -6,13 +6,13 @@
 
 ---
 
-## 1. Objective
+## Objective
 
 Build an admin dashboard that lets privileged users manage customers, products, purchases, the communication inbox, and (for super-admins) system settings and admin accounts. It reuses existing business tables and the already-prepared role middleware.
 
 ---
 
-## 2. RBAC
+## RBAC
 
 Roles already exist in `users.role` (TEXT, CHECK): `customer`, `admin`, `super_admin`.
 
@@ -40,7 +40,7 @@ No granular permission tables are planned at current scale — coarse roles are 
 
 ---
 
-## 3. Modules
+## Modules
 
 | Module | Backend | Frontend |
 |--------|---------|----------|
@@ -54,7 +54,7 @@ No granular permission tables are planned at current scale — coarse roles are 
 
 ---
 
-## 4. Navigation
+## Navigation
 
 ```
 /admin/
@@ -73,7 +73,7 @@ Active route highlighted; mobile collapse; role-gated nav items hidden per `user
 
 ---
 
-## 5. Folder Structure
+## Folder Structure
 
 ### Backend (`backend/src/`)
 ```
@@ -108,7 +108,7 @@ lib/components/admin/           AdminSidebar, DataTable, StatCard, Drawer
 
 ---
 
-## 6. APIs (Planned)
+## APIs (Planned)
 
 All under `/api/admin/*`, role-protected. See `API_REFERENCE.md#admin-planned` for the full reserved table. Highlights:
 
@@ -124,7 +124,7 @@ Every admin query must be scoped and parameterized; admin actions should write t
 
 ---
 
-## 7. Components
+## Components
 
 | Component | Purpose |
 |-----------|---------|
@@ -138,7 +138,7 @@ Reuse existing `ui/` primitives (`Button`, `Input`, `Modal`, `Toast`, `StatusBad
 
 ---
 
-## 8. Reusable Layouts
+## Reusable Layouts
 
 - `admin/+layout.svelte` — `requireAdmin` guard + sidebar + content slot + root `Navbar`/`Footer`/`Toast`.
 - `AuthLayout` (existing `ui/AuthLayout.svelte`) reused for auth pages.
@@ -147,7 +147,7 @@ Reuse existing `ui/` primitives (`Button`, `Input`, `Modal`, `Toast`, `StatusBad
 
 ---
 
-## 9. Design Principles
+## Design Principles
 
 Follow `DESIGN_SYSTEM.md` and `DEVELOPMENT_GUIDE.md`:
 
@@ -161,7 +161,7 @@ Follow `DESIGN_SYSTEM.md` and `DEVELOPMENT_GUIDE.md`:
 
 ---
 
-## 10. Future Scalability
+## Future Scalability
 
 - **New admin modules** add routes + a backend `admin/routes/*` file; no existing table changes.
 - **Analytics** reads existing `created_at`/`status`/`metadata`; optionally a new `analytics_*` table.

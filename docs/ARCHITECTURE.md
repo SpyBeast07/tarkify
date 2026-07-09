@@ -6,7 +6,7 @@
 
 ---
 
-## 1. High-Level Architecture
+## High-Level Architecture
 
 ```mermaid
 flowchart TD
@@ -23,7 +23,7 @@ The frontend is **presentation only** — no secrets, no payment verification, n
 
 ---
 
-## 2. Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
@@ -46,7 +46,7 @@ The frontend is **presentation only** — no secrets, no payment verification, n
 
 ---
 
-## 3. Request Flow
+## Request Flow
 
 ```mermaid
 sequenceDiagram
@@ -76,7 +76,7 @@ The `sessionMiddleware` runs on **every** route and attaches `{ user, session }`
 
 ---
 
-## 4. Backend Architecture
+## Backend Architecture
 
 ```mermaid
 flowchart LR
@@ -106,7 +106,7 @@ flowchart LR
 
 ---
 
-## 5. Frontend Architecture
+## Frontend Architecture
 
 ```mermaid
 flowchart TD
@@ -133,7 +133,7 @@ flowchart TD
 
 ---
 
-## 6. Authentication & Authorization
+## Authentication & Authorization
 
 ### 6.1 Auth Boundary
 
@@ -160,17 +160,9 @@ flowchart LR
 
 ### 6.2 RBAC
 
-Three roles in `users.role` (TEXT, CHECK): `customer`, `admin`, `super_admin`.
+Three roles live in `users.role` (TEXT, CHECK): `customer`, `admin`, `super_admin`. The full route-protection matrix and `requireAuth` / `requireRole` middleware are defined authoritatively in `SECURITY.md#authorization` (the Admin Portal plan extends them in `ADMIN_PORTAL_ARCHITECTURE.md#rbac`).
 
-| Middleware | Allowed roles |
-|-----------|--------------|
-| `requireAuth` | any authenticated user |
-| `requireCustomer` | customer, admin, super_admin |
-| `requireAdmin` | admin, super_admin |
-| `requireSuperAdmin` | super_admin |
-| `requireRole(...)` | custom list |
-
-Roles are coarse (no granular permission tables yet). This is sufficient at current scale and can be extended later.
+Roles are coarse (no granular permission tables yet) — sufficient at current scale and extensible later.
 
 ### 6.3 Session Lifecycle
 
@@ -180,7 +172,7 @@ Roles are coarse (no granular permission tables yet). This is sufficient at curr
 
 ---
 
-## 7. Guest Purchase Linking
+## Guest Purchase Linking
 
 ```mermaid
 sequenceDiagram
@@ -208,7 +200,7 @@ sequenceDiagram
 
 ---
 
-## 8. Payment Flow
+## Payment Flow
 
 ```mermaid
 sequenceDiagram
@@ -239,7 +231,7 @@ sequenceDiagram
 
 ---
 
-## 9. Download Flow
+## Download Flow
 
 ```mermaid
 flowchart LR
@@ -258,7 +250,7 @@ flowchart LR
 
 ---
 
-## 10. Email Flow
+## Email Flow
 
 ```mermaid
 flowchart LR
@@ -277,7 +269,7 @@ flowchart LR
 
 ---
 
-## 11. OAuth Flow (Google, opt-in)
+## OAuth Flow (Google, opt-in)
 
 ```mermaid
 sequenceDiagram
@@ -301,7 +293,7 @@ sequenceDiagram
 
 ---
 
-## 12. Communication Module Architecture
+## Communication Module Architecture
 
 ```mermaid
 flowchart TD
@@ -322,7 +314,7 @@ flowchart TD
 
 ---
 
-## 13. Customer Portal Architecture
+## Customer Portal Architecture
 
 - Authenticated SvelteKit area at `/account`: dashboard, profile, purchases, purchase detail, downloads, billing, settings.
 - `account/+layout.svelte` runs a session check; redirects to `/account/login` if unauthenticated.
@@ -331,7 +323,7 @@ flowchart TD
 
 ---
 
-## 14. Future Admin Portal Architecture (Overview)
+## Future Admin Portal Architecture (Overview)
 
 Planned next phase. Full plan in `ADMIN_PORTAL_ARCHITECTURE.md`.
 
@@ -351,7 +343,7 @@ flowchart TD
 
 ---
 
-## 15. Folder Structure
+## Folder Structure
 
 ### Backend (`backend/`)
 ```
@@ -389,7 +381,7 @@ No fully shared code module; types are duplicated between `frontend/src/lib/type
 
 ---
 
-## 16. Module Relationships
+## Module Relationships
 
 | Module | Depends on | Adds |
 |--------|-------------|--------|
@@ -406,7 +398,7 @@ No fully shared code module; types are duplicated between `frontend/src/lib/type
 
 ---
 
-## 17. Future Scalability
+## Future Scalability
 
 **All future features add new tables** (or optional nullable columns) — no existing column is modified, removed, or has its constraint tightened. Existing data always remains valid.
 

@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Ownership Rules
+## Ownership Rules
 
 Two ownership domains share one database:
 
@@ -22,7 +22,7 @@ Two ownership domains share one database:
 
 ---
 
-## 2. ER Diagram
+## ER Diagram
 
 ```mermaid
 erDiagram
@@ -99,7 +99,7 @@ erDiagram
 
 ---
 
-## 3. Authentication Tables (Better Auth)
+## Authentication Tables (Better Auth)
 
 ### `users`
 Primary key `id` is a **UUID** (Better Auth configured with `generateId: crypto.randomUUID()`).
@@ -134,7 +134,7 @@ One-time codes for email verification + password reset. `id` TEXT PK. `identifie
 
 ---
 
-## 4. Business Tables
+## Business Tables
 
 ### `products`
 | Column | Type | Constraint |
@@ -201,7 +201,7 @@ Constraints: `entitlements_identity_check`; `idx_entitlements_user_product` UNIQ
 
 ---
 
-## 5. Communication Tables
+## Communication Tables
 
 All have `status` (`NEW`/`READ`/`REPLIED`/`ARCHIVED`), `submitted_from_ip`, `user_agent`, `metadata` JSONB, `archived_at`, `created_at`, `updated_at`, plus an `updated_at` BEFORE-UPDATE trigger.
 
@@ -216,7 +216,7 @@ All have `status` (`NEW`/`READ`/`REPLIED`/`ARCHIVED`), `submitted_from_ip`, `use
 
 ---
 
-## 6. Audit & Email Logs
+## Audit & Email Logs
 
 ### `audit_logs`
 Records security/account events. `user_id` FK → `users(id)`, `event` (e.g. `account_created`, `login`, `logout`), `metadata` JSONB, `ip_address`, `user_agent`, `created_at`. Populated by `src/audit/`.
@@ -226,7 +226,7 @@ Per-attempt email log. `recipient`, `template`, `provider`, `provider_id` (Resen
 
 ---
 
-## 7. Indexes (Summary)
+## Indexes (Summary)
 
 - PKs on every table.
 - FKs indexed: `purchases(user_id, product_id)`, `entitlements(user_id, product_id, purchase_id)`, `download_tokens(purchase_id, product_id)`.
@@ -237,7 +237,7 @@ Per-attempt email log. `recipient`, `template`, `provider`, `provider_id` (Resen
 
 ---
 
-## 8. Constraints (Summary)
+## Constraints (Summary)
 
 - `users_role_check`, `users_account_status_check`.
 - `purchases_identity_check` (user_id XOR guest_email not required — either may be set).
@@ -247,7 +247,7 @@ Per-attempt email log. `recipient`, `template`, `provider`, `provider_id` (Resen
 
 ---
 
-## 9. Migration Overview
+## Migration Overview
 
 Runner: `scripts/migrate.ts`. Tracks applied files in `_migrations` (UNIQUE constraint prevents duplicates). Each file applied inside a transaction. Fails fast on error; `waitForDatabase()` retries 10× at 3s.
 

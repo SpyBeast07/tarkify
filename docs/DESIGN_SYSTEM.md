@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Design Principles
+## Design Principles
 
 - **Modern, professional, minimal, premium, fast, clean, accessible.**
 - Whitespace over decoration.
@@ -16,7 +16,7 @@
 
 ---
 
-## 2. Colors
+## Colors
 
 Use **semantic tokens**, never hardcoded values.
 
@@ -35,7 +35,7 @@ Themes switch via design tokens; do not branch on `light`/`dark` in component lo
 
 ---
 
-## 3. Spacing
+## Spacing
 
 Consistent scale — no arbitrary values:
 
@@ -45,7 +45,7 @@ Consistent scale — no arbitrary values:
 
 ---
 
-## 4. Typography
+## Typography
 
 | Level | Usage |
 |-------|-------|
@@ -60,7 +60,7 @@ Consistent scale — no arbitrary values:
 
 ---
 
-## 5. Components
+## Components
 
 - **Small, reusable, predictable.** If a block appears >2×, make a component.
 - One responsibility per component.
@@ -88,7 +88,7 @@ Focus trap, Escape to close, backdrop click optional, accessible label.
 
 ---
 
-## 6. Forms
+## Forms
 
 - Validate input; show inline errors; disable submit while processing; prevent duplicate submissions.
 - Preserve user input on error.
@@ -96,14 +96,14 @@ Focus trap, Escape to close, backdrop click optional, accessible label.
 
 ---
 
-## 7. Loading & Empty States
+## Loading & Empty States
 
 - **Loading**: skeletons / spinners — never blank space.
 - **Empty**: explain what happened, why, and the next action (CTA).
 
 ---
 
-## 8. Responsive Rules
+## Responsive Rules
 
 - Mobile-first; support mobile / tablet / desktop / large desktop.
 - Single column on mobile; comfortable touch targets.
@@ -112,7 +112,7 @@ Focus trap, Escape to close, backdrop click optional, accessible label.
 
 ---
 
-## 9. Accessibility
+## Accessibility
 
 Every interactive element:
 - Keyboard navigable.
@@ -124,14 +124,14 @@ Every interactive element:
 
 ---
 
-## 10. Dark Mode
+## Dark Mode
 
 - Driven by design tokens; `prefers-color-scheme` + user toggle.
 - No theme-specific hacks; components read tokens only.
 
 ---
 
-## 11. Animation
+## Animation
 
 - Subtle; **150–300ms**.
 - Use Svelte native transitions (`fade`, `fly`, `slide`, `scale`) over libraries.
@@ -140,7 +140,7 @@ Every interactive element:
 
 ---
 
-## 12. Section Structure (landing)
+## Section Structure (landing)
 
 ```
 Navbar → Hero → Trusted By → Features → Solutions →
@@ -149,6 +149,6 @@ How It Works → Testimonials → Pricing → FAQ → CTA → Footer
 
 ---
 
-## 13. SEO
+## SEO
 
 Every page: title, meta description, canonical URL, Open Graph, Twitter metadata — via SvelteKit native `<svelte:head>`.
