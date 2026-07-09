@@ -12,10 +12,6 @@
 
   const authState = getContext<AuthState>('auth');
 
-  if (!authState.loaded && !authState.user) {
-    authState.checkSession();
-  }
-
   let ready = $state(false);
 
   $effect(() => {

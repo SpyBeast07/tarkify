@@ -182,10 +182,6 @@ export async function listSessions() {
   return authFetch<ListedSession[]>("/list-sessions");
 }
 
-export async function touchSession() {
-  return authFetch<{ success: boolean }>("/touch-session", { method: "POST" });
-}
-
 export async function revokeSession(sessionToken: string) {
   return authFetch<{ success: boolean }>("/revoke-session", {
     method: "POST",

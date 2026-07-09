@@ -1,12 +1,12 @@
 import { Hono } from 'hono';
 import { requireAuth } from '../middleware/auth.js';
-import { errorResponse } from '../lib/response.js';
+import { errorResponse, type AppEnv } from '../lib/response.js';
 import * as accountService from './service.js';
 import * as purchaseService from '../services/purchase.service.js';
 import * as userService from '../users/service.js';
 import { getAuth } from '../auth.js';
 
-const account = new Hono();
+const account = new Hono<AppEnv>();
 
 account.use('*', requireAuth);
 

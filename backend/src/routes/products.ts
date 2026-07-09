@@ -10,11 +10,11 @@
  */
 
 import { Hono } from 'hono';
-import { errorResponse } from '../lib/response.js';
+import { errorResponse, type AppEnv } from '../lib/response.js';
 import * as productService from '../services/product.service.js';
 import type { ProductResponse } from '../types/index.js';
 
-const products = new Hono();
+const products = new Hono<AppEnv>();
 
 /**
  * List all active products.
