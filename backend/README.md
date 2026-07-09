@@ -93,6 +93,8 @@ Better Auth provides email/password authentication with session management.
 |----------|-------------|
 | `BETTER_AUTH_SECRET` | Secret key for encryption (min 32 chars). Generate with `openssl rand -base64 32`. |
 | `BETTER_AUTH_URL` | Base URL of the API server (used for email links). |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID (omit both to disable Google sign-in). |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret (omit both to disable Google sign-in). |
 
 ### Auth Routes
 

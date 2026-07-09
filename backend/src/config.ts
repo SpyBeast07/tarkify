@@ -48,6 +48,8 @@ export const config = {
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   },
 
+  googleOAuthEnabled: Boolean(process.env.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_SECRET),
+
   email: {
     provider: optionalEnv('EMAIL_PROVIDER', 'resend') as 'resend',
     resendApiKey: process.env.RESEND_API_KEY,
@@ -73,4 +75,19 @@ if (isLiveKey && config.nodeEnv !== 'production') {
     '⚠️  WARNING: Live Razorpay keys detected in non-production environment! ' +
     'Set NODE_ENV=production if this is intentional, or switch to test keys (rzp_test_*).'
   );
+}
+
+const hasGoogleId = Boolean(process.env.GOOGLE_CLIENT_ID);
+const hasGoogleSecret = Boolean(process.env.GOOGLE_CLIENT_SECRET);
+if (hasGoogleId !== hasGoogleSecret) {
+  const missing = hasGoogleId ? 'GOOGLE_CLIENT_SECRET' : 'GOOGLE_CLIENT_ID';
+  throw new Error(
+    `Google OAuth is partially configured. ${missing} is missing. ` +
+    'Set both GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, or omit both to disable Google sign-in.'
+  );
+}
+if (hasGoogleId) {
+  console.info('✓ Google OAuth is configured');
+} else {
+  console.info('○ Google OAuth is not configured — Google sign-in will be unavailable');
 }
