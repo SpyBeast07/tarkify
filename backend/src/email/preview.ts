@@ -4,6 +4,8 @@ import { buildPurchaseReceiptEmail } from './templates/purchase-receipt.js';
 import { buildDownloadEmail } from './templates/download-email.js';
 import { buildContactNotificationEmail } from './templates/contact-notification.js';
 import { buildContactAcknowledgementEmail } from './templates/contact-acknowledgement.js';
+import { buildFeedbackNotificationEmail } from './templates/feedback-notification.js';
+import { buildFeedbackAcknowledgementEmail } from './templates/feedback-acknowledgement.js';
 import { buildNewsletterEmail } from './templates/newsletter-email.js';
 import { buildNewsletterConfirmationEmail } from './templates/newsletter-confirmation.js';
 import { buildNewsletterUnsubscribedEmail } from './templates/newsletter-unsubscribed.js';
@@ -119,6 +121,22 @@ export function renderAllPreviews(): PreviewItem[] {
     },
   });
 
+  const feedbackNotification = buildFeedbackNotificationEmail({
+    name: 'Jane Doe',
+    email: 'jane@example.com',
+    product: 'DevBeast',
+    rating: 5,
+    message: "DevBeast has been a game changer for our deployments. The rollback feature alone saved us twice last month!\n\nHighly recommend.",
+  });
+
+  const feedbackAcknowledgement = buildFeedbackAcknowledgementEmail({
+    name: 'Jane Doe',
+    email: 'jane@example.com',
+    product: 'DevBeast',
+    rating: 5,
+    message: "DevBeast has been a game changer for our deployments.",
+  });
+
   return [
     { name: 'Verification Email', filename: 'verification-email', html: wrapPreview(verification) },
     { name: 'Password Reset', filename: 'password-reset', html: wrapPreview(passwordReset) },
@@ -130,6 +148,8 @@ export function renderAllPreviews(): PreviewItem[] {
     { name: 'Newsletter Confirmation', filename: 'newsletter-confirmation', html: wrapPreview(newsletterConfirmation) },
     { name: 'Newsletter Unsubscribed', filename: 'newsletter-unsubscribed', html: wrapPreview(newsletterUnsubscribed) },
     { name: 'Admin Notification', filename: 'admin-notification', html: wrapPreview(adminNotification) },
+    { name: 'Feedback Notification (Admin)', filename: 'feedback-notification-admin', html: wrapPreview(feedbackNotification) },
+    { name: 'Feedback Acknowledgement', filename: 'feedback-acknowledgement', html: wrapPreview(feedbackAcknowledgement) },
   ];
 }
 

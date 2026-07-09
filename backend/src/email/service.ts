@@ -17,6 +17,7 @@ import type {
   NewsletterConfirmationEmailData,
   NewsletterUnsubscribedEmailData,
   AdminNotificationEmailData,
+  FeedbackEmailData,
 } from './types.js';
 import { buildVerificationEmail } from './templates/verification-email.js';
 import { buildPasswordResetEmail } from './templates/password-reset.js';
@@ -28,6 +29,8 @@ import { buildNewsletterEmail } from './templates/newsletter-email.js';
 import { buildNewsletterConfirmationEmail } from './templates/newsletter-confirmation.js';
 import { buildNewsletterUnsubscribedEmail } from './templates/newsletter-unsubscribed.js';
 import { buildAdminNotificationEmail } from './templates/admin-notification.js';
+import { buildFeedbackNotificationEmail } from './templates/feedback-notification.js';
+import { buildFeedbackAcknowledgementEmail } from './templates/feedback-acknowledgement.js';
 
 const TEMPLATE_CATEGORIES: Record<string, EmailCategory | null> = {
   sendVerificationEmail: null,        // security — always send
@@ -36,6 +39,8 @@ const TEMPLATE_CATEGORIES: Record<string, EmailCategory | null> = {
   sendDownloadEmail: 'billing',
   sendContactNotification: null,      // goes to admin, not user
   sendContactAcknowledgement: 'product',
+  sendFeedbackNotification: null,      // goes to admin, not user
+  sendFeedbackAcknowledgement: 'product',
   sendNewsletterConfirmation: null,   // transactional — just subscribed
   sendNewsletterUnsubscribed: null,   // transactional — just unsubscribed
   sendNewsletterEmail: 'newsletter',
@@ -93,6 +98,26 @@ export class EmailService {
       'We received your message',
       html,
       'sendContactAcknowledgement',
+    );
+  }
+
+  async sendFeedbackNotification(data: FeedbackEmailData): Promise<SendEmailResult> {
+    const html = buildFeedbackNotificationEmail(data);
+    return this.sendWithLogging(
+      config.email.adminEmail,
+      `New feedback: ${data.product} (${data.rating}/5)`,
+      html,
+      'sendFeedbackNotification',
+    );
+  }
+
+  async sendFeedbackAcknowledgement(data: FeedbackEmailData): Promise<SendEmailResult> {
+    const html = buildFeedbackAcknowledgementEmail(data);
+    return this.sendWithLogging(
+      data.email!,
+      'We received your feedback',
+      html,
+      'sendFeedbackAcknowledgement',
     );
   }
 

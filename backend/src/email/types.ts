@@ -73,6 +73,14 @@ export interface ContactNotificationEmailData {
   message: string;
 }
 
+export interface FeedbackEmailData {
+  name: string;
+  email: string | null;
+  product: string;
+  rating: number;
+  message: string;
+}
+
 export interface NewsletterEmailData {
   email: string;
   userName?: string;
