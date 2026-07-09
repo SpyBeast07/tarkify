@@ -345,9 +345,6 @@ function getVersion(): string {
 async function start() {
   const version = getVersion();
   console.info(`Starting Tarkify backend v${version}...`);
-  console.info(`  Environment:  ${config.nodeEnv}`);
-  console.info(`  Port:         ${config.port}`);
-  console.info(`  Frontend URL: ${config.frontendUrl}`);
 
   try {
     await testConnection();
