@@ -194,9 +194,11 @@ export function initAuth() {
       expiresIn: 86400,
       sendVerificationEmail: async ({ user, url }) => {
         try {
+          const token = new URL(url).searchParams.get('token');
+          const verificationUrl = `${config.frontendUrl}/verify-email?token=${encodeURIComponent(token ?? '')}`;
           await emailService.sendVerificationEmail({
             email: user.email,
-            verificationUrl: url,
+            verificationUrl,
             userName: user.name ?? undefined,
           });
         } catch (error) {

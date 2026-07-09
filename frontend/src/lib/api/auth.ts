@@ -172,6 +172,12 @@ export async function sendVerificationEmail(email: string) {
   });
 }
 
+export async function verifyEmail(token: string) {
+  return authFetch<{ status: boolean }>("/verify-email", {
+    query: { token },
+  });
+}
+
 export async function listSessions() {
   return authFetch<ListedSession[]>("/list-sessions");
 }
