@@ -37,18 +37,11 @@
 	});
 
 	$effect(() => {
-		const unsub = navigating.subscribe((nav) => {
-			if (nav) {
-				isNavigating = true;
-			} else {
-				isNavigating = false;
-			}
-		});
-		return () => unsub();
+		isNavigating = !!$navigating;
 	});
 
 	$effect(() => {
-		const pathname = $page.url.pathname;
+		$page.url.pathname;
 		if (typeof window !== 'undefined') {
 			window.scrollTo(0, 0);
 		}

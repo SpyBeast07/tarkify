@@ -1,64 +1,11 @@
-import { API_BASE, AUTH_BASE } from './config';
-const REQUEST_TIMEOUT_MS = 15_000;
+import { API_BASE } from './config';
+import { authFetch, accountFetch, usersFetch } from './fetch';
+import { getDeviceInfo } from '$lib/utils/device';
 
-interface FetchOptions {
-  method?: string;
-  body?: unknown;
-  query?: Record<string, string>;
-}
+export type { ApiErrorBody, FetchOptions } from './fetch';
+export type { ApiErrorBody as ApiError } from './fetch';
 
-export type ApiErrorBody = {
-  error: { message: string; code?: string };
-  status: number;
-};
-
-async function authFetch<T>(path: string, opts: FetchOptions = {}): Promise<T | ApiErrorBody> {
-  let url = `${AUTH_BASE}${path}`;
-  if (opts.query) {
-    const params = new URLSearchParams(opts.query);
-    url += `?${params}`;
-  }
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(url, {
-      method: opts.method || "GET",
-      headers: {
-        "Accept": "application/json",
-        ...(opts.body ? { "Content-Type": "application/json" } : {}),
-      },
-      body: opts.body ? JSON.stringify(opts.body) : undefined,
-      credentials: "include",
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ message: "Request failed" }));
-      return { error: errorBody, status: response.status };
-    }
-
-    return response.json();
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err instanceof Error && err.name === "AbortError") {
-      return { error: { message: "Request timed out", code: "TIMEOUT" }, status: 0 };
-    }
-    if (err instanceof TypeError) {
-      return { error: { message: "Network error", code: "NETWORK_ERROR" }, status: 0 };
-    }
-    if (err instanceof SyntaxError) {
-      return { error: { message: "Invalid server response", code: "PARSE_ERROR" }, status: 0 };
-    }
-    return { error: { message: "Request failed", code: "UNKNOWN" }, status: 0 };
-  }
-}
-
-export type ApiError = ApiErrorBody;
-
-export function mapEmailError(err: ApiErrorBody, context: 'verification' | 'password_reset' | 'general' = 'general'): string {
+export function mapEmailError(err: { error: { message: string; code?: string }; status: number }, context: 'verification' | 'password_reset' | 'general' = 'general'): string {
   const { status, error } = err;
   const message = error?.message || '';
   const code = error?.code || '';
@@ -88,6 +35,8 @@ export function mapEmailError(err: ApiErrorBody, context: 'verification' | 'pass
   return message || 'Something went wrong while sending the email.';
 }
 
+// ── Types ────────────────────────────────────────────────────────
+
 export interface User {
   id: string;
   name: string;
@@ -115,6 +64,31 @@ export interface SessionData {
   session: Session;
 }
 
+export interface AuthResponse {
+  user: User;
+  session: Session;
+  token: string;
+}
+
+export interface ListedSession {
+  id: string;
+  userId: string;
+  token: string;
+  expiresAt: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deviceId?: string;
+  deviceName?: string;
+  deviceType?: string;
+  browser?: string;
+  os?: string;
+  lastSeen?: string;
+}
+
+// ── Auth API ─────────────────────────────────────────────────────
+
 export async function getSession(): Promise<SessionData | null> {
   try {
     const data = await authFetch<SessionData>("/get-session");
@@ -125,53 +99,10 @@ export async function getSession(): Promise<SessionData | null> {
   }
 }
 
-function generateId(): string {
-  if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
-function withDevice(body: Record<string, unknown>): Record<string, unknown> {
-  if (typeof localStorage === 'undefined') return body;
-  try {
-    let raw = localStorage.getItem('tarkify_device_id');
-    if (!raw) {
-      raw = generateId();
-      localStorage.setItem('tarkify_device_id', raw);
-    }
-    const ua = navigator.userAgent;
-    let browserName = 'Unknown', osName = 'Unknown', deviceType = 'desktop';
-    if (ua.includes('Firefox')) browserName = 'Firefox';
-    else if (ua.includes('Chrome')) browserName = 'Chrome';
-    else if (ua.includes('Safari') && !ua.includes('Chrome')) browserName = 'Safari';
-    else if (ua.includes('Edge')) browserName = 'Edge';
-    if (ua.includes('Windows')) osName = 'Windows';
-    else if (ua.includes('Mac OS')) osName = 'macOS';
-    else if (ua.includes('Linux') && !ua.includes('Android')) osName = 'Linux';
-    else if (ua.includes('Android')) osName = 'Android';
-    else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) osName = 'iOS';
-    if (/Mobi|Android/i.test(ua)) deviceType = 'mobile';
-    else if (/iPad|Tablet/i.test(ua)) deviceType = 'tablet';
-    return {
-      ...body,
-      deviceId: raw,
-      deviceName: `${browserName} on ${osName}`,
-      deviceType,
-      browser: browserName,
-      os: osName,
-    };
-  } catch {
-    return body;
-  }
-}
-
 export async function signIn(email: string, password: string, rememberMe?: boolean) {
-  return authFetch<{ user: User; session: Session; token: string }>("/sign-in/email", {
+  return authFetch<AuthResponse>("/sign-in/email", {
     method: "POST",
-    body: withDevice({ email, password, rememberMe }),
+    body: { email, password, rememberMe, ...getDeviceInfo() },
   });
 }
 
@@ -203,122 +134,66 @@ export async function signInWithGoogle(redirectTo?: string, errorRedirectTo?: st
 }
 
 export async function signUp(name: string, email: string, password: string) {
-  return authFetch<{ user: User; session: Session; token: string }>("/sign-up/email", {
+  return authFetch<AuthResponse>("/sign-up/email", {
     method: "POST",
-    body: withDevice({ name, email, password }),
+    body: { name, email, password, ...getDeviceInfo() },
   });
 }
 
 export async function signOut() {
-  return authFetch<Record<string, unknown>>("/sign-out", { method: "POST" });
+  return authFetch<{ success: boolean }>("/sign-out", { method: "POST" });
 }
 
 export async function sendForgotPassword(email: string) {
-  return authFetch<Record<string, unknown>>("/request-password-reset", {
+  return authFetch<{ success: boolean }>("/request-password-reset", {
     method: "POST",
     body: { email },
   });
 }
 
 export async function resetPassword(token: string, newPassword: string) {
-  return authFetch<Record<string, unknown>>("/reset-password", {
+  return authFetch<{ success: boolean }>("/reset-password", {
     method: "POST",
     body: { token, newPassword },
   });
 }
 
 export async function changePassword(currentPassword: string, newPassword: string) {
-  return authFetch<Record<string, unknown>>("/change-password", {
+  return authFetch<{ success: boolean }>("/change-password", {
     method: "POST",
     body: { currentPassword, newPassword },
   });
 }
 
 export async function sendVerificationEmail(email: string) {
-  return authFetch<Record<string, unknown>>("/send-verification-email", {
+  return authFetch<{ success: boolean }>("/send-verification-email", {
     method: "POST",
     body: { email },
   });
 }
 
-export interface ListedSession {
-  id: string;
-  userId: string;
-  token: string;
-  expiresAt: string;
-  ipAddress: string | null;
-  userAgent: string | null;
-  createdAt: string;
-  updatedAt: string;
-  deviceId?: string;
-  deviceName?: string;
-  deviceType?: string;
-  browser?: string;
-  os?: string;
-  lastSeen?: string;
-}
-
-export async function listSessions(): Promise<ListedSession[] | ApiErrorBody> {
+export async function listSessions() {
   return authFetch<ListedSession[]>("/list-sessions");
 }
 
 export async function touchSession() {
-  return authFetch<Record<string, unknown>>("/touch-session", { method: "POST" });
+  return authFetch<{ success: boolean }>("/touch-session", { method: "POST" });
 }
 
 export async function revokeSession(sessionToken: string) {
-  return authFetch<Record<string, unknown>>("/revoke-session", {
+  return authFetch<{ success: boolean }>("/revoke-session", {
     method: "POST",
     body: { token: sessionToken },
   });
 }
 
 export async function revokeOtherSessions() {
-  return authFetch<Record<string, unknown>>("/revoke-other-sessions", { method: "POST" });
+  return authFetch<{ success: boolean }>("/revoke-other-sessions", { method: "POST" });
 }
 
-const ACCOUNT_BASE = `${API_BASE}/api/account`;
-const USERS_BASE = `${API_BASE}/api/users`;
+// ── Account API (password check/set) ────────────────────────────
 
-async function accountFetch<T>(path: string, opts: FetchOptions = {}): Promise<T | ApiErrorBody> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(`${ACCOUNT_BASE}${path}`, {
-      method: opts.method || "GET",
-      headers: {
-        "Accept": "application/json",
-        ...(opts.body ? { "Content-Type": "application/json" } : {}),
-      },
-      body: opts.body ? JSON.stringify(opts.body) : undefined,
-      credentials: "include",
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ message: "Request failed" }));
-      return { error: errorBody, status: response.status };
-    }
-
-    return response.json();
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err instanceof Error && err.name === "AbortError") {
-      return { error: { message: "Request timed out", code: "TIMEOUT" }, status: 0 };
-    }
-    if (err instanceof TypeError) {
-      return { error: { message: "Network error", code: "NETWORK_ERROR" }, status: 0 };
-    }
-    if (err instanceof SyntaxError) {
-      return { error: { message: "Invalid server response", code: "PARSE_ERROR" }, status: 0 };
-    }
-    return { error: { message: "Request failed", code: "UNKNOWN" }, status: 0 };
-  }
-}
-
-export async function checkHasPassword(): Promise<{ hasPassword: boolean } | ApiErrorBody> {
+export async function checkHasPassword() {
   return accountFetch<{ hasPassword: boolean }>("/has-password");
 }
 
@@ -329,43 +204,16 @@ export async function setPassword(newPassword: string) {
   });
 }
 
-async function usersFetch<T>(path: string, opts: FetchOptions = {}): Promise<T | ApiErrorBody> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+// ── Users API ────────────────────────────────────────────────────
 
-  try {
-    const response = await fetch(`${USERS_BASE}${path}`, {
-      method: opts.method || "GET",
-      headers: {
-        "Accept": "application/json",
-        ...(opts.body ? { "Content-Type": "application/json" } : {}),
-      },
-      body: opts.body ? JSON.stringify(opts.body) : undefined,
-      credentials: "include",
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ message: "Request failed" }));
-      return { error: errorBody, status: response.status };
-    }
-
-    return response.json();
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err instanceof Error && err.name === "AbortError") {
-      return { error: { message: "Request timed out", code: "TIMEOUT" }, status: 0 };
-    }
-    if (err instanceof TypeError) {
-      return { error: { message: "Network error", code: "NETWORK_ERROR" }, status: 0 };
-    }
-    if (err instanceof SyntaxError) {
-      return { error: { message: "Invalid server response", code: "PARSE_ERROR" }, status: 0 };
-    }
-    return { error: { message: "Request failed", code: "UNKNOWN" }, status: 0 };
-  }
+export async function deleteAccount(password: string) {
+  return usersFetch<{ success: boolean }>("/delete-account", {
+    method: "POST",
+    body: { password },
+  });
 }
+
+// ── OAuth helpers ────────────────────────────────────────────────
 
 const OAUTH_ERROR_MESSAGES: Record<string, string> = {
   state_mismatch: "Session expired or invalid. Please try signing in again.",
@@ -398,11 +246,4 @@ export function parseOAuthErrorFromParams(params: URLSearchParams): string | nul
   if (!error) return null;
   const description = params.get("error_description");
   return getOAuthErrorMessage(error, description || undefined);
-}
-
-export async function deleteAccount(password: string) {
-  return usersFetch<Record<string, unknown>>("/delete-account", {
-    method: "POST",
-    body: { password },
-  });
 }

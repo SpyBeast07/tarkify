@@ -1,50 +1,10 @@
 import { API_BASE } from './config';
+import { accountFetch } from './fetch';
+
+export type { ApiErrorBody } from './fetch';
 export const API_ORIGIN = API_BASE;
-const ACCOUNT_BASE = `${API_BASE}/api/account`;
-const REQUEST_TIMEOUT_MS = 15_000;
 
-export type ApiErrorBody = {
-  error: { message: string; code?: string };
-  status: number;
-};
-
-async function accountFetch<T>(path: string, opts: { method?: string; body?: unknown } = {}): Promise<T | ApiErrorBody> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
-  try {
-    const response = await fetch(`${ACCOUNT_BASE}${path}`, {
-      method: opts.method || "GET",
-      headers: {
-        "Accept": "application/json",
-        ...(opts.body ? { "Content-Type": "application/json" } : {}),
-      },
-      body: opts.body ? JSON.stringify(opts.body) : undefined,
-      credentials: "include",
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({ message: "Request failed" }));
-      return { error: errorBody, status: response.status };
-    }
-
-    return response.json();
-  } catch (err) {
-    clearTimeout(timeoutId);
-    if (err instanceof Error && err.name === "AbortError") {
-      return { error: { message: "Request timed out", code: "TIMEOUT" }, status: 0 };
-    }
-    if (err instanceof TypeError) {
-      return { error: { message: "Network error", code: "NETWORK_ERROR" }, status: 0 };
-    }
-    if (err instanceof SyntaxError) {
-      return { error: { message: "Invalid server response", code: "PARSE_ERROR" }, status: 0 };
-    }
-    return { error: { message: "Request failed", code: "UNKNOWN" }, status: 0 };
-  }
-}
+// ── Types ────────────────────────────────────────────────────────
 
 export interface DashboardData {
   summary: {
@@ -153,27 +113,29 @@ export interface ProfileData {
   };
 }
 
-export async function fetchDashboard(): Promise<DashboardData | ApiErrorBody> {
+// ── API Functions ────────────────────────────────────────────────
+
+export async function fetchDashboard() {
   return accountFetch<DashboardData>("/dashboard");
 }
 
-export async function fetchPurchases(page = 1, limit = 20): Promise<PurchasesResponse | ApiErrorBody> {
+export async function fetchPurchases(page = 1, limit = 20) {
   return accountFetch<PurchasesResponse>(`/purchases?page=${page}&limit=${limit}`);
 }
 
-export async function fetchPurchase(id: string): Promise<{ purchase: PurchaseRow } | ApiErrorBody> {
+export async function fetchPurchase(id: string) {
   return accountFetch<{ purchase: PurchaseRow }>(`/purchases/${id}`);
 }
 
-export async function fetchDownloads(): Promise<DownloadsResponse | ApiErrorBody> {
+export async function fetchDownloads() {
   return accountFetch<DownloadsResponse>("/downloads");
 }
 
-export async function generateDownloadToken(purchaseId: string): Promise<TokenResponse | ApiErrorBody> {
+export async function generateDownloadToken(purchaseId: string) {
   return accountFetch<TokenResponse>(`/downloads/${purchaseId}`, { method: "POST" });
 }
 
-export async function fetchBilling(page = 1, limit = 20): Promise<BillingResponse | ApiErrorBody> {
+export async function fetchBilling(page = 1, limit = 20) {
   return accountFetch<BillingResponse>(`/billing?page=${page}&limit=${limit}`);
 }
 
@@ -183,7 +145,7 @@ export async function fetchProfile(): Promise<ProfileData | null> {
   return result;
 }
 
-export async function updateProfile(data: { displayName?: string; timezone?: string }): Promise<{ message: string; user: ProfileData['user'] } | ApiErrorBody> {
+export async function updateProfile(data: { displayName?: string; timezone?: string }) {
   return accountFetch<{ message: string; user: ProfileData['user'] }>("/profile", {
     method: "PUT",
     body: data,
