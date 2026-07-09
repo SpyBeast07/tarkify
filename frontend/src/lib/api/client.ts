@@ -5,7 +5,7 @@
  * Handles all error types: 400, 409, 413, 429, 500, network failures, timeouts.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3009';
+import { API_BASE } from './config';
 const REQUEST_TIMEOUT_MS = 15_000;
 
 /**

@@ -2,6 +2,7 @@
 	import { fly, fade } from 'svelte/transition';
 	import { CheckCircle, AlertCircle, Loader, X, Mail, ShoppingBag } from '@lucide/svelte';
 	import { createOrder, verifyPayment } from '$lib/api/payments';
+	import { API_BASE } from '$lib/api/config';
 	import { openCheckout } from '$lib/services/razorpay';
 	import type { PurchaseFlowState, RazorpayPaymentResponse } from '$lib/types/payment';
 	import { validateEmail } from '$lib/utils/validation';
@@ -222,7 +223,7 @@
 				</p>
 				{#if downloadToken}
 					<a
-						href={`${import.meta.env.VITE_API_URL || 'http://localhost:3009'}/api/downloads/${productSlug}?token=${downloadToken}`}
+						href={`${API_BASE}/api/downloads/${productSlug}?token=${downloadToken}`}
 						class="btn btn-primary purchase-submit-btn"
 						download
 					>

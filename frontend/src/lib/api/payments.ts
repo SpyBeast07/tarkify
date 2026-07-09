@@ -7,8 +7,7 @@
  */
 
 import type { CreateOrderResponse, VerifyPaymentResponse, PaymentError } from '$lib/types/payment';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3009';
+import { API_BASE } from './config';
 
 /**
  * Create a Razorpay order for a product purchase.

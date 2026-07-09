@@ -52,8 +52,6 @@ export function initAuth() {
     baseURL: config.auth.url,
     trustedOrigins: [
       config.frontendUrl,
-      "http://localhost:5173",
-      "https://tarkify.qzz.io",
     ],
 
     user: {

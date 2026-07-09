@@ -1,5 +1,4 @@
-const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:3009").replace(/\/+$/, "");
-const AUTH_BASE = `${API_BASE}/api/auth`;
+import { API_BASE, AUTH_BASE } from './config';
 const REQUEST_TIMEOUT_MS = 15_000;
 
 interface FetchOptions {
@@ -183,9 +182,7 @@ export async function signInWithGoogle(redirectTo?: string, errorRedirectTo?: st
   const errorCallbackURL = errorRedirectTo
     ? `${frontendOrigin}${errorRedirectTo.startsWith('/') ? '' : '/'}${errorRedirectTo}`
     : undefined;
-  const apiBase = (import.meta.env.VITE_API_URL || "http://localhost:3009").replace(/\/+$/, "");
-
-  const response = await fetch(`${apiBase}/api/auth/sign-in/social`, {
+  const response = await fetch(`${API_BASE}/api/auth/sign-in/social`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
