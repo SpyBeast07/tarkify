@@ -71,7 +71,7 @@
 				// Non-critical — proceed to redirect based on current state.
 			}
 
-			const target = authState.user ? '/account' : '/account/login';
+			const target = authState.user ? '/account' : '/login';
 			setTimeout(() => {
 				goto(target);
 			}, 2500);
@@ -112,7 +112,7 @@
 	{:else}
 		<div class="verify-state" role="alert" aria-live="polite">
 			<Alert type="error">{errorMessage}</Alert>
-			<a href="/account/login" class="btn btn-primary btn-full">Back to Login</a>
+			<a href="/login" class="btn btn-primary btn-full">Back to Login</a>
 		</div>
 	{/if}
 </AuthLayout>

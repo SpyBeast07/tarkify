@@ -165,9 +165,11 @@ export function initAuth() {
       maxPasswordLength: 128,
       sendResetPassword: async ({ user, url }) => {
         try {
+          const token = new URL(url).pathname.split('/').pop() || '';
+          const resetUrl = `${config.frontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
           await emailService.sendPasswordResetEmail({
             email: user.email,
-            resetUrl: url,
+            resetUrl,
             userName: user.name ?? undefined,
           });
         } catch (error) {

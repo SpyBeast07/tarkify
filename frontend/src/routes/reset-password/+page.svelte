@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { getContext } from 'svelte';
 	import { Lock, Eye, EyeOff, ArrowLeft, ShieldCheck } from '@lucide/svelte';
 	import Seo from '$lib/components/Seo.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import AuthLayout from '$lib/components/ui/AuthLayout.svelte';
-	import { resetPassword } from '$lib/api/auth';
-	import type { ApiErrorBody } from '$lib/api/auth';
+	import { resetPassword, type ApiErrorBody } from '$lib/api/auth';
+	import type { AuthState } from '$lib/context/auth.svelte';
+
+	const authState = getContext<AuthState>('auth');
 
 	let token = $derived($page.url.searchParams.get('token') || '');
 
@@ -21,6 +24,25 @@
 		password.length > 0 && password.length < 8 ? 'Password must be at least 8 characters' : ''
 	);
 	let confirmError = $derived(confirmPassword.length > 0 && password !== confirmPassword ? 'Passwords do not match' : '');
+
+	function describeResetError(
+		statusCode: number,
+		err: { code?: string; message?: string } | undefined
+	): string {
+		const code = err?.code ?? '';
+		const msg = (err?.message ?? '').toLowerCase();
+		if (code === 'INVALID_TOKEN' || msg.includes('invalid') || msg.includes('token')) {
+			return 'This password reset link is invalid or has expired. Please request a new one.';
+		}
+		if (code === 'PASSWORD_TOO_SHORT') return 'Password is too short. Please choose a password with at least 8 characters.';
+		if (code === 'PASSWORD_TOO_LONG') return 'Password is too long. Please choose a shorter password.';
+		if (statusCode === 0) {
+			if (code === 'TIMEOUT') return 'The request timed out. Please try again.';
+			if (code === 'NETWORK_ERROR') return 'Network error. Please check your connection and try again.';
+			return 'Something went wrong. Please try again.';
+		}
+		return 'We could not reset your password. Please try again or request a new link.';
+	}
 
 	async function handleReset(e: Event) {
 		e.preventDefault();
@@ -46,10 +68,21 @@
 		try {
 			const result = await resetPassword(token, password);
 			if ('error' in result) {
-				error = (result as ApiErrorBody).error.message || 'Failed to reset password';
+				error = describeResetError((result as ApiErrorBody).status, (result as ApiErrorBody).error);
 				return;
 			}
 			success = true;
+
+			try {
+				await authState.checkSession();
+			} catch {
+				// Non-critical — proceed to redirect based on current state.
+			}
+
+			const target = authState.user ? '/account' : '/login';
+			setTimeout(() => {
+				goto(target);
+			}, 2500);
 		} catch {
 			error = 'An unexpected error occurred. Please try again.';
 		} finally {
@@ -87,8 +120,8 @@
 			<div class="success-icon">
 				<ShieldCheck size={32} aria-hidden="true" />
 			</div>
-			<h2>Password Reset</h2>
-			<p>Your password has been successfully updated.</p>
+			<h2>Password updated successfully</h2>
+			<p>Redirecting you to sign in…</p>
 			<a href="/login" class="btn btn-primary">
 				Sign In
 			</a>
