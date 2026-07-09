@@ -6,7 +6,7 @@
 	import Seo from '$lib/components/Seo.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import AuthLayout from '$lib/components/ui/AuthLayout.svelte';
-	import { signIn, signInWithGoogle } from '$lib/api/auth';
+	import { signIn, signInWithGoogle, parseOAuthErrorFromParams, getOAuthErrorMessage } from '$lib/api/auth';
 	import type { AuthState } from '$lib/context/auth.svelte';
 
 	let email = $state('');
@@ -28,15 +28,9 @@
 	});
 
 	$effect(() => {
-		const params = $page.url.searchParams;
-		const oauthError = params.get('error');
-		if (oauthError && error === '') {
-			const description = params.get('error_description');
-			if (oauthError === 'access_denied') {
-				error = 'Google sign-in was cancelled.';
-			} else {
-				error = description || 'Google sign-in failed. Please try again.';
-			}
+		const oauthMessage = parseOAuthErrorFromParams($page.url.searchParams);
+		if (oauthMessage && error === '') {
+			error = oauthMessage;
 		}
 	});
 
@@ -68,7 +62,7 @@
 			const url = await signInWithGoogle(returnUrl, '/login');
 			window.location.href = url;
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Failed to sign in with Google';
+			error = e instanceof Error ? getOAuthErrorMessage(e.message, e.message) : 'Failed to sign in with Google';
 			googleLoading = false;
 		}
 	}

@@ -188,6 +188,7 @@ export async function signInWithGoogle(redirectTo?: string, errorRedirectTo?: st
   const response = await fetch(`${apiBase}/api/auth/sign-in/social`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({
       provider: "google",
       callbackURL,
@@ -317,6 +318,39 @@ async function usersFetch<T>(path: string, opts: FetchOptions = {}): Promise<T |
     }
     return { error: { message: "Request failed", code: "UNKNOWN" }, status: 0 };
   }
+}
+
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  state_mismatch: "Session expired or invalid. Please try signing in again.",
+  account_not_linked: "A local account with this email already exists and cannot be linked. Try email and password sign-in instead.",
+  access_denied: "Google sign-in was cancelled.",
+  invalid_state: "The sign-in request expired or was tampered with. Please try again.",
+  oauth_error: "An error occurred during Google sign-in. Please try again.",
+  invalid_grant: "The authorization code expired. Please try signing in again.",
+  provider_not_found: "Google sign-in is not configured. Please contact support.",
+  email_not_found: "Google did not provide an email address. Please try a different account.",
+  no_code: "Authorization code was missing. Please try again.",
+  invalid_code: "The authorization code was invalid or expired. Please try again.",
+  unable_to_get_user_info: "Could not retrieve your profile from Google. Please try again.",
+  unable_to_link_account: "Could not link your Google account. Please try a different sign-in method.",
+  unable_to_create_user: "Could not create your account. Please try again or contact support.",
+  unable_to_create_session: "Could not create a session. Please try again.",
+  internal_server_error: "Server error. Please try again in a few minutes.",
+  signup_disabled: "New account registration via Google is currently disabled.",
+  email_doesn_match: "The email from Google does not match your account email.",
+  account_already_linked_to_different_user: "This Google account is already linked to a different user.",
+  oauth_provider_not_found: "The OAuth provider is not configured.",
+};
+
+export function getOAuthErrorMessage(code: string, fallback?: string): string {
+  return OAUTH_ERROR_MESSAGES[code] || fallback || "Google sign-in failed. Please try again.";
+}
+
+export function parseOAuthErrorFromParams(params: URLSearchParams): string | null {
+  const error = params.get("error");
+  if (!error) return null;
+  const description = params.get("error_description");
+  return getOAuthErrorMessage(error, description || undefined);
 }
 
 export async function deleteAccount(password: string) {

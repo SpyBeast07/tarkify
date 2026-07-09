@@ -146,6 +146,9 @@ export function initAuth() {
         createdAt: "created_at",
         updatedAt: "updated_at",
       },
+      accountLinking: {
+        requireLocalEmailVerified: false,
+      },
     },
 
     verification: {
