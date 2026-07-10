@@ -1,174 +1,847 @@
 # Admin Portal Architecture
 
-> **Status**: Phase-0 planning. **No implementation yet.**
-> **Goal**: Define RBAC, modules, navigation, folder structure, APIs, components, reusable layouts, design principles, and future scalability for the Admin Portal — the next implementation phase after the current production-ready platform.
-> **Related**: `ARCHITECTURE.md`, `API_REFERENCE.md#admin-planned`, `SECURITY.md#authorization`.
+> **Status:** Phase 2 — Admin Dashboard **implemented**. Business modules: planned (Phases 3+).
+> **Purpose:** Single source of truth for the Tarkify Admin Portal.
+> **Related:** `ARCHITECTURE.md`, `API_REFERENCE.md`, `SECURITY.md`, `DATABASE.md`, `DESIGN_SYSTEM.md`, `CUSTOMER_PORTAL.md`, `DEVELOPMENT_GUIDE.md`.
+
+This document defines the design. Implementation is tracked by phase — see [Phase 1 — Admin Foundation](#appendix-phase-1--admin-foundation-implemented) below.
 
 ---
 
-## Objective
+## 1. Admin Portal Overview
 
-Build an admin dashboard that lets privileged users manage customers, products, purchases, the communication inbox, and (for super-admins) system settings and admin accounts. It reuses existing business tables and the already-prepared role middleware.
+### 1.1 Purpose
 
----
+The Admin Portal is the internal control plane for Tarkify. It lets privileged staff (admins) operate the business: manage the catalog, inspect orders and payments, monitor downloads, support customers, triage the communication inbox, observe email delivery, review analytics, watch system health, tune settings, and audit sensitive actions.
 
-## RBAC
+### 1.2 Customer Portal vs Admin Portal
 
-Roles already exist in `users.role` (TEXT, CHECK): `customer`, `admin`, `super_admin`.
+| Aspect | Customer Portal | Admin Portal |
+|--------|-----------------|--------------|
+| Audience | Customers (`role = customer`) | Staff (`role = admin`) |
+| Entry route | `/account/*`, public marketing site | `/admin/*` |
+| Login | `/login` (Email/Password **+ Google OAuth**) | `/admin/login` (**Email/Password only**) |
+| Registration | Self-service `/register` | **None** — accounts created via backend/DB only |
+| Data scope | Own profile, purchases, downloads | All customers, all orders, all system data |
+| Discoverability | Public, SEO-indexed | `noindex,nofollow`, unlinked from public site |
+| Backend | Shared Tarkify API | **Same** shared Tarkify API, `/api/admin/*` namespace |
+| Session infra | Better Auth session cookie | **Same** Better Auth session cookie |
 
-| Role | Capabilities |
-|------|--------------|
-| `customer` | Own profile, purchases, downloads, settings. |
-| `admin` | All customer caps + manage customers, products, purchases, communication inbox. |
-| `super_admin` | All admin caps + manage admins, system settings, analytics. |
+**They are two separate frontends sharing one backend.** Both are served by the same SvelteKit app and talk to the same Hono/Bun API and the same PostgreSQL database. Separation is enforced by route namespace (`/admin/*` vs `/account/*`) and by an explicit **role check** on both the frontend layout and every backend admin route — never by session existence alone.
 
-**Middleware (already implemented)**: `requireAuth`, `requireCustomer`, `requireAdmin`, `requireSuperAdmin`, `requireRole(...)`.
+### 1.3 Authentication flow (summary)
 
-**Route protection matrix** (planned):
+Admins authenticate through the **existing Better Auth** email/password flow (`POST /api/auth/sign-in/email`). A successful sign-in issues the standard Tarkify session cookie. The admin layout and admin API then verify `user.role === 'admin'` before granting access. Full detail in §2.
 
-| Route Pattern | Customer | Admin | Super Admin |
-|---------------|----------|-------|-------------|
-| `/api/admin/customers` | ✗ | ✓ | ✓ |
-| `/api/admin/products` | ✗ | ✓ | ✓ |
-| `/api/admin/purchases` | ✗ | ✓ | ✓ |
-| `/api/admin/communication/*` | ✗ | ✓ | ✓ |
-| `/api/admin/settings*` | ✗ | ✗ | ✓ |
-| `/api/admin/admins*` | ✗ | ✗ | ✓ |
-| `/api/admin/analytics*` | ✗ | ✗ | ✓ |
+### 1.4 Authorization flow (summary)
 
-No granular permission tables are planned at current scale — coarse roles are sufficient and extensible.
+Two roles exist: `customer` and `admin`. Only `admin` may reach any `/admin` page or `/api/admin/*` endpoint. A valid customer session grants **no** admin access. Full detail in §3.
 
----
+### 1.5 Module overview
 
-## Modules
+Dashboard · Products · Orders · Payments · Downloads · Customers · Communication (Contact / Feedback / Newsletter / Careers) · Emails · Analytics · System · Settings · Audit. Each maps to a backend module and a frontend route group (§5, §7).
 
-| Module | Backend | Frontend |
-|--------|---------|----------|
-| Customers | list, search, detail, manual purchase linking | datatable + detail drawer |
-| Products | CRUD | list + create/edit form |
-| Purchases | list, view, refund | datatable + detail |
-| Communication | unified inbox (contact/feedback/newsletter/careers) | tabbed inbox |
-| Settings | system config (super-admin) | settings form |
-| Admins | admin management (super-admin) | user admin table |
-| Analytics | read-only aggregates (future) | charts |
+### 1.6 Future scalability
+
+The design is additive: new modules are new route files + a new backend module folder, with no changes to existing business tables. Multiple admin roles, CMS, subscriptions, licensing, automation, an AI assistant, feature flags, plugins, and multi-tenancy are documented as future possibilities in §12 and are **out of scope now**.
 
 ---
 
-## Navigation
+## 2. Authentication Architecture
+
+### 2.1 Admin login flow
 
 ```
-/admin/
-├── +layout.svelte        Auth guard (requireAdmin) + AdminSidebar
-├── dashboard/           Summary cards
-├── customers/  [id]/   Customer mgmt
-├── products/   [id]/   Product CRUD
-├── purchases/ [id]/   Purchase mgmt + refund
-├── communication/         Unified inbox (tabs)
-├── settings/            System settings (super-admin)
-├── admins/             Admin mgmt (super-admin)
-└── analytics/           Charts (future)
+Admin
+  ↓
+/admin/login  (Email + Password form)
+  ↓
+POST /api/auth/sign-in/email   (existing Better Auth handler)
+  ↓
+Session Cookie  (tarkify.* httpOnly cookie, shared session infra)
+  ↓
+ADMIN verification  (role === 'admin' checked in admin layout + admin API)
+  ↓
+Admin Portal  (/admin/dashboard)
 ```
 
-Active route highlighted; mobile collapse; role-gated nav items hidden per `user.role`.
+### 2.2 Rules
+
+- **No Google OAuth** on the admin login page. Email + Password only.
+- **No admin registration.** There is no `/admin/register` and no "Create Admin" button anywhere in the UI.
+- **No Forgot Password** on admin login initially (future enhancement).
+- **Admin accounts are created only through the backend/database** (see §2.4).
+- Admin login uses **Email + Password** exclusively.
+- Uses the **existing Better Auth implementation** (`backend/src/auth.ts`) — no new auth system.
+- Shares the **same session infrastructure** as the Customer Portal (same cookie, same `session` table, same `sessionMiddleware`).
+- The session's user carries `role = 'admin'`, resolved from the DB by `sessionMiddleware` (`backend/src/middleware/auth.ts`).
+
+### 2.3 Reused Better Auth surface
+
+| Concern | Existing mechanism | Admin use |
+|---------|--------------------|-----------|
+| Sign-in | `POST /api/auth/sign-in/email` | Admin login form posts here |
+| Session read | `GET /api/auth/get-session` → `authState` context | Admin layout reads user + role |
+| Sign-out | `POST /api/auth/sign-out` | Header "Logout" |
+| Session cookie | `tarkify.*`, httpOnly, `sameSite: lax`, secure in prod | Unchanged |
+| Role resolution | `sessionMiddleware` merges `users.role` onto `c.get('user')` | Source of truth for authz |
+| Rate limiting | `authLimit` on `/api/auth/*` (10/min) | Applies to admin login |
+| Account status gate | Sign-in rejects non-`ACTIVE` accounts | Suspended admins cannot log in |
+
+> Note: The device-dedup logic on `/api/auth/sign-in/email` (`backend/src/index.ts`) applies to admins too and needs no change.
+
+### 2.4 Creating admin accounts (out-of-band)
+
+Admins are provisioned **outside the UI**. A backend script / SQL updates an existing user's role, e.g. `UPDATE users SET role = 'admin' WHERE email = $1`, or a seed/CLI script that creates the Better Auth user (so the password is hashed by Better Auth) and then elevates the role. A dedicated provisioning script (e.g. `backend/scripts/create-admin.ts`) will be specified in the implementation phase. No self-service path is exposed.
+
+### 2.5 Session expiry & logout
+
+Sessions follow the existing config (`expiresIn: 2592000`, `updateAge: 86400`, `cookieCache 300s`). On expiry or logout the admin layout redirects to `/admin/login`. Cross-tab logout is already handled by the `tarkify-auth` BroadcastChannel in `auth.svelte.ts`.
 
 ---
 
-## Folder Structure
+## 3. Authorization
 
-### Backend (`backend/src/`)
+### 3.1 Roles (now)
+
+```
+customer   → Customer Portal only. Can NEVER access /admin.
+admin      → Full access to every admin page and every /api/admin/* endpoint.
+```
+
+Only **one** admin role exists today. Future roles may be added later — **do not implement them now** (§12).
+
+> **Codebase note:** the `users.role` CHECK currently allows `customer/admin/super_admin`, and legacy middleware `requireSuperAdmin` exists. For this phase we treat `admin` as the single privileged role. `super_admin` is left dormant as a reserved value for future RBAC and is **not** used to gate any admin feature. All admin routes gate on `admin` (implemented via `requireRole('admin')` / `requireAdmin`).
+
+### 3.2 Rules
+
+- Customers can **never** access `/admin` (frontend) or `/api/admin/*` (backend).
+- Admins can access **every** admin page.
+- A valid Customer Portal session must **not** grant admin access simply because it is valid. The admin layout must **explicitly verify `user.role === 'admin'`** before rendering any admin content, and every admin API route must independently enforce the same check.
+
+### 3.3 Enforcement (defense in depth)
+
+| Layer | Mechanism | Failure behavior |
+|-------|-----------|------------------|
+| Frontend layout | `frontend/src/routes/admin/+layout.svelte` reads `authState`, checks `loaded` + `user.role === 'admin'` | Not authed → redirect `/admin/login`; authed non-admin → redirect `/` (or `/403`) |
+| Backend middleware | `admin` route group mounts `requireAuth` + `requireRole('admin')` | No session → `401 UNAUTHORIZED`; wrong role → `403 FORBIDDEN` |
+| Data layer | Services scope every query; repositories parameterize all SQL | — |
+
+The frontend guard is UX only; the **backend is the security boundary**. Every admin endpoint is protected server-side regardless of what the UI does.
+
+### 3.4 Route protection matrix
+
+| Route pattern | customer | admin |
+|---------------|:--------:|:-----:|
+| `/api/admin/**` | ✗ (403) | ✓ |
+| `/admin/**` (frontend) | ✗ (redirect) | ✓ |
+| `/admin/login` | ✓ (public) | ✓ (redirect to dashboard if already admin) |
+
+Unauthorized responses: **`401`** (no/invalid session) or redirect to **`/admin/login`**; **`403`** when authenticated but not an admin.
+
+---
+
+## 4. Route Structure (Frontend)
+
+All under `/admin`. Every route except `/admin/login` requires `role = admin`.
+
+```
+/admin                 → redirect to /admin/dashboard
+/admin/login           → public (email + password)
+/admin/dashboard       → overview widgets
+/admin/products        → catalog management
+/admin/orders          → orders (purchases table)
+/admin/payments        → payment records & reconciliation
+/admin/downloads       → download tokens & activity
+/admin/customers       → customer management
+/admin/contact         → communication: contact messages
+/admin/feedback        → communication: feedback
+/admin/newsletter      → communication: newsletter subscribers
+/admin/careers         → communication: career applications
+/admin/emails          → email delivery logs
+/admin/analytics       → aggregate metrics & charts
+/admin/system          → system health & diagnostics
+/admin/settings        → admin-configurable settings
+/admin/audit           → audit logs
+```
+
+**Access control:** every route above (except `/admin/login`) requires `ADMIN`. Unauthorized users receive `401` or are redirected to `/admin/login`; authenticated non-admins are redirected away (`/` or `/403`).
+
+> The `/admin/contact`, `/admin/feedback`, `/admin/newsletter`, `/admin/careers` pages are grouped under a **Communication** section in navigation (§8) and under a `communication/` folder on disk (§5), while keeping the flat URLs above.
+
+---
+
+## 5. Folder Structure
+
+### 5.1 Frontend (`frontend/src/`)
+
+```
+routes/
+  admin/
+    +layout.svelte              # ADMIN guard + AdminLayout shell (sidebar/header/breadcrumbs)
+    +layout.ts                  # noindex; optional server-side session prefetch
+    +page.svelte                # redirect → /admin/dashboard
+    login/
+      +page.svelte              # email + password (no OAuth, no register, no forgot)
+    dashboard/
+      +page.svelte
+    products/
+      +page.svelte              # list
+      [id]/+page.svelte         # detail / edit
+      new/+page.svelte          # create
+    orders/
+      +page.svelte
+      [id]/+page.svelte
+    payments/
+      +page.svelte
+      [id]/+page.svelte
+    downloads/
+      +page.svelte
+    customers/
+      +page.svelte
+      [id]/+page.svelte
+    communication/
+      contact/+page.svelte
+      feedback/+page.svelte
+      newsletter/+page.svelte
+      careers/+page.svelte
+    emails/
+      +page.svelte
+    analytics/
+      +page.svelte
+    system/
+      +page.svelte
+    settings/
+      +page.svelte
+    audit/
+      +page.svelte
+
+lib/
+  admin/
+    api/                        # typed admin API clients (one file per module)
+      client.ts                 # shared adminFetch wrapper (credentials: include)
+      dashboard.ts  products.ts  orders.ts  payments.ts  downloads.ts
+      customers.ts  communication.ts  emails.ts  analytics.ts
+      system.ts     settings.ts  audit.ts
+    components/                 # admin-only composite components (see §10)
+      AdminSidebar.svelte  AdminHeader.svelte  Breadcrumbs.svelte
+      DataTable.svelte     StatCard.svelte     DetailDrawer.svelte
+      FilterBar.svelte     QuickActions.svelte
+    layouts/
+      AdminLayout.svelte        # sidebar + header + content slot
+    stores/                     # admin UI state (Svelte 5 runes .svelte.ts)
+      sidebar.svelte.ts  notifications.svelte.ts
+    types/                      # shared admin TS types (mirror backend contracts)
+      index.ts
+    utils/                      # formatting, guards, query helpers
+      guards.ts  format.ts
+```
+
+> Reuse existing primitives from `lib/components/ui/` and the existing `lib/api/fetch.ts`/`config.ts`. `lib/admin/` holds only what is genuinely admin-specific. **Do not duplicate** shared UI (§10).
+
+### 5.2 Backend (`backend/src/`)
+
+Follows the existing per-module convention (as in `communication/*`): `routes.ts`, `service.ts`, `repository.ts`, `validation.ts`, `types.ts`.
+
 ```
 admin/
-  middleware/require-role.ts     (or reuse existing)
-  routes/
-    customers.ts
-    products.ts
-    purchases.ts
-    communication.ts
-    settings.ts
-    admins.ts
-    analytics.ts
-index.ts                        mount /api/admin/* with role middleware
+  index.ts                      # Hono sub-app; mounts requireAuth + requireRole('admin')
+  dashboard/
+    routes.ts  service.ts  repository.ts  types.ts
+  products/
+    routes.ts  service.ts  repository.ts  validation.ts  types.ts
+  orders/
+    routes.ts  service.ts  repository.ts  validation.ts  types.ts
+  payments/
+    routes.ts  service.ts  repository.ts  validation.ts  types.ts
+  downloads/
+    routes.ts  service.ts  repository.ts  types.ts
+  customers/
+    routes.ts  service.ts  repository.ts  validation.ts  types.ts
+  communication/
+    routes.ts  service.ts  repository.ts  validation.ts  types.ts
+  emails/
+    routes.ts  service.ts  repository.ts  types.ts
+  analytics/
+    routes.ts  service.ts  repository.ts  types.ts
+  system/
+    routes.ts  service.ts  repository.ts  types.ts
+  settings/
+    routes.ts  service.ts  repository.ts  validation.ts  types.ts
+  audit/
+    routes.ts  service.ts  repository.ts  types.ts
 ```
 
-### Frontend (`frontend/src/`)
-```
-routes/admin/
-  +layout.svelte
-  +page.svelte                dashboard
-  customers/+page.svelte  customers/[id]/+page.svelte
-  products/+page.svelte   products/[id]/+page.svelte
-  purchases/+page.svelte  purchases/[id]/+page.svelte
-  communication/+page.svelte
-  settings/+page.svelte
-  admins/+page.svelte
-  analytics/+page.svelte
-lib/api/admin.ts                 typed admin client
-lib/components/admin/           AdminSidebar, DataTable, StatCard, Drawer
+Mounted in `backend/src/index.ts`:
+
+```ts
+import admin from './admin/index.js';
+app.use('/api/admin/*', adminLimit);      // rate limit (e.g. 120/min)
+app.route('/api/admin', admin);           // admin sub-app applies requireAuth + requireRole('admin')
 ```
 
----
-
-## APIs (Planned)
-
-All under `/api/admin/*`, role-protected. See `API_REFERENCE.md#admin-planned` for the full reserved table. Highlights:
-
-- `GET /admin/customers`, `GET /admin/customers/:id` (incl. linked purchases, manual link action)
-- `GET/POST/PUT /admin/products`
-- `GET /admin/purchases`, `POST /admin/purchases/:id/refund`
-- `GET /admin/communication/{contact,feedback,newsletter,careers}`
-- `GET/PUT /admin/settings` (super-admin)
-- `GET/PUT /admin/admins` (super-admin)
-- `GET /admin/analytics/*` (future)
-
-Every admin query must be scoped and parameterized; admin actions should write to `audit_logs`.
+Business logic stays in `service.ts`; SQL stays in `repository.ts` (§6).
 
 ---
 
-## Components
+## 6. Backend Architecture
 
-| Component | Purpose |
-|-----------|---------|
-| `AdminSidebar` | Role-aware vertical nav, mobile overlay |
-| `DataTable` | Sortable/paginated table (reused across modules) |
-| `StatCard` | Dashboard metric card |
-| `Drawer` | Detail panel for customers/purchases |
-| `ConfirmDialog` | Destructive actions (refund, delete) |
+Every admin module follows the established layered flow:
 
-Reuse existing `ui/` primitives (`Button`, `Input`, `Modal`, `Toast`, `StatusBadge`, `Skeleton`).
+```
+Route  →  Validation  →  Service  →  Repository  →  Database
+```
 
----
+Rules (consistent with the existing codebase):
 
-## Reusable Layouts
-
-- `admin/+layout.svelte` — `requireAdmin` guard + sidebar + content slot + root `Navbar`/`Footer`/`Toast`.
-- `AuthLayout` (existing `ui/AuthLayout.svelte`) reused for auth pages.
-- Shared `DataTable` + `Pagination` (existing `account/Pagination.svelte`) for list pages.
-- Consistent loading (skeleton), empty, error, and success states (per `DESIGN_SYSTEM.md`).
+- **No SQL inside routes.** Routes parse input, call a service, and shape the HTTP response using the shared helpers (`lib/response.ts` → `AppEnv`, `errorResponse`; or `communication/shared/response.ts` → `success`, `badRequest`).
+- **No business logic inside repositories.** Repositories only run parameterized queries and map rows to typed objects.
+- **Validation** uses `zod` schemas (per module `validation.ts`), matching existing patterns.
+- **Services** own business rules, orchestration, and cross-module calls; they never touch `Context`.
+- **Authorization** is applied once at the sub-app level (`requireAuth` + `requireRole('admin')` in `admin/index.ts`); individual routes may add stricter checks if ever needed.
+- **Auditing:** every state-changing admin action (refund, product edit, customer suspend, settings change, message status change) writes to `audit_logs` via the audit service. This requires extending `AUDIT_EVENTS` (`backend/src/audit/types.ts`) with admin events (e.g. `admin_refund_issued`, `admin_product_updated`, `admin_customer_suspended`, `admin_settings_updated`).
+- **Errors:** consistent envelope `{ success: false, error: CODE, message, requestId }` with proper status codes, matching `index.ts` conventions.
 
 ---
 
-## Design Principles
+## 7. API Structure (Planned)
 
-Follow `DESIGN_SYSTEM.md` and `DEVELOPMENT_GUIDE.md`:
+All endpoints are under **`/api/admin/*`**, all require **`ADMIN`** (`requireAuth` + `requireRole('admin')`). Standard errors apply to every endpoint: **`401`** (no session), **`403`** (not admin), **`400`** (validation), **`404`** (not found), **`429`** (rate limit), **`500`** (server). Below, only the notable additional errors are listed per endpoint.
 
-- Semantic color tokens; light + dark support.
-- Consistent spacing scale; max content width.
-- Reusable, single-responsibility components.
-- Accessible (keyboard, focus, ARIA); WCAG AA.
-- Subtle animations (150–300ms); native Svelte transitions.
-- Server-rendered where possible; client fetch only for interaction.
-- No secrets, no business logic in the frontend.
+Response envelope: success returns JSON payloads (list endpoints return `{ items, page, limit, total }`); errors return `{ success: false, error, message, requestId }`.
+
+### 7.1 Dashboard
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/dashboard` | GET | Admin | — | `{ metrics, recent, systemHealth }` aggregates for widgets (§9) | — |
+
+### 7.2 Products
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/products` | GET | Admin | `?page&limit&q&active` | `{ items: Product[], page, limit, total }` | — |
+| `/admin/products/:id` | GET | Admin | — | `Product` | 404 |
+| `/admin/products` | POST | Admin | `{ slug, name, description, type, price, currency, download_key, active }` | `Product` (201) | 400, 409 (slug taken) |
+| `/admin/products/:id` | PUT | Admin | partial product fields | `Product` | 400, 404, 409 |
+| `/admin/products/:id` | DELETE | Admin | — | `{ success }` | 404, 409 (has purchases) |
+
+### 7.3 Orders (`purchases` table)
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/orders` | GET | Admin | `?page&limit&status&q&productId&from&to` | `{ items: Order[], page, limit, total }` | — |
+| `/admin/orders/:id` | GET | Admin | — | `Order` + product + customer/guest + entitlement | 404 |
+
+### 7.4 Payments
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/payments` | GET | Admin | `?page&limit&status&provider&from&to` | `{ items: Payment[], page, limit, total }` | — |
+| `/admin/payments/:id` | GET | Admin | — | payment detail incl. razorpay ids | 404 |
+| `/admin/payments/:id/refund` | POST | Admin | `{ reason }` | `{ success, refund }` | 400, 404, 409 (already refunded), 502 (provider) |
+
+Refund is audited (`admin_refund_issued`).
+
+### 7.5 Downloads
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/downloads` | GET | Admin | `?page&limit&productId&purchaseId&active` | `{ items: DownloadToken[], page, limit, total }` | — |
+| `/admin/downloads/:id/revoke` | POST | Admin | — | `{ success }` | 404 |
+
+### 7.6 Customers
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/customers` | GET | Admin | `?page&limit&q&status` | `{ items: Customer[], page, limit, total }` | — |
+| `/admin/customers/:id` | GET | Admin | — | customer + purchases + entitlements + sessions | 404 |
+| `/admin/customers/:id/status` | PATCH | Admin | `{ status: 'ACTIVE'|'SUSPENDED' }` | `Customer` | 400, 404 |
+
+Status change is audited (`admin_customer_suspended` / `admin_customer_reactivated`). Admin role assignment is **not** exposed here (out-of-band only, §2.4).
+
+### 7.7 Communication
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/communication/contact` | GET | Admin | `?page&limit&status&q` | contact messages page | — |
+| `/admin/communication/feedback` | GET | Admin | `?page&limit&status&rating` | feedback page | — |
+| `/admin/communication/newsletter` | GET | Admin | `?page&limit&active` | subscribers page | — |
+| `/admin/communication/careers` | GET | Admin | `?page&limit&status` | applications page | — |
+| `/admin/communication/:type/:id` | GET | Admin | — | single record | 404 |
+| `/admin/communication/:type/:id/status` | PATCH | Admin | `{ status: NEW|READ|REPLIED|ARCHIVED }` | updated record | 400, 404 |
+
+`type ∈ {contact, feedback, newsletter, careers}`. Status changes are audited.
+
+### 7.8 Emails
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/emails` | GET | Admin | `?page&limit&status&template&recipient&from&to` | `email_logs` page | — |
+| `/admin/emails/:id` | GET | Admin | — | single email log | 404 |
+| `/admin/emails/:id/resend` | POST | Admin | — | `{ success }` (future) | 404, 502 |
+
+### 7.9 Analytics
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/analytics/overview` | GET | Admin | `?from&to` | revenue, orders, conversion aggregates | — |
+| `/admin/analytics/revenue` | GET | Admin | `?from&to&interval` | time series | — |
+| `/admin/analytics/products` | GET | Admin | `?from&to` | top products | — |
+
+Read-only, derived from existing tables (`purchases.created_at/status/amount`, etc.).
+
+### 7.10 System
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/system/health` | GET | Admin | — | db, migrations, storage, email provider status | — |
+| `/admin/system/info` | GET | Admin | — | version, uptime, env (non-secret) | — |
+
+Reuses signals from existing `/api/health` and `/api/ready`.
+
+### 7.11 Settings
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/settings` | GET | Admin | — | current settings | — |
+| `/admin/settings` | PUT | Admin | settings object | updated settings | 400 |
+
+Setting changes are audited (`admin_settings_updated`). A `settings` table (or JSONB config row) is introduced in the implementation phase.
+
+### 7.12 Audit
+
+| Route | Method | Auth | Request | Response | Notable errors |
+|-------|--------|------|---------|----------|----------------|
+| `/admin/audit` | GET | Admin | `?page&limit&event&userId&from&to` | `audit_logs` page | — |
+| `/admin/audit/:id` | GET | Admin | — | single audit entry | 404 |
+
+Read-only. Sourced from the existing `audit_logs` table.
 
 ---
 
-## Future Scalability
+## 8. Navigation
 
-- **New admin modules** add routes + a backend `admin/routes/*` file; no existing table changes.
-- **Analytics** reads existing `created_at`/`status`/`metadata`; optionally a new `analytics_*` table.
-- **Audit**: every admin mutation logs to `audit_logs` (already exists).
-- **RBAC extension**: if granular perms are needed later, add a `role_permissions` table without touching business tables.
-- **Multi-instance**: admin reads are stateless; pair with the same DB and (when scaling) a shared Redis rate-limit store.
+### 8.1 Sidebar
+
+```
+Dashboard
+Products
+Orders
+Payments
+Downloads
+Customers
+Communication
+  ├─ Contact
+  ├─ Feedback
+  ├─ Newsletter
+  └─ Careers
+Emails
+Analytics
+System
+Settings
+Audit Logs
+```
+
+- Rendered by `AdminSidebar.svelte`. Active route highlighted (via `$page.url.pathname`).
+- "Communication" is a collapsible group; children link to `/admin/contact|feedback|newsletter|careers`.
+- Collapses to an overlay on mobile (pattern mirrors `account/Sidebar.svelte`).
+- Uses `@lucide/svelte` icons (already a dependency).
+
+### 8.2 Header
+
+```
+Search   Notifications   Profile   Theme   Logout
+```
+
+- **Search:** global/contextual quick search (scaffold now, wire per module later).
+- **Notifications:** bell with unread count from `notifications.svelte.ts` store (e.g. new messages/orders); backend feed is future.
+- **Profile:** admin name/email + link; no role switching.
+- **Theme:** reuses existing `theme.svelte.ts` (light/dark).
+- **Logout:** calls `POST /api/auth/sign-out`, clears `authState`, redirects to `/admin/login`.
+
+### 8.3 Breadcrumbs
+
+Derived from the pathname (same approach as `account/+layout.svelte`), e.g. `Admin → Orders → #ORD-123`. Rendered by `Breadcrumbs.svelte`.
+
+### 8.4 Quick Actions
+
+`QuickActions.svelte` surfaces common tasks (e.g. "New Product", "Search Orders", "View Audit"), shown on the dashboard and optionally in the header.
 
 ---
 
-*This is a planning document only. Implementation begins after the current platform is confirmed production-ready. No code changes are implied.*
+## 9. Dashboard Planning
+
+### 9.1 Metric widgets (`StatCard`)
+
+| Widget | Source |
+|--------|--------|
+| Revenue | `SUM(purchases.amount) WHERE status='paid'` (+ period delta) |
+| Orders | count of `purchases` (by status) |
+| Payments | paid vs failed vs refunded counts |
+| Downloads | active `download_tokens` / recent downloads |
+| Products | active product count |
+| Customers | total customers, new this period |
+| System Health | db/migrations/storage/email status badge |
+
+### 9.2 Recent activity lists
+
+- Recent Purchases (latest orders)
+- Recent Messages (contact)
+- Recent Feedback
+- Recent Careers (applications)
+- Recent Emails (email log tail)
+
+### 9.3 Quick Actions
+
+Shortcut buttons (§8.4) — create product, go to orders, open audit, etc.
+
+### 9.4 Recent Activity (audit)
+
+Compact feed of the latest `audit_logs` entries (who did what, when).
+
+All dashboard data comes from a single `GET /admin/dashboard` aggregate (§7.1) to minimize round-trips; each widget supports the standard states in §11.
+
+---
+
+## 10. Shared UI
+
+Reuse the existing Tarkify design system — **do not duplicate components.**
+
+Reuse from `lib/components/ui/`:
+
+| Need | Existing component |
+|------|--------------------|
+| Cards | `Card.svelte`, `SectionCard.svelte` |
+| Alerts | `Alert.svelte` |
+| Empty / Error / Loading states | `StateCard.svelte`, `Loading.svelte`, `Skeleton.svelte` |
+| Status badges | `StatusBadge.svelte`, `Badge.svelte` |
+| Modals / Confirmation dialogs | `Modal.svelte`, `Dialog.svelte` |
+| Forms / inputs | `Input.svelte`, `Button.svelte`, `Dropdown.svelte` |
+| Pagination | `account/Pagination.svelte` |
+| Toasts | `Toast.svelte` + `toast.svelte.ts` |
+| Auth page shell | `AuthLayout.svelte` (for `/admin/login`) |
+
+**New admin-only composites** (only where nothing suitable exists), in `lib/admin/components/`:
+
+| Component | Why it's new |
+|-----------|--------------|
+| `DataTable` | Sortable/filterable/paginated table shared across list pages |
+| `StatCard` | Dashboard metric tile (thin wrapper over `Card`) |
+| `DetailDrawer` | Slide-over detail panel for order/customer/etc. |
+| `FilterBar` | Standard filters (status, date range, search) |
+| `AdminSidebar` / `AdminHeader` / `Breadcrumbs` / `QuickActions` | Admin chrome |
+
+Maintain the existing Tarkify design language: semantic color tokens, glass surfaces, spacing scale, light+dark, subtle 150–300ms transitions, WCAG AA — per `DESIGN_SYSTEM.md`.
+
+---
+
+## 11. Error Handling
+
+Every admin page supports these states, using the shared components in §10:
+
+| State | Component / behavior |
+|-------|----------------------|
+| Loading | `Skeleton` / `Loading` placeholders |
+| Empty | `StateCard` empty variant with guidance |
+| Error | `StateCard`/`Alert` error variant |
+| Success | rendered content (+ `Toast` for actions) |
+| Retry | retry button on error state re-invokes the loader |
+| Unauthorized (401) | redirect to `/admin/login` |
+| Forbidden (403) | redirect to `/` or a `/403` state (non-admin) |
+| Not Found (404) | `StateCard` not-found variant |
+
+The shared `adminFetch` (`lib/admin/api/client.ts`) normalizes the backend error envelope (mirroring `lib/api/fetch.ts` / `client.ts`) into typed errors so pages map status → state consistently. `401`/`403` are handled centrally (redirect); other errors render inline.
+
+---
+
+## 12. Future Scalability (Documentation Only)
+
+Do **not** implement now. Recorded so the architecture stays additive:
+
+- **More admin roles** — reuse the reserved `super_admin` value and/or add a `role_permissions` table for granular RBAC, without touching business tables.
+- **CMS** — manage marketing/site content from the admin portal.
+- **Subscription management** — build on `products.type = SUBSCRIPTION`.
+- **License management** — issue/track licenses per entitlement.
+- **Automation** — scheduled jobs, workflows, triggers.
+- **AI assistant** — admin copilot over orders/customers/analytics.
+- **Feature flags** — runtime toggles via the settings module.
+- **Plugin system** — modular admin extensions.
+- **Multi-tenancy** — tenant scoping across tables and sessions.
+
+Each is a new module (new route files + new backend module folder) or an additive migration — no rewrite of existing modules required.
+
+---
+
+*Planning document only. Business module implementation begins in Phase 2 after this foundation is confirmed stable.*
+
+---
+
+## Appendix: Phase 1 — Admin Foundation (Implemented)
+
+### Scope
+
+Built the shared Admin Portal infrastructure. No business modules were implemented.
+
+### Files created (19 files)
+
+```
+frontend/src/
+  routes/admin/
+    +layout.svelte            Admin guard + AdminLayout shell
+    +page.svelte              Landing page (placeholder)
+    login/+page.svelte        Email/password login (no OAuth/register/forgot)
+
+  lib/admin/
+    types/index.ts            Shared admin TypeScript types
+    stores/sidebar.svelte.ts  Sidebar mobile open/close state
+    api/client.ts             Typed fetch wrapper for /api/admin/*
+    components/
+      AdminLayout.svelte        Shell: sidebar + header + content
+      AdminSidebar.svelte       Navigation sidebar with groups + mobile drawer
+      AdminHeader.svelte        Breadcrumbs + search + notifications + theme + logout
+      AdminBreadcrumbs.svelte   Auto-generated breadcrumbs from pathname
+      AdminSearch.svelte        Search trigger + dropdown (UI only)
+      AdminNotificationMenu.svelte  Bell icon + dropdown (UI only, empty state)
+      AdminPage.svelte          Loading/error/content state container
+      AdminPageHeader.svelte    Title + description + actions
+      AdminSection.svelte       Glass card section wrapper
+      AdminTableContainer.svelte  Styled table wrapper
+      AdminEmptyState.svelte    Empty state via existing StateCard
+      AdminLoading.svelte       Skeleton loading variants (page/table/card)
+      AdminError.svelte         Error state with retry (401/403/404/500/offline)
+```
+
+### Files modified (2 files)
+
+| File | Change |
+|------|--------|
+| `frontend/src/routes/+layout.svelte` | Conditionally hide Navbar/Footer/InteractiveBg on `/admin/*` routes |
+| `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix |
+
+### Component hierarchy
+
+```
++layout.svelte (root)
+  ├── (admin routes) → admin/+layout.svelte
+  │     ├── AdminGuard (auth check + role verification)
+  │     │     ├── not loaded → spinner
+  │     │     ├── forbidden → "Access Denied" screen
+  │     │     └── ready → AdminLayout
+  │     │           ├── AdminSidebar (fixed left, mobile overlay)
+  │     │           ├── AdminHeader
+  │     │           │     ├── Sidebar toggle (mobile)
+  │     │           │     ├── AdminBreadcrumbs
+  │     │           │     ├── AdminSearch (UI only)
+  │     │           │     ├── AdminNotificationMenu (UI only)
+  │     │           │     ├── Theme toggle
+  │     │           │     ├── Admin profile
+  │     │           │     └── Logout button
+  │     │           └── <main>@render children()</main>
+  │     └── page content (wrapped in AdminLayout)
+  └── (public routes) → Navbar + Footer + children
+```
+
+### Authentication flow
+
+```
+Admin → /admin/login → POST /api/auth/sign-in/email (Better Auth)
+  → session cookie set
+  → if role !== 'admin': signOut() + redirect /admin/login?error=forbidden
+  → if role === 'admin': goto /admin
+```
+
+### Route guard flow
+
+```
+Request to /admin/*
+  → root layout renders without Navbar/Footer
+  → admin/+layout.svelte:
+      authState.loaded? → no → spinner
+      is login page? → yes → render (no guard)
+      user exists? → no → redirect /admin/login
+      user.role !== 'admin'? → signOut + redirect /admin/login?error=forbidden
+      all clear → render AdminLayout + page
+```
+
+### Security
+
+- Role verification happens on **every** navigation (layout runs for each route change).
+- Customers who somehow reach `/admin/*` are immediately signed out and redirected.
+- The admin login page checks role after sign-in and refuses non-admin users.
+- Backend will add `requireRole('admin')` middleware when business APIs are implemented.
+
+### Verification
+
+- `svelte-check` — 0 errors, 1 a11y warning (`autofocus` on search, intentional)
+- `tsc --noEmit` — 0 errors from admin code (1 pre-existing error in `sitemap.xml/+server.ts`)
+- Customer Portal unchanged — root layout condition renders identical template for non-admin routes
+- Better Auth unchanged — all auth goes through existing `/api/auth/*` endpoints
+- No CSS duplication — reuses existing design system tokens and `ui/` components
+- Auth state — uses existing `authState` context; no second auth system created
+- Theme — uses existing `themeState` context; no duplication
+- Icons — reuses existing `@lucide/svelte` dependency
+
+---
+
+## Appendix: Phase 2 — Admin Dashboard (Implemented)
+
+### Scope
+
+Built the read-only Admin Dashboard as the central business overview, displaying key metrics and recent activity.
+
+### Backend module
+
+```
+backend/src/admin/
+  index.ts                      Mounts admin routes with requireAuth + requireRole('admin')
+  dashboard/
+    types.ts                    DashboardResponse, DashboardSummary, widget item types
+    repository.ts               SQL queries (aggregate COUNT, indexed LIMIT lookups, no N+1)
+    service.ts                  Orchestrates 12 parallel queries via Promise.all
+    routes.ts                   GET /api/admin/dashboard endpoint with error handling
+```
+
+Mounted at `/api/admin/dashboard`, rate-limited (120/min), protected by `requireAuth` + `requireRole('admin')`.
+
+### Dashboard API
+
+`GET /api/admin/dashboard` returns everything in one request:
+
+```json
+{
+  "summary": {
+    "revenue":      { "total", "paidOrders", "pendingPayments", "failedPayments" },
+    "orders":       { "total" },
+    "customers":    { "total", "verified", "unverified", "newThisMonth" },
+    "downloads":    { "total", "activeTokens", "expiredTokens", "today" },
+    "products":     { "published", "inactive", "latest": { "id", "name", "slug" } }
+  },
+  "recentOrders":   [],  // max 5
+  "recentContacts": [],  // max 5
+  "recentFeedback": [],  // max 5
+  "recentCareers":  [],  // max 5
+  "recentEmails":   [],  // max 5
+  "recentActivity": [],  // max 10 (from audit_logs)
+  "systemHealth":   { "backend", "database", "email", "payments", "storage", "oauth" }
+}
+```
+
+### SQL query summary
+
+| Data | Query pattern | Indexes used |
+|------|--------------|--------------|
+| Revenue aggregate | `SUM/COUNT FILTER WHERE status IN (...) FROM purchases` | `idx_purchases_status` |
+| Customer count | `COUNT FILTER WHERE role='customer' AND email_verified/created_at` | `idx_users_role` |
+| Download count | `COUNT FILTER FROM download_tokens` by expiry/created | PK indexes |
+| Product count | `COUNT FILTER FROM products` by active flag | PK |
+| Recent orders | `SELECT ... FROM purchases LEFT JOIN users+products ORDER BY created_at DESC LIMIT 5` | `idx_purchases_user_id`, `created_at` PK |
+| Recent contacts | `SELECT FROM contact_messages ORDER BY created_at DESC LIMIT 5` | PK |
+| Recent feedback | `SELECT FROM feedback ORDER BY created_at DESC LIMIT 5` | PK |
+| Recent careers | `SELECT FROM career_applications ORDER BY created_at DESC LIMIT 5` | PK |
+| Recent emails | `SELECT FROM email_logs ORDER BY sent_at DESC LIMIT 5` | PK |
+| Recent activity | `SELECT FROM audit_logs LEFT JOIN users ORDER BY created_at DESC LIMIT 10` | PK |
+| DB health | `SELECT 1` | — |
+
+All 12 queries run concurrently via `Promise.all` in the service layer.
+
+### Frontend page
+
+`frontend/src/routes/admin/dashboard/+page.svelte`
+
+### Widget layout
+
+```
+┌─────────────────────────────────────────────────────┐
+│ Dashboard (title + description)       [Quick Actions]│
+├─────────────────┬───────────────────────────────────┤
+│ Summary Cards   │                                   │
+│ [Revenue][Orders][Customers][Downloads][Products]   │
+├─────────────────┼───────────────────────────────────┤
+│ Grid Left       │ Grid Right                        │
+│                 │                                   │
+│ Revenue         │ Customers (total/verified/unver./  │
+│   Total + break │           new this month)         │
+│   down by status│                                   │
+│                 │ Downloads (total/active/expired/   │
+│ Recent Orders   │           today)                  │
+│   table (5)     │                                   │
+│                 │ Products (published/inactive/      │
+│ Recent Messages │           latest product)          │
+│   table (5)     │                                   │
+│                 │ System Health                      │
+│ Recent Feedback │   (status indicators per service)  │
+│   table (5)     │                                   │
+│                 │ Recent Activity                    │
+│ Recent Careers  │   (timeline, last 10 actions)      │
+│   table (5)     │                                   │
+│                 │                                   │
+│ Recent Emails   │                                   │
+│   table (5)     │                                   │
+└─────────────────┴───────────────────────────────────┘
+```
+
+- Desktop: Two-column grid (left = 1fr, right = 320px)
+- Tablet: Right column becomes 2-column sub-grid
+- Mobile: Single column, summary cards shrink to 160px min
+
+### Component hierarchy
+
+```
+dashboard/+page.svelte
+  ├── AdminPageHeader (title + quick actions)
+  ├── AdminPage (loading / error / success wrapper)
+  │     ├── Summary Stats grid
+  │     │     └── DashboardStatCard × 5 (revenue, orders, customers, downloads, products)
+  │     ├── Grid Left
+  │     │     ├── AdminSection × 1 (Revenue: total + paid/pending/failed breakdown)
+  │     │     └── AdminSection × 5 (Recent Orders/Contacts/Feedback/Careers/Emails)
+  │     │           ├── AdminEmptyState (when empty)
+  │     │           └── AdminTableContainer > table (when data exists)
+  │     └── Grid Right
+  │           ├── AdminSection × 4 (Customers/Downloads/Products/System Health)
+  │           └── AdminSection × 1 (Recent Activity: timeline list)
+```
+
+### Error handling
+
+- **Loading**: `AdminPage` shows `AdminLoading` skeleton while fetching
+- **Global error**: `AdminPage` shows `AdminError` with retry button
+- **Empty widgets**: Each table section shows `AdminEmptyState` with contextual message
+- **Partial data**: The API returns all-or-nothing; if the endpoint fails, the entire page shows an error. Individual widgets handle their empty states independently.
+- **Isolation**: Each widget is a separate block — if one were to fail (handled by the data structure), others remain unaffected
+
+### Files created (5 backend, 2 frontend)
+
+```
+backend/src/admin/
+  index.ts
+  dashboard/
+    types.ts
+    repository.ts
+    service.ts
+    routes.ts
+
+frontend/src/
+  routes/admin/dashboard/+page.svelte
+  lib/admin/components/DashboardStatCard.svelte
+```
+
+### Files modified (1 backend, 1 doc)
+
+| File | Change |
+|------|--------|
+| `backend/src/index.ts` | Imported + mounted `/api/admin/*` with rate limiting |
+| `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix |
+
+### Verification
+
+- `bun test` — 78 pass, 0 fail (all existing tests unchanged)
+- `tsc --noEmit` — 0 errors from admin code (backend + frontend)
+- `svelte-check` — 0 errors, 1 a11y warning (pre-existing autofocus on search)
+- Customer Portal unchanged — no modifications to any customer route or component
+- Authentication unchanged — uses existing Better Auth + sessionMiddleware
+- Role enforcement — `requireAuth` + `requireRole('admin')` on every admin API route
+- Single API request — dashboard loads everything in one `GET /api/admin/dashboard`
+- Read-only — no mutations, no CRUD, no edit/delete functionality
+- No CSS duplication — all styles use existing design tokens; no new global CSS

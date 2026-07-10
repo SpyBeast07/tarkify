@@ -19,6 +19,7 @@ import newsletter from './communication/newsletter/routes.js';
 import careers from './communication/careers/routes.js';
 import users from './users/routes.js';
 import account from './account/routes.js';
+import admin from './admin/index.js';
 
 const app = new Hono<{ Variables: { requestId: string } }>();
 let migrationState: { applied: number; ok: boolean } = { applied: 0, ok: false };
@@ -99,6 +100,7 @@ const authLimit = rateLimit({ windowMs: 60_000, max: 10 });
 const userLimit = rateLimit({ windowMs: 60_000, max: 60 });
 const accountLimit = rateLimit({ windowMs: 60_000, max: 60 });
 const cspReportLimit = rateLimit({ windowMs: 60_000, max: 100 });
+const adminLimit = rateLimit({ windowMs: 60_000, max: 120 });
 
 app.use('/api/payments/*', paymentLimit);
 app.use('/api/downloads/*', downloadLimit);
@@ -228,6 +230,8 @@ app.route('/api/newsletter', newsletter);
 app.route('/api/careers', careers);
 app.route('/api/users', users);
 app.route('/api/account', account);
+app.use('/api/admin/*', adminLimit);
+app.route('/api/admin', admin);
 
 // ── Email Preview Dashboard ──────────────────────────────────────
 app.get('/api/email-previews', async (c) => {

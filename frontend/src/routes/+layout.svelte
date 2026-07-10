@@ -14,6 +14,7 @@
 
 	let InteractiveBg = $state<Component | null>(null);
 	let isNavigating = $state(false);
+	let isAdminRoute = $derived($page.url.pathname.startsWith('/admin'));
 
 	onMount(async () => {
 		try {
@@ -93,15 +94,19 @@
 	<div class="progress-bar"></div>
 {/if}
 
-<div class="app">
-	{#if InteractiveBg}
-		<InteractiveBg />
-	{/if}
-	<Navbar />
-	<main id="main-content" tabindex="-1">
-		{@render children()}
-	</main>
-	<Footer />
-</div>
+{#if isAdminRoute}
+	{@render children()}
+{:else}
+	<div class="app">
+		{#if InteractiveBg}
+			<InteractiveBg />
+		{/if}
+		<Navbar />
+		<main id="main-content" tabindex="-1">
+			{@render children()}
+		</main>
+		<Footer />
+	</div>
+{/if}
 
 <Toast />
