@@ -78,6 +78,8 @@ export const AUDIT_EVENTS = {
   NOTIFICATIONS_UPDATED: 'notifications_updated',
   SEO_UPDATED: 'seo_updated',
   LEGAL_UPDATED: 'legal_updated',
+
+  AUDIT_LOG_VIEWED: 'audit_log_viewed',
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];

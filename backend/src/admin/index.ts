@@ -11,6 +11,7 @@ import email from './email/routes.js';
 import analytics from './analytics/routes.js';
 import system from './system/routes.js';
 import settings from './settings/routes.js';
+import audit from './audit/routes.js';
 
 const admin = new Hono();
 
@@ -27,5 +28,6 @@ admin.route('/email', email);
 admin.route('/analytics', analytics);
 admin.route('/system', system);
 admin.route('/settings', settings);
+admin.route('/audit', audit);
 
 export default admin;
