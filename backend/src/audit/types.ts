@@ -8,6 +8,7 @@ export const AUDIT_EVENTS = {
   SESSION_REVOKED: 'session_revoked',
   ACCOUNT_DELETED: 'account_deleted',
   ACCOUNT_REACTIVATED: 'account_reactivated',
+  ACCOUNT_SUSPENDED: 'account_suspended',
 
   PRODUCT_CREATED: 'product_created',
   PRODUCT_UPDATED: 'product_updated',
@@ -19,6 +20,14 @@ export const AUDIT_EVENTS = {
   ORDER_VIEWED: 'order_viewed',
   PAYMENT_VIEWED: 'payment_viewed',
   RECEIPT_VIEWED: 'receipt_viewed',
+
+  CUSTOMER_VIEWED: 'customer_viewed',
+  CUSTOMER_SUSPENDED: 'customer_suspended',
+  CUSTOMER_REACTIVATED: 'customer_reactivated',
+  CUSTOMER_DELETED: 'customer_deleted',
+  VERIFICATION_RESENT: 'verification_resent',
+  PASSWORD_RESET_REQUESTED: 'password_reset_requested',
+  CUSTOMER_SESSIONS_REVOKED: 'customer_sessions_revoked',
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];

@@ -1,6 +1,6 @@
 # Admin Portal Architecture
 
-> **Status:** Phase 4 — Orders & Payments **implemented**. Business modules: planned (Phases 5+).
+> **Status:** Phase 5 — Customer Management **implemented**. Business modules: planned (Phases 6+).
 > **Purpose:** Single source of truth for the Tarkify Admin Portal.
 > **Related:** `ARCHITECTURE.md`, `API_REFERENCE.md`, `SECURITY.md`, `DATABASE.md`, `DESIGN_SYSTEM.md`, `CUSTOMER_PORTAL.md`, `DEVELOPMENT_GUIDE.md`.
 
@@ -1362,3 +1362,7 @@ frontend/src/lib/admin/components/
 - Read-only — no write endpoints for financial data
 - No duplicated UI — all components reuse existing admin primitives
 - No CSS duplication — all styles use existing design tokens
+
+---
+
+## Appendix: Phase 5 — Customer Management (Implemented)
