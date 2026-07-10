@@ -1,6 +1,6 @@
 # Admin Portal Architecture
 
-> **Status:** Phase 3 — Product Management **implemented**. Business modules: planned (Phases 4+).
+> **Status:** Phase 4 — Orders & Payments **implemented**. Business modules: planned (Phases 5+).
 > **Purpose:** Single source of truth for the Tarkify Admin Portal.
 > **Related:** `ARCHITECTURE.md`, `API_REFERENCE.md`, `SECURITY.md`, `DATABASE.md`, `DESIGN_SYSTEM.md`, `CUSTOMER_PORTAL.md`, `DEVELOPMENT_GUIDE.md`.
 
@@ -1077,3 +1077,288 @@ frontend/src/lib/admin/components/
 - No duplicated UI — all components reuse existing admin primitives
 - No CSS duplication — all styles use existing design tokens
 - Accessible forms — labels, error messages, keyboard navigation, aria attributes
+
+---
+
+## Appendix: Phase 4 — Orders & Payments (Implemented)
+
+### Scope
+
+Read-only operational views for orders (purchases) and payments (purchase + Razorpay details). Admins can inspect the complete payment lifecycle, view receipts, audit refunds (internal records), browse payment failures, and review payment timelines.
+
+No modifications to the existing customer purchase flow or Razorpay integration.
+
+### Backend Modules
+
+```
+backend/src/admin/
+  orders/
+    types.ts         OrderListItem, OrderDetail, OrderListParams, OrderListResponse,
+                     OrderEntitlement, OrderDownloadToken, OrderEmailLog, OrderAuditEntry
+    validation.ts    Zod schema: orderListParamsSchema (search, status, date range, customer, product, sort, pagination)
+    repository.ts    SQL: listOrders (7 filters + sort + paginate), getOrderById, getEntitlementsByPurchaseId,
+                     getDownloadTokensByPurchaseId, getEmailLogsByPurchase, getAuditLogByEntity, getProductOptions
+    service.ts       listOrders (paginated), getOrder (detail + entitlements + tokens + emails + audit),
+                     recordOrderViewed, recordPaymentViewed, recordReceiptViewed
+    routes.ts        GET /api/admin/orders (list), GET /api/admin/orders/options (filters),
+                     GET /api/admin/orders/:id (detail)
+
+  payments/
+    types.ts         PaymentListItem, PaymentDetail, PaymentListParams, PaymentListResponse,
+                     PaymentAuditEntry, RefundInfo, ReceiptInfo
+    validation.ts    Zod schema: paymentListParamsSchema (search, status, date range, customer, product, sort, pagination)
+    repository.ts    SQL: listPayments (7 filters + sort + paginate), getPaymentById, getRefundInfo,
+                     getReceiptInfo, getPaymentAuditLog, getProductOptions
+    service.ts       listPayments (paginated), getPayment (detail + refund + receipt + audit),
+                     recordPaymentViewed, recordReceiptViewed
+    routes.ts        GET /api/admin/payments (list), GET /api/admin/payments/options (filters),
+                     GET /api/admin/payments/:id (detail)
+```
+
+### API Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/admin/orders` | Admin | List with `?search`, `?status`, `?dateFrom`, `?dateTo`, `?customer`, `?product`, `?sort`, `?page`, `?perPage` |
+| `GET` | `/api/admin/orders/options` | Admin | Filter options (`products[]`, `statuses[]`) |
+| `GET` | `/api/admin/orders/:id` | Admin | Order detail + entitlements + download tokens + email logs + audit timeline |
+| `GET` | `/api/admin/payments` | Admin | List with same search/filter/sort/pagination params |
+| `GET` | `/api/admin/payments/options` | Admin | Filter options (`products[]`) |
+| `GET` | `/api/admin/payments/:id` | Admin | Payment detail + refund info + receipt info + audit timeline |
+
+All endpoints are read-only, protected by `requireAuth` + `requireRole('admin')`.
+
+### Data Model
+
+Since there is no separate `orders` or `payments` table, both modules read from the existing `purchases` table:
+
+| Table | Role |
+|-------|------|
+| `purchases` | Core order + payment record (status: created → paid → failed/refunded) |
+| `users` | Customer name + email (via `user_id` FK) |
+| `products` | Product name, slug, description (via `product_id` FK) |
+| `entitlements` | Entitlements granted per purchase |
+| `download_tokens` | Download tokens generated per purchase |
+| `email_logs` | Receipt / download emails sent (matched by recipient email + metadata) |
+| `audit_logs` | Admin view events + existing payment lifecycle events |
+
+### Refund Architecture (Current)
+
+Refunds are **internal records only** — the `purchases` table has a `refunded` status, set by the existing `refundPurchase()` function in `purchase.service.ts` (triggered via Razorpay webhook). No admin-initiated refund API exists yet.
+
+**Design for future Razorpay refund API integration:**
+- The `GET /api/admin/payments/:id` response includes a `refund` object: `{ status, refunded_at, refund_amount, refund_reason }`
+- When `status !== 'refunded'`, the detail page shows "Not Refunded" with a placeholder note
+- A future `POST /api/admin/payments/:id/refund` endpoint (designed in §7.4) will call the Razorpay refund API and update the purchase status
+
+### Receipt Display
+
+Receipts are rendered from existing `purchases` data via the `ReceiptCard` component. No PDF generation yet — receipt data is displayed inline.
+
+Fields displayed:
+- Receipt Number (`purchase.id` truncated to 8 chars)
+- Purchase Date
+- Product Name
+- Customer
+- Total Amount + Currency
+- Razorpay Payment ID
+- Razorpay Order ID
+
+### Payment Failures
+
+The payment detail page shows a "Failure Details" section when `status === 'failed'`:
+- Failure Reason (parsed from audit metadata `gateway_message` or `reason`)
+- Attempt Count (count of `payment_initiated` / `payment_attempt` events in audit)
+- Retry Possible — always "Yes" (customer can retry from product page)
+
+### Audit Events Added
+
+| Event | Trigger |
+|-------|---------|
+| `order_viewed` | Admin views order detail |
+| `payment_viewed` | Admin views payment detail |
+| `receipt_viewed` | Admin views receipt tab |
+
+Events are recorded via `audit/service.ts` → `insertAuditLog()` with admin user ID, entity metadata, IP, and user agent. Only meaningful admin view actions are logged — no excessive audit noise.
+
+### Frontend Architecture
+
+```
+frontend/src/routes/admin/orders/
+  +page.svelte              List page (search, 5 filters, sort, pagination)
+  [id]/+page.svelte         Detail page (overview + audit timeline tabs)
+
+frontend/src/routes/admin/payments/
+  +page.svelte              List page (search, 4 filters, sort, pagination)
+  [id]/+page.svelte         Detail page (details + receipt + timeline tabs)
+
+frontend/src/lib/admin/components/
+  OrderStatusBadge.svelte   Color-coded badge (created=blue, paid=green, failed=red, refunded=purple)
+  PaymentStatusBadge.svelte Color-coded badge (same as order)
+  PaymentTimeline.svelte    Chronological event list with icons (eye, check, x, credit-card, download, mail, rotate-ccw)
+  ReceiptCard.svelte        Structured receipt display with key-value rows + total
+```
+
+### Component Hierarchy
+
+```
+Orders List (+page.svelte)
+  AdminPageHeader (title + "View Payments" button)
+  AdminPage (loading/error/content)
+    Search bar + filter toggle
+    Filters bar (status, product, date range, sort)
+    AdminTableContainer > table (order ID, customer, product, amount, status, payment method, date)
+    Pagination (page nav, info)
+
+Order Detail ([id]/+page.svelte)
+  AdminPageHeader (back + "View Payment" button)
+  AdminPage (loading/error/content)
+    Tab bar (Overview | Audit Timeline)
+    Overview tab:
+      Grid Left:
+        SectionCard "Order Information" (ID, status, created, updated)
+        SectionCard "Customer Information" (name, email, user ID)
+        SectionCard "Product" (name, slug)
+        SectionCard "Payment Information" (amount, currency, gateway, Razorpay IDs, signature)
+      Grid Right:
+        SectionCard "Download Tokens" (table: token, expires, status)
+        SectionCard "Entitlements" (table: granted, status)
+        SectionCard "Emails Sent" (table: template, status, sent)
+        SectionCard "Internal Notes" (read-only placeholder)
+    Audit tab:
+      AdminSection "Audit Timeline" (PaymentTimeline component)
+
+Payments List (+page.svelte)
+  AdminPageHeader (title + "View Orders" button)
+  AdminPage (loading/error/content)
+    Search bar + filter toggle
+    Filters bar (status, product, date range, sort)
+    AdminTableContainer > table (payment ID, order, customer, amount, currency, gateway, status, created)
+    Pagination
+
+Payment Detail ([id]/+page.svelte)
+  AdminPageHeader (back + "View Order" button)
+  AdminPage (loading/error/content)
+    Tab bar (Details | Receipt | Timeline)
+    Details tab:
+      Grid Left:
+        SectionCard "Payment Information" (ID, status, amount, currency, gateway, created, updated)
+        SectionCard "Transaction Details" (Razorpay order ID, payment ID, signature)
+        SectionCard "Failure Details" (if failed: reason, attempts, retry)
+        SectionCard "Refund Information" (if refunded: status, amount, date, reason)
+      Grid Right:
+        SectionCard "Customer" (name, email)
+        SectionCard "Product" (name, slug)
+        SectionCard "Refund" (if not refunded: "Not Refunded" placeholder)
+    Receipt tab:
+      ReceiptCard component
+    Timeline tab:
+      AdminSection "Payment Timeline" (table: event, user, date)
+```
+
+### Search & Filter Capabilities
+
+| Feature | Orders | Payments |
+|---------|--------|----------|
+| Search | ILIKE on order ID, customer name, email, Razorpay order ID, Razorpay payment ID, product name | Same |
+| Status filter | created/paid/failed/refunded | Same |
+| Product filter | Dynamic from DB (published products) | Same |
+| Date range | From/To timestamptz | Same |
+| Customer filter | ILIKE on name/email | — |
+| Sort | newest, oldest, amount, status | Same |
+| Pagination | Server-side, default 20, max 100 | Same |
+
+### Dashboard Integration
+
+- Revenue stat card already linked to `/admin/orders` (from Phase 2)
+- Orders stat card already linked to `/admin/orders` (from Phase 2)
+- Recent Orders table rows now clickable → navigates to `/admin/orders/:id`
+
+### Shared Components Reused
+
+- **AdminPage** — loading/error/content state container
+- **AdminPageHeader** — title + description + action buttons
+- **AdminSection** — glass card section wrapper
+- **AdminTableContainer** — styled table wrapper
+- **AdminEmptyState** — empty state with contextual message
+- **Alert** — error/success messages
+- **Skeleton** — loading placeholders (via AdminPage)
+- **Button** — action buttons
+- **Input** — search input + select filters
+- **SectionCard** — detail section cards
+
+### Accessibility
+
+- Keyboard navigation: all clickable rows handle `Enter` key
+- aria-live regions: loading/error states (AdminPage)
+- role="alert": error messages
+- Focus management: tab order follows visual layout
+- Semantic HTML: `<nav>`, `<table>`, `<section>` with aria-labels
+
+### Performance
+
+- Server-side pagination with `LIMIT/OFFSET`
+- Filtered queries use indexed columns (`purchases.status`, `purchases.created_at`, `purchases.user_id`)
+- Parallel reads: order detail fetches entitlements, tokens, emails, and audit concurrently via `Promise.all`
+- No N+1 queries — each list endpoint makes 2 DB calls (count + data), each detail endpoint makes 5
+- Fetch only required columns (not `SELECT *` in list queries)
+- Audit log queries limited to 100 recent entries
+- Read-only — no write locks or mutations
+
+### Files Created (10 backend, 4 frontend, 4 components = 18 total)
+
+```
+backend/src/admin/orders/
+  types.ts
+  validation.ts
+  repository.ts
+  service.ts
+  routes.ts
+
+backend/src/admin/payments/
+  types.ts
+  validation.ts
+  repository.ts
+  service.ts
+  routes.ts
+
+frontend/src/routes/admin/orders/
+  +page.svelte
+  [id]/+page.svelte
+
+frontend/src/routes/admin/payments/
+  +page.svelte
+  [id]/+page.svelte
+
+frontend/src/lib/admin/components/
+  OrderStatusBadge.svelte
+  PaymentStatusBadge.svelte
+  PaymentTimeline.svelte
+  ReceiptCard.svelte
+```
+
+### Files Modified (5)
+
+| File | Change |
+|------|--------|
+| `backend/src/admin/index.ts` | Mounted `/orders` and `/payments` routes |
+| `backend/src/audit/types.ts` | Added `order_viewed`, `payment_viewed`, `receipt_viewed` audit events |
+| `frontend/src/routes/admin/dashboard/+page.svelte` | Made Recent Orders table rows clickable (navigate to order detail) |
+| `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix (Phase 4) |
+
+### Verification
+
+- `bun run tsc --noEmit` — 0 errors (backend)
+- `bun test` — all tests pass (no existing tests broken)
+- `svelte-check` — 0 errors, 0 warnings
+- Customer Portal unchanged — no modifications to customer routes or components
+- Razorpay flow unchanged — existing payment routes (create-order, verify, webhooks) untouched
+- Existing purchase flow unchanged — `purchase.service.ts`, `razorpay.service.ts` not modified
+- Existing downloads unchanged — `downloads` routes and tokens unaffected
+- Existing receipts unchanged — receipts use existing `purchases` data, no new storage
+- Existing webhooks unchanged — webhook routes handle refund/capture without admin involvement
+- Only ADMIN can access new routes — `requireAuth` + `requireRole('admin')` on every endpoint
+- All view actions create audit log entries (order viewed, payment viewed, receipt viewed)
+- Read-only — no write endpoints for financial data
+- No duplicated UI — all components reuse existing admin primitives
+- No CSS duplication — all styles use existing design tokens

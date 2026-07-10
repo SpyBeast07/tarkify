@@ -215,7 +215,13 @@
 									</thead>
 									<tbody>
 										{#each data.recentOrders as order}
-											<tr>
+											<tr
+												class="clickable-row"
+												onclick={() => window.location.href = `/admin/orders/${order.id}`}
+												role="link"
+												tabindex="0"
+												onkeydown={(e) => e.key === 'Enter' && (window.location.href = `/admin/orders/${order.id}`)}
+											>
 												<td>{order.customer || order.email || 'Guest'}</td>
 												<td>{order.product}</td>
 												<td>{formatCurrency(order.amount)}</td>
@@ -495,7 +501,11 @@
 		gap: 1rem;
 	}
 
-	/* Revenue */
+	/* Recent Orders */
+	.clickable-row {
+		cursor: pointer;
+	}
+
 	.revenue-main {
 		display: flex;
 		flex-direction: column;

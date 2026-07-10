@@ -15,6 +15,10 @@ export const AUDIT_EVENTS = {
   PRODUCT_UNPUBLISHED: 'product_unpublished',
   PRODUCT_ARCHIVED: 'product_archived',
   PRODUCT_RESTORED: 'product_restored',
+
+  ORDER_VIEWED: 'order_viewed',
+  PAYMENT_VIEWED: 'payment_viewed',
+  RECEIPT_VIEWED: 'receipt_viewed',
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];

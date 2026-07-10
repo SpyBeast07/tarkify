@@ -1,7 +1,7 @@
 import { insertAuditLog } from './repository.js';
 import type { AuditEvent, AuditLogEntry } from './types.js';
 
-async function recordEvent(
+export async function recordEvent(
   userId: string,
   event: AuditEvent,
   metadata: Record<string, unknown> = {},
