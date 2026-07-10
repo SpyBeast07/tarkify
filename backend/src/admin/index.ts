@@ -12,6 +12,7 @@ import analytics from './analytics/routes.js';
 import system from './system/routes.js';
 import settings from './settings/routes.js';
 import audit from './audit/routes.js';
+import search from './search/routes.js';
 
 const admin = new Hono();
 
@@ -29,5 +30,6 @@ admin.route('/analytics', analytics);
 admin.route('/system', system);
 admin.route('/settings', settings);
 admin.route('/audit', audit);
+admin.route('/search', search);
 
 export default admin;

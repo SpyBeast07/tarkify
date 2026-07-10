@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { Search } from '@lucide/svelte';
+	import { goto } from '$app/navigation';
 
 	let { class: className = '' } = $props();
 
 	let open = $state(false);
 	let query = $state('');
+	let navigating = $state(false);
 
 	function toggle() {
 		open = !open;
@@ -16,6 +18,11 @@
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
 			open = false;
+		} else if (e.key === 'Enter' && query.trim()) {
+			navigating = true;
+			goto(`/admin/search?q=${encodeURIComponent(query.trim())}`).finally(() => {
+				navigating = false;
+			});
 		}
 	}
 </script>
@@ -36,15 +43,16 @@
 				<Search size={18} class="search-input-icon" aria-hidden="true" />
 				<input
 					type="text"
-					placeholder="Search..."
+					placeholder="Search products, orders, customers..."
 					bind:value={query}
 					class="search-input"
 					autofocus
 					aria-label="Search query"
+					onkeydown={handleKeydown}
 				/>
 			</div>
 			<div class="search-results">
-				<p class="search-hint">Type to search across the admin panel.</p>
+				<p class="search-hint">{query.trim() ? 'Press Enter to search across the admin panel.' : 'Type to search across the admin panel.'}</p>
 			</div>
 		</div>
 	{/if}
