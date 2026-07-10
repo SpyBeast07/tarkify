@@ -64,6 +64,7 @@ export const AUDIT_EVENTS = {
   PROVIDER_VIEWED: 'provider_viewed',
 
   ANALYTICS_VIEWED: 'analytics_viewed',
+  SYSTEM_HEALTH_VIEWED: 'system_health_viewed',
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];

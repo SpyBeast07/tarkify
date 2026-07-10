@@ -9,6 +9,7 @@ import downloads from './downloads/routes.js';
 import communication from './communication/routes.js';
 import email from './email/routes.js';
 import analytics from './analytics/routes.js';
+import system from './system/routes.js';
 
 const admin = new Hono();
 
@@ -23,5 +24,6 @@ admin.route('/downloads', downloads);
 admin.route('/communication', communication);
 admin.route('/email', email);
 admin.route('/analytics', analytics);
+admin.route('/system', system);
 
 export default admin;
