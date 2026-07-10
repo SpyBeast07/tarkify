@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { Search } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 
@@ -7,6 +8,7 @@
 	let open = $state(false);
 	let query = $state('');
 	let navigating = $state(false);
+	let inputEl = $state<HTMLInputElement | null>(null);
 
 	function toggle() {
 		open = !open;
@@ -14,6 +16,12 @@
 			query = '';
 		}
 	}
+
+	$effect(() => {
+		if (open && inputEl) {
+			inputEl.focus();
+		}
+	});
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
@@ -46,7 +54,7 @@
 					placeholder="Search products, orders, customers..."
 					bind:value={query}
 					class="search-input"
-					autofocus
+					bind:this={inputEl}
 					aria-label="Search query"
 					onkeydown={handleKeydown}
 				/>

@@ -119,23 +119,25 @@
 	</div>
 {:else if config.type === 'social'}
 	<div class="field-group">
-		<label class="field-label">{config.label}</label>
+		<span class="field-label">{config.label}</span>
 		<div class="social-list">
 			{#each (value as SocialLink[]) || [] as link, i}
 				<div class="social-row">
 					<Input
+						id={`${config.key}-label-${i}`}
 						type="text"
 						bind:value={link.label}
 						disabled={fieldDisabled}
 						placeholder="Label (e.g. Twitter)"
-						aria-label="Social label"
+						label="Label"
 					/>
 					<Input
+						id={`${config.key}-url-${i}`}
 						type="url"
 						value={link.url}
 						disabled={fieldDisabled}
 						placeholder="https://…"
-						aria-label="Social URL"
+						label="URL"
 						oninput={(e: Event) => updateSocial(i, 'url', (e.target as HTMLInputElement).value)}
 					/>
 					<button

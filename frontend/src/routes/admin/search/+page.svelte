@@ -214,7 +214,7 @@
 		box-shadow: 0 0 0 3px rgba(39, 59, 9, 0.1);
 	}
 
-	.search-icon {
+	:global(.search-icon) {
 		opacity: 0.4;
 		flex-shrink: 0;
 	}

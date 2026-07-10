@@ -95,9 +95,9 @@
 		color: #ef4444;
 		border: 1px solid rgba(220, 38, 38, 0.2);
 	}
-	.spin { animation: spin 1s linear infinite; }
+	:global(.spin) { animation: spin 1s linear infinite; }
 	@keyframes spin { to { transform: rotate(360deg); } }
 	@media (prefers-reduced-motion: reduce) {
-		.spin { animation: none; }
+		:global(.spin) { animation: none; }
 	}
 </style>

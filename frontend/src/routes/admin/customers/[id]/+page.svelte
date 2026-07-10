@@ -752,11 +752,11 @@
 		gap: 0.5rem;
 	}
 
-	.danger-btn {
+	:global(.danger-btn) {
 		color: #ef4444;
 	}
 
-	.danger-btn:hover {
+	:global(.danger-btn:hover) {
 		background: rgba(220, 38, 38, 0.1) !important;
 	}
 

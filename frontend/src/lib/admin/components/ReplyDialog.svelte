@@ -26,10 +26,14 @@
 		onClose
 	}: Props = $props();
 
-	let subject = $state(defaultSubject);
+	let subject = $state('');
 	let message = $state('');
 	let sending = $state(false);
 	let error = $state<string | null>(null);
+
+	$effect(() => {
+		subject = defaultSubject ?? '';
+	});
 
 	async function handleSend() {
 		if (!subject.trim() || !message.trim()) return;
@@ -50,13 +54,14 @@
 
 <div
 	class="reply-overlay"
-	role="presentation"
-	tabindex="-1"
+	role="dialog"
 	aria-modal="true"
+	aria-labelledby="reply-title"
+	tabindex="-1"
 	onkeydown={(e) => { if (e.key === 'Escape') onClose?.(); }}
 	onclick={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
 >
-	<div class="reply-dialog" role="dialog" aria-labelledby="reply-title" tabindex="-1">
+	<div class="reply-dialog" role="document" tabindex="-1">
 		<h3 id="reply-title">Reply to {recipientEmail}</h3>
 		{#if error}
 			<p class="reply-error" role="alert">{error}</p>

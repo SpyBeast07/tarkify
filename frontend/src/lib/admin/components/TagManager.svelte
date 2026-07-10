@@ -26,7 +26,7 @@
 	let { recordType, recordId, initialTags = [], onChange }: Props = $props();
 
 	let allTags = $state<CommTag[]>([]);
-	let assigned = $state<CommRecordTag[]>(initialTags);
+	let assigned = $state<CommRecordTag[]>([]);
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let newTagName = $state('');
@@ -34,6 +34,10 @@
 	let adding = $state(false);
 	let editingId = $state<string | null>(null);
 	let editingName = $state('');
+
+	$effect(() => {
+		assigned = initialTags ?? [];
+	});
 
 	async function load() {
 		loading = true;
