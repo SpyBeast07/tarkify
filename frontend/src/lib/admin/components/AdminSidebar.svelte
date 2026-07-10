@@ -42,7 +42,7 @@
 				{ href: '/admin/communication/careers', label: 'Careers' }
 			]
 		},
-		{ href: '/admin/emails', label: 'Emails', icon: Mail },
+		{ href: '/admin/email', label: 'Email Center', icon: Mail },
 		{ href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
 		{ href: '/admin/system', label: 'System', icon: Activity },
 		{ href: '/admin/settings', label: 'Settings', icon: Settings },

@@ -166,6 +166,24 @@ export class EmailService {
     return this.sendWithLogging(to, 'Tarkify — Test email', html, 'sendTestEmail');
   }
 
+  async sendResend(recipient: string, subject: string): Promise<SendEmailResult> {
+    const escapedSubject = subject
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    const html = `<!DOCTYPE html>
+<html>
+  <body style="margin:0;padding:24px;background:#f4f4f5;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;padding:32px;color:#1f2937;">
+      <h2 style="margin-top:0;">Email re-delivery</h2>
+      <p>This is a re-delivery of a previously failed email.</p>
+      <p style="margin:0;"><strong>Original subject:</strong> ${escapedSubject}</p>
+    </div>
+  </body>
+</html>`;
+    return this.sendWithLogging(recipient, `Re: ${subject}`, html, 'admin_resend');
+  }
+
   private async sendWithLogging(
     to: string,
     subject: string,

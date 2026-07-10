@@ -3,7 +3,7 @@
 	import type { Component } from 'svelte';
 
 	interface Props {
-		type?: 'text' | 'email' | 'password' | 'textarea' | 'select' | 'tel' | 'url' | 'number';
+		type?: 'text' | 'email' | 'password' | 'textarea' | 'select' | 'tel' | 'url' | 'number' | 'date';
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		value: any;
 		label?: string;

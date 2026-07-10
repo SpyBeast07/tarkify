@@ -56,6 +56,12 @@ export const AUDIT_EVENTS = {
   NOTE_ADDED: 'note_added',
   TAG_ADDED: 'tag_added',
   TAG_REMOVED: 'tag_removed',
+
+  EMAIL_VIEWED: 'email_viewed',
+  EMAIL_RESENT: 'email_resent',
+  EMAIL_TEST_SENT: 'email_test_sent',
+  TEMPLATE_VIEWED: 'template_viewed',
+  PROVIDER_VIEWED: 'provider_viewed',
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];
