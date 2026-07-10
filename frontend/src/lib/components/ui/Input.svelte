@@ -3,7 +3,16 @@
 	import type { Component } from 'svelte';
 
 	interface Props {
-		type?: 'text' | 'email' | 'password' | 'textarea' | 'select' | 'tel' | 'url' | 'number' | 'date';
+		type?:
+			| 'text'
+			| 'email'
+			| 'password'
+			| 'textarea'
+			| 'select'
+			| 'tel'
+			| 'url'
+			| 'number'
+			| 'date';
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		value: any;
 		label?: string;
@@ -18,6 +27,7 @@
 		iconSnippet?: Snippet;
 		rows?: number;
 		maxlength?: number;
+		help?: string;
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		[key: string]: any;
 	}
@@ -37,6 +47,7 @@
 		iconSnippet,
 		rows = 4,
 		maxlength,
+		help,
 		...rest
 	}: Props = $props();
 </script>
@@ -105,6 +116,8 @@
 
 	{#if error}
 		<span class="error-text" id="{id}-error">{error}</span>
+	{:else if help}
+		<span class="help-text" id="{id}-help">{help}</span>
 	{/if}
 </div>
 
@@ -112,6 +125,14 @@
 	.error-text {
 		color: #ef4444;
 		font-size: 0.85rem;
+		margin-top: 0.25rem;
+		display: block;
+	}
+
+	.help-text {
+		color: var(--color-text);
+		font-size: 0.78rem;
+		opacity: 0.55;
 		margin-top: 0.25rem;
 		display: block;
 	}

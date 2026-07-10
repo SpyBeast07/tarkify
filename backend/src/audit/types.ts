@@ -65,6 +65,19 @@ export const AUDIT_EVENTS = {
 
   ANALYTICS_VIEWED: 'analytics_viewed',
   SYSTEM_HEALTH_VIEWED: 'system_health_viewed',
+
+  SETTINGS_VIEWED: 'settings_viewed',
+  GENERAL_UPDATED: 'general_updated',
+  BRAND_UPDATED: 'brand_updated',
+  EMAIL_UPDATED: 'email_updated',
+  PAYMENTS_UPDATED: 'payments_updated',
+  OAUTH_UPDATED: 'oauth_updated',
+  SECURITY_UPDATED: 'security_updated',
+  STORAGE_UPDATED: 'storage_updated',
+  FEATURES_UPDATED: 'features_updated',
+  NOTIFICATIONS_UPDATED: 'notifications_updated',
+  SEO_UPDATED: 'seo_updated',
+  LEGAL_UPDATED: 'legal_updated',
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];
