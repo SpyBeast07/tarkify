@@ -69,6 +69,12 @@ export const config = {
     'DOWNLOAD_TOKEN_TTL_SECONDS',
     86400
   ),
+
+  admin: {
+    name: optionalEnv('ADMIN_NAME', 'Administrator'),
+    email: requireEnv('ADMIN_EMAIL'),
+    password: requireEnv('ADMIN_PASSWORD'),
+  },
 };
 
 const isProduction = config.nodeEnv === 'production';

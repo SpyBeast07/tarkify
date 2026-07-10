@@ -10,7 +10,7 @@
     "db:start": "docker compose up --build -d",
     "db:stop": "docker compose down",
     "db:migrate": "bun run scripts/migrate.ts",
-    "test": "bun test"
+    "test": "bun test --preload ./tests/setup.ts"
   },
   "dependencies": {
     "better-auth": "^1.6.23",

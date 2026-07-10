@@ -8,9 +8,13 @@ export function createAuthState() {
 	let currentSessionToken = $state<string | null>(null);
 	let loaded = $state(false);
 	let checking = false;
+	let lastCheckedAt = 0;
+	const MIN_CHECK_INTERVAL = 5_000;
 
 	async function checkSession() {
 		if (checking) return;
+		const now = Date.now();
+		if (now - lastCheckedAt < MIN_CHECK_INTERVAL) return;
 		checking = true;
 		try {
 			const data = await apiGetSession();
@@ -22,6 +26,7 @@ export function createAuthState() {
 		} finally {
 			loaded = true;
 			checking = false;
+			lastCheckedAt = Date.now();
 		}
 	}
 

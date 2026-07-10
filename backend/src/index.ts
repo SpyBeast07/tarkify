@@ -97,6 +97,7 @@ const feedbackLimit = rateLimit({ windowMs: 60_000, max: 20 });
 const newsletterLimit = rateLimit({ windowMs: 60_000, max: 30 });
 const careersLimit = rateLimit({ windowMs: 60_000, max: 10 });
 const authLimit = rateLimit({ windowMs: 60_000, max: 10 });
+const authReadLimit = rateLimit({ windowMs: 60_000, max: 60 });
 const userLimit = rateLimit({ windowMs: 60_000, max: 60 });
 const accountLimit = rateLimit({ windowMs: 60_000, max: 60 });
 const cspReportLimit = rateLimit({ windowMs: 60_000, max: 100 });
@@ -109,7 +110,15 @@ app.use('/api/contact', contactLimit);
 app.use('/api/feedback', feedbackLimit);
 app.use('/api/newsletter', newsletterLimit);
 app.use('/api/careers', careersLimit);
-app.use('/api/auth/*', authLimit);
+// Sensitive auth endpoints (sign-in, sign-up, password ops) — low limit for brute-force protection.
+app.use('/api/auth/sign-in/*', authLimit);
+app.use('/api/auth/sign-up/*', authLimit);
+app.use('/api/auth/request-password-reset', authLimit);
+app.use('/api/auth/reset-password', authLimit);
+app.use('/api/auth/change-password', authLimit);
+app.use('/api/auth/send-verification-email', authLimit);
+// Non-sensitive auth endpoints (session reads, list, revoke, verify) — higher limit for SPA usage.
+app.use('/api/auth/*', authReadLimit);
 app.use('/api/users/*', userLimit);
 app.use('/api/account/*', accountLimit);
 app.use('/api/csp-report', cspReportLimit);
@@ -373,6 +382,25 @@ async function start() {
   } catch {
     migrationState = { applied: 0, ok: false };
     console.warn('⚠ Could not query migration state (migrations may not have run)');
+  }
+
+  // ── Admin Bootstrap ──────────────────────────────────────────────
+  // Skip if the DB is unavailable (e.g. during tests with mocked DB).
+  try {
+    const { bootstrapAdmin } = await import('./admin/bootstrap/service.js');
+    const results = await bootstrapAdmin({
+      name: config.admin.name,
+      email: config.admin.email,
+      password: config.admin.password,
+    });
+    for (const r of results) {
+      console.info(`  [admin-bootstrap] ${r.action}: ${r.detail}`);
+    }
+  } catch (err) {
+    console.error('✗ Admin bootstrap failed:', err instanceof Error ? err.message : err);
+    if (process.env.NODE_ENV === 'production') {
+      process.exit(1);
+    }
   }
 
   try {

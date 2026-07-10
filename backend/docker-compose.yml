@@ -53,6 +53,8 @@ services:
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       STORAGE_PATH: /app/storage
       DOWNLOAD_TOKEN_TTL_SECONDS: ${DOWNLOAD_TOKEN_TTL_SECONDS:-600}
+      ADMIN_NAME: ${ADMIN_NAME:-Administrator}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy
