@@ -1,6 +1,6 @@
 # Admin Portal Architecture
 
-> **Status:** Phase 5 — Customer Management **implemented**. Business modules: planned (Phases 6+).
+> **Status:** Phase 7 — Communication Center **implemented**. Business modules: planned (Phases 8+).
 > **Purpose:** Single source of truth for the Tarkify Admin Portal.
 > **Related:** `ARCHITECTURE.md`, `API_REFERENCE.md`, `SECURITY.md`, `DATABASE.md`, `DESIGN_SYSTEM.md`, `CUSTOMER_PORTAL.md`, `DEVELOPMENT_GUIDE.md`.
 
@@ -1366,3 +1366,605 @@ frontend/src/lib/admin/components/
 ---
 
 ## Appendix: Phase 5 — Customer Management (Implemented)
+
+### Scope
+
+Complete Customer Management module for viewing customer profiles, purchase history, download activity, sessions, and performing administrative actions (suspend, reactivate, delete, resend verification, request password reset, revoke sessions).
+
+No changes to customer-facing authentication, Better Auth, or the customer portal.
+
+### Backend Module
+
+```
+backend/src/admin/customers/
+  types.ts         CustomerListItem, CustomerDetail, CustomerListParams, CustomerListResponse,
+                   CustomerPurchase, CustomerDownload, CustomerSession, CustomerActivity
+  validation.ts    Zod schema: customerListParamsSchema (search, status, sort, pagination)
+  repository.ts    SQL: listCustomers (search + status filter + sort + paginate), getCustomerById,
+                   getCustomerPurchases, getCustomerDownloads, getCustomerSessions, getCustomerActivity,
+                   verifyCustomerEmail, updateCustomerStatus, deleteCustomer,
+                   requestPasswordResetForCustomer, revokeAllCustomerSessions
+  service.ts       listCustomers (paginated), getCustomer (detail + purchases + downloads + sessions + activity),
+                   suspendCustomer, reactivateCustomer, deleteCustomer, resendVerificationEmail,
+                   requestPasswordReset, revokeSessions, recordCustomerViewed
+  routes.ts        GET /api/admin/customers (list), GET /api/admin/customers/:id (detail),
+                   POST /:id/suspend, POST /:id/reactivate, DELETE /:id,
+                   POST /:id/resend-verification, POST /:id/request-password-reset,
+                   POST /:id/revoke-sessions
+```
+
+### API Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/admin/customers` | Admin | List with `?search`, `?status`, `?sort`, `?page`, `?perPage` |
+| `GET` | `/api/admin/customers/:id` | Admin | Customer detail + purchases + downloads + sessions + activity |
+| `POST` | `/api/admin/customers/:id/suspend` | Admin | Set `status = 'SUSPENDED'` |
+| `POST` | `/api/admin/customers/:id/reactivate` | Admin | Set `status = 'ACTIVE'` |
+| `DELETE` | `/api/admin/customers/:id` | Admin | Soft-delete (set `deleted_at = NOW()`) |
+| `POST` | `/api/admin/customers/:id/resend-verification` | Admin | Better Auth `sendVerificationEmail()` |
+| `POST` | `/api/admin/customers/:id/request-password-reset` | Admin | Better Auth `requestPasswordReset()` |
+| `POST` | `/api/admin/customers/:id/revoke-sessions` | Admin | Delete all customer sessions |
+
+All endpoints require `requireAuth` + `requireRole('admin')`.
+
+### Customer Data Model
+
+| Data | Source Table | Query |
+|------|-------------|-------|
+| Customer list | `users WHERE role = 'customer'` | ILIKE on name/email, status filter, sort by created/name/email/status/purchases |
+| Customer detail | `users` | Single row by ID |
+| Purchases | `purchases JOIN products` | Limit 50, most recent first |
+| Downloads | `download_tokens JOIN products` | Limit 50, most recent first |
+| Sessions | `session` table | Direct SQL, all active sessions |
+| Activity | `purchases` + `download_tokens` + `audit_logs` | Union of 3 event sources, limit 100 |
+
+### Admin Actions
+
+| Action | Confirmation Required | Effect |
+|--------|-----------------------|--------|
+| Suspend | Yes | Sets `status = 'SUSPENDED'` — customer can't log in |
+| Reactivate | Yes | Sets `status = 'ACTIVE'` — restores login ability |
+| Delete | Yes | Sets `deleted_at = NOW()` — account persisted but disabled |
+| Resend Verification | Yes | Better Auth sends verification email |
+| Request Password Reset | Yes | Better Auth sends password reset email |
+| Revoke Sessions | Yes | Deletes all rows from `session` table for this user |
+
+### Better Auth Integration
+
+| Action | Better Auth API | Notes |
+|--------|-----------------|-------|
+| Resend Verification | `auth.api.sendVerificationEmail(email)` | Cast as `any` — not in v1.1.x TS types |
+| Request Password Reset | `auth.api.requestPasswordReset(email)` | Cast as `any` — same reason |
+| List Sessions | Direct `session` table SQL | No Better Auth API for listing by user |
+| Revoke Sessions | Direct `session` table `DELETE` | No Better Auth API for bulk revoke |
+
+Better Auth v1.1.x does not export typed admin methods for email verification or password reset. The calls are made via `(auth.api as any).sendVerificationEmail(...)` and wrapped in try/catch. A `@ts-ignore` comment documents the version constraint.
+
+### Audit Events Added
+
+| Event | Trigger |
+|-------|---------|
+| `customer_viewed` | Admin views customer detail |
+| `customer_suspended` | Admin suspends customer |
+| `customer_reactivated` | Admin reactivates customer |
+| `customer_deleted` | Admin deletes customer |
+| `verification_resent` | Admin resends verification email |
+| `password_reset_requested` | Admin requests password reset |
+| `customer_sessions_revoked` | Admin revokes sessions |
+
+Events record the target `user_id` in metadata.
+
+### Frontend Architecture
+
+```
+frontend/src/routes/admin/customers/
+  +page.svelte              List page (search, 4 filters, sort, pagination)
+  [id]/+page.svelte         Detail page (6 tabs with admin actions)
+
+frontend/src/lib/admin/components/
+  CustomerStatusBadge.svelte    Color-coded badge (ACTIVE=green, SUSPENDED=red, UNVERIFIED=amber)
+  SessionTable.svelte           Session list with device info + created/expiry dates
+  CustomerOverviewCard.svelte   Summary: name, email, status, created, last sign-in, unverified badge
+  ActivityTimeline.svelte       Chronological event timeline (purchases, downloads, audit)
+```
+
+### Component Hierarchy
+
+```
+Customers List (+page.svelte)
+  AdminPageHeader (title + total customer count)
+  AdminPage (loading/error/content)
+    Search bar + filter toggle
+    Filters bar (status, sort)
+    AdminTableContainer > table (name, email, status, purchases count, created)
+    Pagination (page nav, info)
+
+Customer Detail ([id]/+page.svelte)
+  AdminPageHeader (title + actions dropdown)
+  AdminPage (loading/error/content)
+    CustomerOverviewCard (name, email, status, created, last sign-in)
+    Tab bar (Overview | Purchases | Downloads | Sessions | Activity | Audit)
+    Overview tab:
+      SectionCard "Customer Summary" (status, email verified, created, last sign-in, purchases count)
+      SectionCard "Admin Actions" (6 action buttons with confirmation dialogs)
+    Purchases tab: AdminTableContainer > table (order, product, amount, status, date)
+    Downloads tab: AdminTableContainer > table (token, product, status, expires, created)
+    Sessions tab: SessionTable > table (device, IP, created, expires, revoke all button)
+    Activity tab: ActivityTimeline (chronological: purchases, downloads, admin actions)
+    Audit tab: AdminTableContainer > table (event, details, admin, date)
+  Dialog × 6 (confirmation dialogs for each admin action)
+```
+
+### Admin Actions Workflow
+
+```
+Admin clicks action button (e.g. "Suspend")
+  → Confirmation dialog appears (title, description, confirm/cancel buttons)
+  → Admin clicks confirm
+  → API call to /api/admin/customers/:id/suspend
+  → Success: toast notification + page data reloaded
+  → Error: toast with error message
+```
+
+### Search & Filter Capabilities
+
+| Feature | Customers |
+|---------|-----------|
+| Search | ILIKE on name and email |
+| Status filter | active / suspended / unverified / all |
+| Sort | newest, oldest, name, email, status, most purchases |
+| Pagination | Server-side, default 20, max 100 |
+
+### Reused Existing Components
+
+- `AdminPage`, `AdminPageHeader`, `AdminSection`, `AdminTableContainer`, `AdminEmptyState`
+- `SectionCard`, `Button`, `Input`, `Modal` (confirm/cancel dialogs)
+- Generic status badge pattern adapted for customer status
+
+### Experience & Edge Cases
+
+- **Loading state**: Skeleton placeholders using `AdminLoading` for all 5 parallel fetches
+- **Error state**: `AdminError` with retry button per section
+- **Empty state**: `AdminEmptyState` with contextual message per tab
+- **Deleted customer**: Shows `deleted_at` timestamp, no admin actions available
+- **No sessions**: "No active sessions" empty state
+- **No purchases**: "No purchases yet" empty state
+- **No activity**: "No activity recorded" empty state
+- **Long names/emails**: CSS text-overflow ellipsis in tables
+- **Many sessions**: Paginated display in SessionTable (default 20, max 100)
+- **Network failure during action**: Toast error + retry available
+
+### Customer Status Lifecycle
+
+```
+                  ┌──────────┐
+            ┌────►│  ACTIVE  │◄────┐
+            │     └──────────┘     │
+            │  reactivate    reactivate
+            │                     │
+       ┌────┴──────┐        ┌────┴──────────┐
+       │  SUSPENDED │        │  UNVERIFIED   │
+       └───────────┘        └───────────────┘
+                                    │
+                              verify email
+                                    │
+                              ┌─────▼──────┐
+                              │   ACTIVE    │
+                              └────────────┘
+
+       Any status → DELETE → deleted_at set (soft-delete)
+```
+
+- `UNVERIFIED`: Email not verified (email_verified_at is NULL)
+- `ACTIVE`: Email verified, account in good standing
+- `SUSPENDED`: Admin-suspended, cannot log in
+- `deleted_at`: Soft-deleted — account disabled and hidden from active lists
+
+### Performance
+
+- Server-side pagination with `LIMIT/OFFSET`
+- Indexed queries — `users.role` indexed, `users.status` indexed, `users.email` indexed
+- Parallel reads: customer detail fetches purchases, downloads, sessions, and activity concurrently via `Promise.all`
+- No N+1 queries — list query uses LEFT JOIN + aggregate count
+- Fetch only required columns — list query avoids `SELECT *`
+- Activity query limited to 100 events
+- Sessions query limited to 50
+
+### Files Created (5 backend, 2 frontend, 4 components = 11 total)
+
+```
+backend/src/admin/customers/
+  types.ts
+  validation.ts
+  repository.ts
+  service.ts
+  routes.ts
+
+frontend/src/routes/admin/customers/
+  +page.svelte
+  [id]/+page.svelte
+
+frontend/src/lib/admin/components/
+  CustomerStatusBadge.svelte
+  SessionTable.svelte
+  CustomerOverviewCard.svelte
+  ActivityTimeline.svelte
+```
+
+### Files Modified (3)
+
+| File | Change |
+|------|--------|
+| `backend/src/admin/index.ts` | Mounted `/customers` routes |
+| `backend/src/audit/types.ts` | Added 7 customer audit events |
+| `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix (Phase 5) |
+
+### Verification
+
+- `bun run tsc --noEmit` — 0 errors (backend)
+- `bun test` — 78 pass, 0 fail (all existing tests unchanged)
+- `svelte-check` — 0 errors, 3 pre-existing warnings (2x .danger-btn, 1x autofocus)
+- Customer Portal unchanged — no modifications to customer routes or components
+- Better Auth unchanged — only admin-initiated email operations via existing APIs
+- OAuth unchanged — Google OAuth for customer login not modified
+- Email system unchanged — email templates and sending logic not modified
+- Password reset flow unchanged — uses existing Better Auth `requestPasswordReset()`
+- Session management unchanged — direct DB operations for list/revoke, no session infra changes
+- Only ADMIN can access customer routes — `requireAuth` + `requireRole('admin')` on every endpoint
+- All admin actions create audit log entries with target `user_id`
+- All soft-delete operations reversible by DB admin
+- No secrets exposed — passwords, tokens, and sensitive auth data never returned in API responses
+
+---
+
+## Appendix: Phase 6 — Download Management (Implemented)
+
+### Scope
+
+Complete Download Management module for inspecting download tokens, token lifecycle, download history, and performing safe token administration (revoke, regenerate).
+
+No changes to the customer download flow, token generation logic, or entitlement system.
+
+### Backend Module
+
+```
+backend/src/admin/downloads/
+  types.ts         DownloadTokenStatus, DownloadListItem, DownloadDetail, DownloadHistoryEntry,
+                   DownloadAuditEntry, DownloadListResponse, DownloadListParams,
+                   DownloadDetailResponse, DownloadFilterOptions
+  validation.ts    Zod schema: downloadListParamsSchema (search, status, product, sort, pagination)
+  repository.ts    SQL: listDownloads, getDownloadById, getDownloadHistory, getDownloadAuditLog,
+                   revokeDownloadToken, getProductOptions, getPurchaseIdByTokenId
+  service.ts       listDownloads, getDownload, getDownloadHistory, getFilterOptions,
+                   revokeToken, regenerateToken (reuses purchaseService.generateDownloadToken),
+                   recordDownloadViewed
+  routes.ts        GET /api/admin/downloads (list), GET /api/admin/downloads/options,
+                   GET /api/admin/downloads/:id (detail), GET /:id/history,
+                   POST /:id/revoke, POST /:id/regenerate
+```
+
+### API Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/admin/downloads` | Admin | List with `?search`, `?status`, `?product`, `?sort`, `?page`, `?perPage` |
+| `GET` | `/api/admin/downloads/options` | Admin | Filter options (`products[]`) |
+| `GET` | `/api/admin/downloads/:id` | Admin | Download detail + history + audit |
+| `GET` | `/api/admin/downloads/:id/history` | Admin | Chronological history of token events |
+| `POST` | `/api/admin/downloads/:id/revoke` | Admin | Set `expires_at = NOW()` on token |
+| `POST` | `/api/admin/downloads/:id/regenerate` | Admin | Expire old token + create new via `purchaseService.generateDownloadToken()` |
+
+All endpoints require `requireAuth` + `requireRole('admin')`.
+
+### Data Model
+
+| Data | Source Table | Query |
+|------|-------------|-------|
+| Download list | `download_tokens` + `purchases` + `users` + `products` | LEFT JOIN chain with correlated subquery for `tokens_count` |
+| Download detail | `download_tokens` + `purchases` + `users` + `products` | Single row with token count subquery |
+| Token history | `email_logs` + `audit_logs` | Union of: token creation, email sent, admin actions (revoke/regenerate) |
+| Token audit | `audit_logs` | Admin actions filtered by `download_token_id` or `purchase_id` |
+
+### Token Status Lifecycle
+
+```
+Token Created  →  Active (expires_at > NOW())
+                →  Expired (expires_at <= NOW(), natural expiry)
+                →  Revoked (expires_at set to NOW() by admin action)
+                      ↓
+                Regenerate → New token created, old one revoked
+```
+
+- **Active**: Token is valid for download (expires_at in the future)
+- **Expired**: Token naturally expired (expires_at passed)
+- **Revoked**: Token invalidated by admin or refund (expires_at forced to past)
+- Revoke and Regenerate both set `expires_at = NOW()` on the old token
+- Regenerate calls the existing `purchaseService.generateDownloadToken()` to create a new token
+
+### Admin Actions
+
+| Action | Effect | Confirmation Required |
+|--------|--------|----------------------|
+| Revoke | Immediately invalidates token (`expires_at = NOW()`) | Yes |
+| Regenerate | Invalidates old token + creates new one for same purchase/product | Yes |
+
+Both actions preserve the entitlement — only the token is affected.
+
+### Audit Events Added
+
+| Event | Trigger |
+|-------|---------|
+| `download_viewed` | Admin views download detail |
+| `token_revoked` | Admin revokes a download token |
+| `token_regenerated` | Admin regenerates a token (old → new) |
+
+Events record `download_token_id`, `purchase_id`, and for regeneration, `new_token_id` in metadata.
+
+### Frontend Architecture
+
+```
+frontend/src/routes/admin/downloads/
+  +page.svelte              List page (search, 2 filters, sort, pagination)
+  [id]/+page.svelte         Detail page (3 tabs: overview, history, audit)
+
+frontend/src/lib/admin/components/
+  DownloadStatusBadge.svelte   Color-coded badge (active=green, expired=amber, revoked=red)
+  DownloadTokenCard.svelte     Token display with copy-to-clipboard + expiry info
+  DownloadHistoryTable.svelte  Chronological event table (event, description, actor, date)
+```
+
+### Component Hierarchy
+
+```
+Downloads List (+page.svelte)
+  AdminPageHeader (title + total token count)
+  AdminPage (loading/error/content)
+    Search bar + filter toggle
+    Filters bar (status, product, sort)
+    AdminTableContainer > table (product, customer, token, status, tokens count, expires, created)
+    Pagination (page nav, info)
+
+Download Detail ([id]/+page.svelte)
+  AdminPageHeader (title + "View Order" + "View Customer" buttons)
+  Alert (success/error after admin action; new token display after regenerate)
+  AdminPage (loading/error/content)
+    Tab bar (Overview | History | Audit)
+    Overview tab:
+      Grid Left:
+        SectionCard "Overview" (status badge, created, expires, total tokens count)
+        SectionCard "Customer" (name, email, "View Customer" link)
+        SectionCard "Product" (name, slug, "View Product" link)
+      Grid Right:
+        SectionCard "Download Token" (DownloadTokenCard with copy-to-clipboard)
+        SectionCard "Admin Actions" (Revoke + Regenerate buttons with confirmation dialog)
+    History tab:
+      AdminSection "Token History" (DownloadHistoryTable)
+    Audit tab:
+      AdminSection "Audit Log" (AdminTableContainer: event, admin, details, date)
+```
+
+### Search & Filter Capabilities
+
+| Feature | Downloads |
+|---------|-----------|
+| Search | ILIKE on customer name, email, product name, token value |
+| Status filter | active / expired |
+| Product filter | Dynamic from DB (products with tokens) |
+| Sort | newest, oldest, expiring soon, most tokens |
+| Pagination | Server-side, default 20, max 100 |
+
+### Reused Existing Components
+
+- `AdminPage`, `AdminPageHeader`, `AdminSection`, `AdminTableContainer`, `AdminEmptyState`
+- `SectionCard`, `Button`, `Input`
+- `ActivityTimeline` — available for future use
+
+### Dashboard Integration
+
+- Downloads stat card already linked to `/admin/downloads` (from Phase 2)
+- Active Downloads count in the Downloads widget now clickable → links to `/admin/downloads?status=active`
+
+### Performance
+
+- Server-side pagination with `LIMIT/OFFSET`
+- Indexed queries — `download_tokens.purchase_id` indexed, `download_tokens.expires_at` indexed
+- Parallel reads: download detail fetches history and audit concurrently via `Promise.all`
+- No N+1 queries — list query uses a single correlated subquery for token count
+- Fetch only required columns — list query avoids `SELECT *`
+- History query limited to 100 events
+- All read queries use indexed columns
+
+### Files Created (5 backend, 2 frontend, 3 components = 10 total)
+
+```
+backend/src/admin/downloads/
+  types.ts
+  validation.ts
+  repository.ts
+  service.ts
+  routes.ts
+
+frontend/src/routes/admin/downloads/
+  +page.svelte
+  [id]/+page.svelte
+
+frontend/src/lib/admin/components/
+  DownloadStatusBadge.svelte
+  DownloadTokenCard.svelte
+  DownloadHistoryTable.svelte
+```
+
+### Files Modified (4)
+
+| File | Change |
+|------|--------|
+| `backend/src/admin/index.ts` | Mounted `/downloads` routes |
+| `backend/src/audit/types.ts` | Added `download_viewed`, `token_revoked`, `token_regenerated` audit events |
+| `frontend/src/routes/admin/dashboard/+page.svelte` | Active Downloads stat in widget now clickable with status filter |
+| `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix (Phase 6) |
+
+### Verification
+
+- `bun run tsc --noEmit` — 0 errors (backend)
+- `bun test` — 78 pass, 0 fail (all existing tests unchanged)
+- `svelte-check` — 0 errors, 3 pre-existing warnings
+- Customer Portal unchanged — no modifications to customer routes or components
+- Download flow unchanged — customer download endpoints and token validation not touched
+- Existing token generation unchanged — `purchaseService.generateDownloadToken()` reused as-is
+- Existing entitlement logic unchanged — revoke/regenerate only affects tokens, not entitlements
+- Orders & Payments unchanged — no modifications to Phase 4 modules
+- Customer Management unchanged — no modifications to Phase 5 modules
+- Only ADMIN can access download routes — `requireAuth` + `requireRole('admin')` on every endpoint
+- All admin actions create audit log entries with `download_token_id` and `purchase_id` metadata
+- Regenerate reuses existing `purchaseService.generateDownloadToken()` — no new token generation code
+- No duplicated UI — all components reuse existing admin primitives
+- No CSS duplication — all styles use existing design tokens
+- No secrets exposed — full token values shown only to admins in detail view
+
+---
+
+## Appendix: Phase 7 — Communication Center (Implemented)
+
+### Scope
+
+Read and manage the four communication channels: Contact Messages, Feedback, Newsletter Subscribers, and Career Applications. Adds admin-only internal **notes** and reusable **tags** across all record types, plus a **reply** action that reuses the existing Resend email system. No changes to the customer-facing submission forms, the email sending logic, or the existing `communication/*` modules.
+
+### Migration
+
+`backend/migrations/018_create_communication_admin.sql` adds three tables:
+
+| Table | Purpose |
+|-------|---------|
+| `communication_notes` | Internal admin notes per record (`record_type`, `record_id`, `author_id`, `content`) |
+| `communication_tags` | Reusable tag definitions (`name` UNIQUE, `color`) |
+| `communication_record_tags` | Junction between records and tags (PK on `record_type, record_id, tag_id`) |
+
+All three are auto-applied on server boot alongside existing migrations.
+
+### Backend Module
+
+```
+backend/src/admin/communication/
+  types.ts         RecordType, CommStatus, note/tag types, list/detail response types, filter options
+  validation.ts    Zod: list params, status update, reply, note create, tag create/assign
+  repository.ts    SQL: list+detail+status+archive+restore+delete for all 4 types; notes; tags
+  service.ts       Orchestration: list/get, status changes, archive/restore/delete, reply, notes, tags, audit
+  routes.ts        19 endpoints + shared /tags, /:recordType/:recordId/notes, /tags, /reply
+```
+
+### API Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/api/admin/communication/contact` | Admin | List contact messages (search, status, archived, date, sort, pagination) |
+| `GET` | `/api/admin/communication/contact/:id` | Admin | Detail + notes + tags + audit (records VIEWED) |
+| `PUT` | `/api/admin/communication/contact/:id/status` | Admin | Set status (NEW/READ/REPLIED/ARCHIVED) |
+| `PUT` | `/api/admin/communication/contact/:id/archive` | Admin | Soft-archive |
+| `PUT` | `/api/admin/communication/contact/:id/restore` | Admin | Restore from archive |
+| `DELETE` | `/api/admin/communication/contact/:id` | Admin | Delete |
+| `GET`/`GET :id`/`PUT :id/status`/`PUT :id/archive`/`PUT :id/restore`/`DELETE :id` | `/api/admin/communication/feedback/*` | Admin | Same as contact |
+| `GET`/`GET :id`/`PUT :id/status`/`DELETE :id` | `/api/admin/communication/newsletter/*` | Admin | Newsletter (no archive/restore — unsubscribe handled by customer flow) |
+| `GET`/`GET :id`/`PUT :id/status`/`PUT :id/archive`/`PUT :id/restore`/`DELETE :id` | `/api/admin/communication/careers/*` | Admin | Same as contact |
+| `GET` | `/api/admin/communication/tags` | Admin | List all tags |
+| `POST` | `/api/admin/communication/tags` | Admin | Create tag |
+| `PUT` | `/api/admin/communication/tags/:id` | Admin | Rename/recolor tag |
+| `DELETE` | `/api/admin/communication/tags/:id` | Admin | Delete tag (cascade from junction) |
+| `GET` | `/api/admin/communication/:recordType/:recordId/notes` | Admin | List notes |
+| `POST` | `/api/admin/communication/:recordType/:recordId/notes` | Admin | Add note (records NOTE_ADDED) |
+| `POST` | `/api/admin/communication/:recordType/:recordId/tags` | Admin | Assign existing tag (records TAG_ADDED) |
+| `DELETE` | `/api/admin/communication/:recordType/:recordId/tags/:tagId` | Admin | Remove tag (records TAG_REMOVED) |
+| `POST` | `/api/admin/communication/:recordType/:recordId/reply` | Admin | Send reply email (contact/feedback only) + set REPLIED |
+| `GET` | `/api/admin/communication/options` | Admin | Filter options (statuses) |
+
+All endpoints require `requireAuth` + `requireRole('admin')`.
+
+### Notes
+
+- Internal only — never visible to customers. Stored in `communication_notes` with `author_id` + `created_at`.
+- Multiple notes per record; rendered newest-first in the detail **Notes** tab via `NotesPanel.svelte`.
+
+### Tags
+
+- Reusable across all record types. `communication_tags` holds definitions; `communication_record_tags` links them.
+- Add / remove / edit / delete via `TagManager.svelte` (assign, create new, rename, recolor, delete).
+- Default palette seed colors applied on creation.
+
+### Reply
+
+- `ReplyDialog.svelte` collects subject + message, then `POST .../reply`.
+- Backend calls the new `emailService.sendReplyEmail({ to, subject, message })` — a generic method that reuses the existing `sendWithLogging` (provider, retry, DB logging). Category is `null` so it always sends (not subject to customer opt-out like transactional admin mail).
+- After sending, the record status is advanced to `REPLIED` and a `contact_replied` / `feedback_replied` audit event is recorded.
+- Newsletter subscribers have no reply action (read-only channel).
+
+### Frontend
+
+```
+frontend/src/routes/admin/communication/
+  +page.svelte                       Landing overview (counts + "new" badges per type)
+  contact/+page.svelte              List (search, status/archived filters, sort, bulk select/archive/delete)
+  contact/[id]/+page.svelte         Detail (Overview/Notes/Tags/Audit tabs + reply + actions)
+  feedback/+page.svelte             List
+  feedback/[id]/+page.svelte        Detail
+  newsletter/+page.svelte           List
+  newsletter/[id]/+page.svelte      Detail
+  careers/+page.svelte              List
+  careers/[id]/+page.svelte         Detail
+
+frontend/src/lib/admin/api/communication.ts        Typed client (list/get/status/archive/restore/delete/tags/notes/reply)
+frontend/src/lib/admin/components/
+  CommunicationStatusBadge.svelte   NEW/READ/REPLIED/ARCHIVED colors
+  CommunicationCard.svelte          Landing card
+  CommunicationListView.svelte      Reusable list (filters, sort, pagination, bulk select/archive/delete)
+  CommunicationDetailView.svelte    Reusable detail (tabs, status change, archive/restore/delete, reply)
+  NotesPanel.svelte                 Add/list internal notes
+  TagManager.svelte                 Add/remove/edit/delete tags
+  ReplyDialog.svelte                Reply composer
+```
+
+### Reused Infrastructure
+
+- `AdminPage`, `AdminPageHeader`, `AdminSection`, `AdminTableContainer`, `AdminEmptyState`, `Button`, `Input`
+- `adminFetch` client wrapper (`credentials: include`, 15s timeout, `AdminApiError`)
+- Existing DB tables `contact_messages`, `feedback`, `newsletter_subscribers`, `career_applications` (read/updated only)
+- Existing `emailService` (new `sendReplyEmail` method reuses `sendWithLogging`)
+- Existing `audit` service + `recordEvent`
+
+### Security & Audit
+
+- Every endpoint gated by `requireAuth` + `requireRole('admin')`; all inputs validated with Zod; parameterized SQL.
+- Audit events added: `contact_viewed`, `feedback_viewed`, `newsletter_viewed`, `careers_viewed`, `contact_replied`, `feedback_replied`, `contact_status_changed`, `feedback_status_changed`, `newsletter_status_changed`, `careers_status_changed`, `contact_archived`, `feedback_archived`, `careers_archived`, `contact_restored`, `feedback_restored`, `careers_restored`, `contact_deleted`, `feedback_deleted`, `newsletter_deleted`, `careers_deleted`, `note_added`, `tag_added`, `tag_removed`.
+- Each audit entry stores `record_type` + `record_id` in metadata so the detail **Audit** tab can filter by record.
+
+### Files Created (11 backend, 8 frontend = 19 total)
+
+```
+backend/src/admin/communication/ (types, validation, repository, service, routes)
+backend/migrations/018_create_communication_admin.sql
+
+frontend/src/lib/admin/api/communication.ts
+frontend/src/lib/admin/components/ (CommunicationStatusBadge, CommunicationCard, CommunicationListView, CommunicationDetailView, NotesPanel, TagManager, ReplyDialog)
+frontend/src/routes/admin/communication/ (+page + 4 lists + 4 details)
+```
+
+### Files Modified (3)
+
+| File | Change |
+|------|--------|
+| `backend/src/admin/index.ts` | Mounted `/communication` routes |
+| `backend/src/audit/types.ts` | Added 23 communication audit events |
+| `backend/src/email/service.ts` | Added `sendReplyEmail()` method (reuses `sendWithLogging`) |
+| `frontend/src/lib/admin/components/AdminSidebar.svelte` | Repointed Communication group to `/admin/communication/*` |
+| `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix (Phase 7) |
+
+### Verification
+
+- `bun run tsc --noEmit` — 0 errors (backend)
+- `bun test` — 78 pass, 0 fail (all existing tests unchanged)
+- `svelte-check` — 0 errors, 6 warnings (intentional initial-value captures + pre-existing autofocus/.danger-btn)
+- Customer Portal unchanged — submission forms and `communication/*` modules untouched
+- Email system unchanged — only added `sendReplyEmail` reusing existing `sendWithLogging`; customer-facing templates untouched
+- No duplicate communication logic — admin reads/writes go through the new module, reusing existing tables and email service
+- Existing contact/feedback/newsletter/careers forms continue working unchanged
+- All admin actions audited with `record_type`/`record_id` metadata
+- UI follows existing Admin Portal design system + shared components only

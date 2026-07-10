@@ -36,10 +36,10 @@
 			label: 'Communication',
 			icon: MessageSquare,
 			children: [
-				{ href: '/admin/contact', label: 'Contact' },
-				{ href: '/admin/feedback', label: 'Feedback' },
-				{ href: '/admin/newsletter', label: 'Newsletter' },
-				{ href: '/admin/careers', label: 'Careers' }
+				{ href: '/admin/communication/contact', label: 'Contact' },
+				{ href: '/admin/communication/feedback', label: 'Feedback' },
+				{ href: '/admin/communication/newsletter', label: 'Newsletter' },
+				{ href: '/admin/communication/careers', label: 'Careers' }
 			]
 		},
 		{ href: '/admin/emails', label: 'Emails', icon: Mail },

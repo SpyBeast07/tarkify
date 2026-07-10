@@ -141,6 +141,22 @@ export class EmailService {
     return this.sendWithLogging(config.email.adminEmail, data.subject, html, 'sendAdminNotification');
   }
 
+  async sendReplyEmail(data: { to: string; subject: string; message: string }): Promise<SendEmailResult> {
+    const escaped = data.message
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    const html = `<!DOCTYPE html>
+<html>
+  <body style="margin:0;padding:24px;background:#f4f4f5;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;padding:32px;color:#1f2937;">
+      <div style="white-space:pre-wrap;line-height:1.6;font-size:15px;">${escaped.replace(/\n/g, '<br>')}</div>
+    </div>
+  </body>
+</html>`;
+    return this.sendWithLogging(data.to, data.subject, html, 'admin_reply');
+  }
+
   async sendTestEmail(to: string): Promise<SendEmailResult> {
     const html = buildVerificationEmail({
       email: to,

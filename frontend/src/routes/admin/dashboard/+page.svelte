@@ -388,7 +388,7 @@
 								<span class="download-value">{data.summary.downloads.total}</span>
 								<span class="download-label">Total Tokens</span>
 							</div>
-							<div class="download-stat active">
+							<div class="download-stat active" role="link" tabindex="0" onclick={() => window.location.href = '/admin/downloads?status=active'} onkeydown={(e) => e.key === 'Enter' && (window.location.href = '/admin/downloads?status=active')}>
 								<span class="download-value">{data.summary.downloads.activeTokens}</span>
 								<span class="download-label">Active</span>
 							</div>
