@@ -62,6 +62,8 @@ export const AUDIT_EVENTS = {
   EMAIL_TEST_SENT: 'email_test_sent',
   TEMPLATE_VIEWED: 'template_viewed',
   PROVIDER_VIEWED: 'provider_viewed',
+
+  ANALYTICS_VIEWED: 'analytics_viewed',
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];
