@@ -83,6 +83,16 @@ export async function recordAccountDeleted(
   return recordEvent(userId, 'account_deleted', metadata, ipAddress, userAgent);
 }
 
+export async function recordProductEvent(
+  userId: string,
+  event: AuditEvent,
+  metadata: Record<string, unknown> = {},
+  ipAddress?: string | null,
+  userAgent?: string | null,
+): Promise<AuditLogEntry> {
+  return recordEvent(userId, event, metadata, ipAddress, userAgent);
+}
+
 export async function recordAccountReactivated(
   userId: string,
   ipAddress?: string | null,

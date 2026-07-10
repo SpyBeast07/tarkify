@@ -74,6 +74,8 @@
 			<p class="access-denied-message">You do not have permission to access the Admin Portal.</p>
 		</div>
 	</div>
+{:else if isLoginPage()}
+	{@render children()}
 {:else if ready}
 	<AdminLayout>
 		{@render children()}

@@ -1,6 +1,6 @@
 # Admin Portal Architecture
 
-> **Status:** Phase 2 — Admin Dashboard **implemented**. Business modules: planned (Phases 3+).
+> **Status:** Phase 3 — Product Management **implemented**. Business modules: planned (Phases 4+).
 > **Purpose:** Single source of truth for the Tarkify Admin Portal.
 > **Related:** `ARCHITECTURE.md`, `API_REFERENCE.md`, `SECURITY.md`, `DATABASE.md`, `DESIGN_SYSTEM.md`, `CUSTOMER_PORTAL.md`, `DEVELOPMENT_GUIDE.md`.
 
@@ -845,3 +845,235 @@ frontend/src/
 - Single API request — dashboard loads everything in one `GET /api/admin/dashboard`
 - Read-only — no mutations, no CRUD, no edit/delete functionality
 - No CSS duplication — all styles use existing design tokens; no new global CSS
+
+---
+
+## Appendix: Phase 3 — Product Management (Implemented)
+
+### Scope
+
+Complete CRUD product management module: list, create, edit, publish, unpublish, archive, restore products with full validation, search, filters, pagination, audit logging, and SEO support.
+
+### Database Migration
+
+`backend/migrations/017_add_product_fields.sql`
+
+New columns added to `products` table:
+
+| Column | Type | Default | Constraint |
+|--------|------|---------|------------|
+| `status` | TEXT | `'published'` | `CHECK (draft/published/archived)` |
+| `visibility` | TEXT | `'public'` | `CHECK (public/hidden)` |
+| `short_description` | TEXT | — | — |
+| `category` | TEXT | `'General'` | — |
+| `tags` | JSONB | `'[]'` | — |
+| `seo_title` | TEXT | — | — |
+| `seo_description` | TEXT | — | — |
+| `og_image` | TEXT | — | — |
+| `version` | TEXT | `'1.0.0'` | — |
+| `release_date` | TIMESTAMPTZ | — | — |
+| `release_notes` | TEXT | — | — |
+
+Indexes: `idx_products_status`, `idx_products_category`, `idx_products_visibility`.
+
+The existing `active` boolean is derived from `status` (`published` = `active=true`). Existing rows are migrated: `active=true` → `published`, `active=false` → `archived`.
+
+### Backend Architecture
+
+```
+backend/src/admin/products/
+  types.ts         Product interfaces, list response/params types
+  validation.ts    Zod schemas for create (17 fields) and update (16 fields)
+  repository.ts    SQL queries with parameterized filters, pagination, sorting
+  service.ts       Business logic, audit logging, error handling
+  routes.ts        8 endpoints mounted at /api/admin/products
+```
+
+### API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/admin/products` | List with `?search`, `?status`, `?visibility`, `?category`, `?sort`, `?page`, `?perPage` |
+| `GET` | `/api/admin/products/categories` | Distinct category names |
+| `GET` | `/api/admin/products/:id` | Full product detail + audit log |
+| `POST` | `/api/admin/products` | Create product (returns 201) |
+| `PUT` | `/api/admin/products/:id` | Update product fields |
+| `POST` | `/api/admin/products/:id/publish` | Set status → `published` |
+| `POST` | `/api/admin/products/:id/unpublish` | Set status → `draft` |
+| `POST` | `/api/admin/products/:id/archive` | Set status → `archived` |
+| `POST` | `/api/admin/products/:id/restore` | Set status → `draft` |
+
+All endpoints require `requireAuth` + `requireRole('admin')`.
+
+### Audit Events Added
+
+| Event | Trigger |
+|-------|---------|
+| `product_created` | POST create |
+| `product_updated` | PUT update |
+| `product_published` | POST publish |
+| `product_unpublished` | POST unpublish |
+| `product_archived` | POST archive |
+| `product_restored` | POST restore |
+
+Events logged via `backend/src/audit/service.ts` → `insertAuditLog()` with user ID, product metadata, IP, and user agent.
+
+### Frontend Architecture
+
+```
+frontend/src/routes/admin/products/
+  +page.svelte              List page (search, filters, sort, pagination)
+  new/+page.svelte          Create product form
+  [id]/+page.svelte         Product detail (read-only)
+  [id]/edit/+page.svelte    Edit product form
+
+frontend/src/lib/admin/components/
+  ProductForm.svelte        Reusable create/edit form with all fields
+  ProductStatusBadge.svelte Color-coded status badge (draft/published/archived)
+  TagInput.svelte           Tag input with add/remove/keyboard support
+```
+
+### Component Hierarchy
+
+```
+Products List (+page.svelte)
+  AdminPageHeader (title + "New Product" button)
+  AdminPage (loading/error/content)
+    Search bar + filter toggle
+    Filters bar (status, visibility, category, sort)
+    AdminTableContainer > table (name, slug, price, status, visibility, category, version, updated)
+    Pagination (page nav, info)
+
+Product Detail ([id]/+page.svelte)
+  AdminPageHeader (back, edit, publish/unpublish/archive/restore buttons)
+  AdminPage (loading/error/content)
+    Grid Left:
+      SectionCard "Overview" (name, slug, description, category, tags)
+      SectionCard "Pricing" (price, type)
+      SectionCard "SEO" (title, description, og_image)
+      AdminSection "Audit Summary" (table)
+    Grid Right:
+      SectionCard "Status & Visibility" (status badge, visibility, created, updated)
+      SectionCard "Versions" (current version, release date)
+      SectionCard "Release Notes" (if exists)
+      SectionCard "Statistics" (download key)
+  Dialog × 4 (publish, unpublish, archive, restore confirmations)
+
+Create/Edit (new/+page.svelte, [id]/edit/+page.svelte)
+  AdminPageHeader
+  AdminPage
+    AdminSection
+      ProductForm (reusable)
+        2-column grid
+        Column 1: name, slug, short_description, description, category, tags
+        Column 2: price+currency, status, visibility, version, download_key, release_date, release_notes, SEO settings
+        Actions: Cancel + Submit
+```
+
+### Validation Rules
+
+| Field | Rules |
+|-------|-------|
+| `name` | Required, max 255 chars, trimmed |
+| `slug` | Required, max 255 chars, lowercase alphanumeric + hyphens, unique |
+| `price` | Required, integer ≥ 0 |
+| `currency` | Max 10 chars, default `INR` |
+| `short_description` | Max 500 chars |
+| `description` | Free text |
+| `category` | Max 100 chars, default `General` |
+| `tags` | Array of strings, max 20 tags, each max 50 chars |
+| `visibility` | Enum: `public` or `hidden` |
+| `status` | Enum: `draft`, `published`, `archived` |
+| `seo_title` | Max 255 chars |
+| `seo_description` | Max 500 chars |
+| `og_image` | Max 1000 chars |
+| `version` | Required, min 1, max 50 chars, default `1.0.0` |
+| `slug` | Regex: `/^[a-z0-9]+(?:-[a-z0-9]+)*$/` |
+
+### Product List Features
+
+- **Search**: ILIKE on name and slug
+- **Status filter**: draft/published/archived
+- **Visibility filter**: public/hidden
+- **Category filter**: dynamic from DB
+- **Sort**: newest, oldest, updated, price, name
+- **Pagination**: server-side, configurable perPage (default 20, max 100)
+- **States**: loading (skeleton), empty (contextual message), error (retry)
+
+### Product Status Lifecycle
+
+```
+    ┌─────────┐
+    │  Draft  │
+    └────┬────┘
+         │ publish     ┌──────────┐
+    ┌────▼────┐  ────► │ Archived │
+    │Published│  archive└──────────┘
+    └────┬────┘            │ restore
+         │ unpublish   ┌───▼────┐
+    ┌────▼────┐        │  Draft  │
+    │  Draft  │        └────────┘
+    └─────────┘
+```
+
+- Only `published` products are visible to customers via `WHERE active = true`
+- `archived` is soft-delete — products remain in DB with full history
+- `restore` brings archived products back to `draft`
+
+### Performance
+
+- Server-side pagination with `LIMIT/OFFSET`
+- Filtered queries use indexed columns (`status`, `category`, `visibility`)
+- Parallel queries where applicable
+- No N+1 queries — each list/detail endpoint makes 1-2 DB calls
+- `getProductAuditLog` limited to 50 recent entries
+
+### Files Created (7 backend, 6 frontend = 13 total)
+
+```
+backend/migrations/017_add_product_fields.sql
+
+backend/src/admin/products/
+  types.ts
+  validation.ts
+  repository.ts
+  service.ts
+  routes.ts
+
+frontend/src/routes/admin/products/
+  +page.svelte
+  new/+page.svelte
+  [id]/+page.svelte
+  [id]/edit/+page.svelte
+
+frontend/src/lib/admin/components/
+  ProductForm.svelte
+  ProductStatusBadge.svelte
+  TagInput.svelte
+```
+
+### Files Modified (4)
+
+| File | Change |
+|------|--------|
+| `backend/src/admin/index.ts` | Mounted `/products` routes |
+| `backend/src/audit/types.ts` | Added 6 product audit events |
+| `backend/src/audit/service.ts` | Added `recordProductEvent()` |
+| `backend/src/admin/dashboard/repository.ts` | Updated product summary to use `status` column |
+| `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix |
+
+### Verification
+
+- `bun run tsc --noEmit` — 0 errors (backend)
+- `bun test` — 78 pass, 0 fail
+- `svelte-check` — 0 errors, 1 pre-existing a11y warning
+- Customer Portal unchanged — no modifications to customer routes or components
+- Dashboard unchanged — product stats still work with new `status` column
+- Better Auth unchanged — auth still goes through existing `/api/auth/*` endpoints
+- Role enforcement — `requireAuth` + `requireRole('admin')` on every product route
+- All mutations create audit log entries
+- All user inputs validated via Zod schemas
+- Soft delete only — archive never permanently deletes products
+- No duplicated UI — all components reuse existing admin primitives
+- No CSS duplication — all styles use existing design tokens
+- Accessible forms — labels, error messages, keyboard navigation, aria attributes

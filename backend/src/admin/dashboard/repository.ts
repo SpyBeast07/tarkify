@@ -45,8 +45,8 @@ export async function getDownloadsSummary() {
 export async function getProductsSummary() {
   const result = await query(`
     SELECT
-      COUNT(*) FILTER (WHERE active = true)::int AS published,
-      COUNT(*) FILTER (WHERE active = false)::int AS inactive
+      COUNT(*) FILTER (WHERE status = 'published')::int AS published,
+      COUNT(*) FILTER (WHERE status IN ('draft', 'archived'))::int AS inactive
     FROM products
   `);
   const latest = await query(`
