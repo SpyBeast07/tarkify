@@ -39,7 +39,7 @@ Two roles exist: `customer` and `admin`. Only `admin` may reach any `/admin` pag
 
 ### 1.5 Module overview
 
-Dashboard · Products · Orders · Payments · Downloads · Customers · Communication (Contact / Feedback / Newsletter / Careers) · Emails · Analytics · System · Settings · Audit. Each maps to a backend module and a frontend route group (§5, §7).
+Dashboard · Products · Orders · Payments · Downloads · Customers · Communication (Contact / Feedback / Newsletter / Careers) · Emails · System · Settings · Audit. Analytics is embedded within the Dashboard (no standalone Analytics page). Each maps to a backend module and a frontend route group (§5, §7).
 
 ### 1.6 Future scalability
 
@@ -62,7 +62,7 @@ Session Cookie  (tarkify.* httpOnly cookie, shared session infra)
   ↓
 ADMIN verification  (role === 'admin' checked in admin layout + admin API)
   ↓
-Admin Portal  (/admin/dashboard)
+Admin Portal  (/admin)
 ```
 
 ### 2.2 Rules
@@ -146,9 +146,8 @@ Unauthorized responses: **`401`** (no/invalid session) or redirect to **`/admin/
 All under `/admin`. Every route except `/admin/login` requires `role = admin`.
 
 ```
-/admin                 → redirect to /admin/dashboard
+/admin                 → dashboard page (overview widgets, analytics charts, KPI cards, growth metrics, recent activity)
 /admin/login           → public (email + password)
-/admin/dashboard       → overview widgets
 /admin/products        → catalog management
 /admin/orders          → orders (purchases table)
 /admin/payments        → payment records & reconciliation
@@ -159,7 +158,6 @@ All under `/admin`. Every route except `/admin/login` requires `role = admin`.
 /admin/newsletter      → communication: newsletter subscribers
 /admin/careers         → communication: career applications
 /admin/emails          → email delivery logs
-/admin/analytics       → aggregate metrics & charts
 /admin/system          → system health & diagnostics
 /admin/settings        → admin-configurable settings
 /admin/audit           → audit logs
@@ -180,11 +178,9 @@ routes/
   admin/
     +layout.svelte              # ADMIN guard + AdminLayout shell (sidebar/header/breadcrumbs)
     +layout.ts                  # noindex; optional server-side session prefetch
-    +page.svelte                # redirect → /admin/dashboard
+    +page.svelte                # dashboard page (analytics, KPIs, recent activity, system health)
     login/
       +page.svelte              # email + password (no OAuth, no register, no forgot)
-    dashboard/
-      +page.svelte
     products/
       +page.svelte              # list
       [id]/+page.svelte         # detail / edit
@@ -206,8 +202,6 @@ routes/
       newsletter/+page.svelte
       careers/+page.svelte
     emails/
-      +page.svelte
-    analytics/
       +page.svelte
     system/
       +page.svelte
@@ -383,6 +377,8 @@ Status change is audited (`admin_customer_suspended` / `admin_customer_reactivat
 
 ### 7.9 Analytics
 
+Analytics is **embedded within the Dashboard** — there is no standalone Analytics page. The Dashboard consumes these endpoints directly alongside the aggregate `/admin/dashboard` endpoint.
+
 | Route | Method | Auth | Request | Response | Notable errors |
 |-------|--------|------|---------|----------|----------------|
 | `/admin/analytics/overview` | GET | Admin | `?from&to` | revenue, orders, conversion aggregates | — |
@@ -437,7 +433,6 @@ Communication
   ├─ Newsletter
   └─ Careers
 Emails
-Analytics
 System
 Settings
 Audit Logs
@@ -747,7 +742,7 @@ All 12 queries run concurrently via `Promise.all` in the service layer.
 
 ### Frontend page
 
-`frontend/src/routes/admin/dashboard/+page.svelte`
+`frontend/src/routes/admin/+page.svelte` (formerly `dashboard/+page.svelte`)
 
 ### Widget layout
 
@@ -823,7 +818,7 @@ backend/src/admin/
     routes.ts
 
 frontend/src/
-  routes/admin/dashboard/+page.svelte
+  routes/admin/+page.svelte
   lib/admin/components/DashboardStatCard.svelte
 ```
 
@@ -1343,7 +1338,7 @@ frontend/src/lib/admin/components/
 |------|--------|
 | `backend/src/admin/index.ts` | Mounted `/orders` and `/payments` routes |
 | `backend/src/audit/types.ts` | Added `order_viewed`, `payment_viewed`, `receipt_viewed` audit events |
-| `frontend/src/routes/admin/dashboard/+page.svelte` | Made Recent Orders table rows clickable (navigate to order detail) |
+| `frontend/src/routes/admin/+page.svelte` (formerly `dashboard/+page.svelte`) | Made Recent Orders table rows clickable (navigate to order detail) |
 | `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix (Phase 4) |
 
 ### Verification
@@ -1801,7 +1796,7 @@ frontend/src/lib/admin/components/
 |------|--------|
 | `backend/src/admin/index.ts` | Mounted `/downloads` routes |
 | `backend/src/audit/types.ts` | Added `download_viewed`, `token_revoked`, `token_regenerated` audit events |
-| `frontend/src/routes/admin/dashboard/+page.svelte` | Active Downloads stat in widget now clickable with status filter |
+| `frontend/src/routes/admin/+page.svelte` (formerly `dashboard/+page.svelte`) | Active Downloads stat in widget now clickable with status filter |
 | `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix (Phase 6) |
 
 ### Verification

@@ -9,7 +9,6 @@
 		Users,
 		MessageSquare,
 		Mail,
-		BarChart3,
 		Settings,
 		Shield,
 		Activity,
@@ -43,7 +42,6 @@
 			]
 		},
 		{ href: '/admin/email', label: 'Email Center', icon: Mail },
-		{ href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
 		{ href: '/admin/system', label: 'System', icon: Activity },
 		{ href: '/admin/settings', label: 'Settings', icon: Settings },
 		{ href: '/admin/audit', label: 'Audit Logs', icon: Shield }

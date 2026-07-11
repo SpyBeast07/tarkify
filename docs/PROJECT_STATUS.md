@@ -31,7 +31,7 @@ The platform preserves full backward compatibility with historical **guest purch
 | Audit Logging | ✅ Complete | `audit_logs` table + service. |
 | Deployment | ✅ Complete | Docker, Compose, migration runner, health/readiness. |
 | Admin Portal | ⏳ Planned | Next phase. See `ADMIN_PORTAL_ARCHITECTURE.md`. |
-| Analytics | ⏳ Planned | |
+| Analytics | ✅ Embedded in Dashboard | Integrated into `/admin` — no standalone Analytics page. |
 | CMS / Blog | ⏳ Planned | |
 | Subscriptions | ⏳ Planned | Schema already supports `type=SUBSCRIPTION`. |
 | Licensing | ⏳ Planned | |
@@ -67,7 +67,7 @@ See `ARCHITECTURE.md#tech-stack` for the full list.
 - [x] Deployment pipeline
 - [ ] Google OAuth (code done; enable via credentials)
 - [ ] Admin Portal
-- [ ] Analytics
+- [x] Analytics (embedded in Dashboard)
 - [ ] CMS
 - [ ] Subscriptions
 - [ ] Licensing
@@ -95,7 +95,7 @@ See `DEPLOYMENT.md#production-deployment` and `SECURITY.md`.
 - **Single backend instance** — connection pool capped at 10; no multi-replica deployment.
 - **Limited integration test coverage** — unit tests exist; no automated payment/webhook integration tests.
 - **Frontend static data drift** — `solutions.json` still has a subscription-style placeholder price; product detail now fetches the real price from the API.
-- **No CMS / blog admin, no subscriptions, no licensing, no multi-tenant.**
+- **No CMS / blog admin, no subscriptions, no licensing, no multi-tenant, no standalone Analytics page (embedded in Dashboard).**
 - **Email link routing** — verification/reset emails are configured to land on frontend pages (recent fix); confirm in production.
 
 ---
@@ -104,8 +104,8 @@ See `DEPLOYMENT.md#production-deployment` and `SECURITY.md`.
 
 - **Authentication**: Google OAuth GA, potential MFA, richer session management.
 - **Customer Portal**: client-side caching, invoice download (PDF), avatar upload, activity log.
-- **Admin Portal** (next): customers, products CRUD, purchases, communication inbox, settings, admin management, analytics.
-- **Analytics**: funnels, revenue, engagement.
+- **Admin Portal** (next): customers, products CRUD, purchases, communication inbox, settings, admin management.
+- **Analytics**: funnels, revenue, engagement (embedded in Dashboard; `/admin`).
 - **Licensing**: license-key issuance/validation.
 - **Subscriptions**: recurring billing (schema-ready).
 - **Automation**: workflows, external webhooks.
@@ -117,7 +117,7 @@ See `DEPLOYMENT.md#production-deployment` and `SECURITY.md`.
 
 ## Next Implementation Phases
 
-1. **Admin Portal** — `ADMIN_PORTAL_ARCHITECTURE.md` defines RBAC, modules, navigation, folder structure, APIs, components, reusable layouts. No implementation yet.
+1. **Admin Portal** — `ADMIN_PORTAL_ARCHITECTURE.md` defines RBAC, modules, navigation, folder structure, APIs, components, reusable layouts. Analytics is embedded in the Dashboard — no standalone Analytics page or route exists.
 2. **OAuth GA** — supply Google credentials; gate the login/register OAuth buttons on `googleOAuthEnabled`.
 3. **Subscriptions / Licensing** — add new tables; existing tables are not modified.
 
