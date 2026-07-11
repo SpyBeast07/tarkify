@@ -9,7 +9,8 @@
 		IndianRupee,
 		Mail,
 		Percent,
-		Receipt,
+		Settings,
+		MessageSquare,
 	} from '@lucide/svelte';
 	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
 	import {
@@ -21,7 +22,6 @@
 		getDownloads,
 		getProducts,
 		getCustomers,
-		getEmails,
 		getGrowth,
 		getTraffic,
 	} from '$lib/admin/api/analytics';
@@ -32,7 +32,6 @@
 		DownloadsAnalytics,
 		ProductsAnalytics,
 		CustomersAnalytics,
-		EmailsAnalytics,
 		TrafficAnalytics,
 		GrowthAnalytics,
 	} from '$lib/admin/types/analytics';
@@ -43,7 +42,7 @@
 	import EmailStatsCard from '$lib/admin/components/EmailStatsCard.svelte';
 	import AnalyticsChart from '$lib/admin/components/AnalyticsChart.svelte';
 	import AnalyticsFilterBar from '$lib/admin/components/AnalyticsFilterBar.svelte';
-	import AnalyticsComparisonCard from '$lib/admin/components/AnalyticsComparisonCard.svelte';
+	import ActivityTimeline from '$lib/admin/components/ActivityTimeline.svelte';
 
 	interface DashboardData {
 		summary: {
@@ -56,6 +55,10 @@
 		systemHealth: {
 			backend: string; database: string; email: string; payments: string; storage: string; oauth: string;
 		};
+		recentActivity: Array<{
+			id: string; event: string; user_id: string | null; user_name: string | null;
+			metadata: Record<string, unknown>; created_at: string;
+		}>;
 	}
 
 	let data = $state<DashboardData | null>(null);
@@ -74,7 +77,6 @@
 	let downloads = $state<DownloadsAnalytics | null>(null);
 	let products = $state<ProductsAnalytics | null>(null);
 	let customers = $state<CustomersAnalytics | null>(null);
-	let emails = $state<EmailsAnalytics | null>(null);
 	let growth = $state<GrowthAnalytics | null>(null);
 	let traffic = $state<TrafficAnalytics | null>(null);
 
@@ -100,14 +102,13 @@
 		analyticsLoading = true;
 		analyticsError = null;
 		try {
-			const [o, r, ord, dl, pr, cu, em, gr, tr] = await Promise.all([
+			const [o, r, ord, dl, pr, cu, gr, tr] = await Promise.all([
 				getOverview(query()),
 				getRevenue(query()),
 				getOrders(query()),
 				getDownloads(query()),
 				getProducts(query()),
 				getCustomers(query()),
-				getEmails(query()),
 				getGrowth(query()),
 				getTraffic(query()),
 			]);
@@ -117,7 +118,6 @@
 			downloads = dl;
 			products = pr;
 			customers = cu;
-			emails = em;
 			growth = gr;
 			traffic = tr;
 		} catch (err) {
@@ -149,6 +149,15 @@
 	const fmtNumber = (n: number) => n.toLocaleString('en-IN');
 	const fmtPercent = (n: number) => `${n}%`;
 
+	function trendText(deltaPct: number | null | undefined): string {
+		if (deltaPct == null) return '';
+		const abs = Math.abs(deltaPct);
+		const formatted = Number.isInteger(abs) ? String(abs) : abs.toFixed(1);
+		if (deltaPct > 0) return `↑ ${formatted}% vs previous`;
+		if (deltaPct < 0) return `↓ ${formatted}% vs previous`;
+		return '— 0% vs previous';
+	}
+
 	function healthColor(status: string): string {
 		if (status === 'healthy') return 'var(--color-accent-green)';
 		if (status === 'warning') return '#f59e0b';
@@ -158,7 +167,7 @@
 	function systemLabel(key: string): string {
 		const labels: Record<string, string> = {
 			backend: 'Backend', database: 'Database', email: 'Email',
-			payments: 'Payments', storage: 'Storage', oauth: 'OAuth'
+			payments: 'Payments', storage: 'Storage',
 		};
 		return labels[key] || key;
 	}
@@ -169,9 +178,6 @@
 	function toNamed(items: { product: string; orders?: number; downloads?: number; count?: number }[]) {
 		return items.map((i) => ({ label: i.product || '—', value: i.orders ?? i.downloads ?? i.count ?? 0 }));
 	}
-	function emailTypeChart(items: { type: string; count: number }[]) {
-		return items.map((i) => ({ label: i.type || 'other', value: i.count }));
-	}
 </script>
 
 <svelte:head>
@@ -179,14 +185,19 @@
 </svelte:head>
 
 <div class="dashboard-page">
-	<AdminPageHeader title="Dashboard" description="Business overview with key metrics, analytics, and recent activity.">
+	<AdminPageHeader title="Dashboard" description="Executive overview of business performance, sales, and key metrics.">
 		<div class="quick-actions">
 			<a href="/admin/products" class="btn btn-outline btn-sm">
 				<Plus size={14} aria-hidden="true" /> New Product
 			</a>
 			<a href="/admin/orders" class="btn btn-outline btn-sm">Orders</a>
 			<a href="/admin/customers" class="btn btn-outline btn-sm">Customers</a>
-			<a href="/admin/emails" class="btn btn-outline btn-sm">Emails</a>
+			<a href="/admin/communication" class="btn btn-outline btn-sm">
+				<MessageSquare size={14} aria-hidden="true" /> Communication
+			</a>
+			<a href="/admin/settings" class="btn btn-outline btn-sm">
+				<Settings size={14} aria-hidden="true" /> Settings
+			</a>
 		</div>
 	</AdminPageHeader>
 
@@ -202,174 +213,141 @@
 			{/if}
 
 			{#if overview}
+				<!-- KPIs -->
 				<section class="kpi-grid" aria-label="Key performance indicators">
 					<DashboardStatCard
 						label="Revenue"
 						value={formatCurrency(overview.revenue)}
 						icon={IndianRupee}
-						subtext={`${data.summary.revenue.paidOrders} paid orders`}
+						subtext={growth ? trendText(growth.revenue.deltaPct) : ''}
 						href="/admin/orders"
 					/>
 					<DashboardStatCard
 						label="Orders"
 						value={fmtNumber(overview.orders)}
 						icon={ShoppingCart}
-						subtext={`${data.summary.orders.total} total`}
+						subtext={growth ? trendText(growth.orders.deltaPct) : ''}
 						href="/admin/orders"
 					/>
 					<DashboardStatCard
 						label="Customers"
 						value={fmtNumber(overview.customers)}
 						icon={Users}
-						subtext={`${data.summary.customers.newThisMonth} new this month`}
+						subtext={growth ? trendText(growth.customers.deltaPct) : ''}
 						href="/admin/customers"
 					/>
 					<DashboardStatCard
 						label="Downloads"
 						value={fmtNumber(overview.downloads)}
 						icon={Download}
-						subtext={`${data.summary.downloads.today} today`}
+						subtext={growth ? trendText(growth.downloads.deltaPct) : ''}
 						href="/admin/downloads"
 					/>
 					<DashboardStatCard
 						label="Products"
 						value={fmtNumber(overview.products)}
 						icon={Package}
-						subtext={`${data.summary.products.inactive} inactive`}
+						subtext={`${data.summary.products.published} published, ${data.summary.products.inactive} inactive`}
 						href="/admin/products"
 					/>
-					<EmailStatsCard label="Emails" value={fmtNumber(overview.emails)} icon={Mail} />
 					<EmailStatsCard label="Conversion Rate" value={fmtPercent(overview.conversionRate)} icon={Percent} />
-					<EmailStatsCard label="Avg Order Value" value={formatCurrency(overview.averageOrderValue)} icon={Receipt} />
 				</section>
 
-				<section class="breakdown-strip" aria-label="Detailed metrics breakdown">
-					<div class="bs-group">
-						<span class="bs-label">Revenue</span>
-						<span class="bs-item bs-paid">Paid: {data.summary.revenue.paidOrders}</span>
-						<span class="bs-item bs-pending">Pending: {data.summary.revenue.pendingPayments}</span>
-						<span class="bs-item bs-failed">Failed: {data.summary.revenue.failedPayments}</span>
-					</div>
-					<div class="bs-divider" aria-hidden="true"></div>
-					<div class="bs-group">
-						<span class="bs-label">Customers</span>
-						<span class="bs-item">Verified: {data.summary.customers.verified}</span>
-						<span class="bs-item">Unverified: {data.summary.customers.unverified}</span>
-					</div>
-					<div class="bs-divider" aria-hidden="true"></div>
-					<div class="bs-group">
-						<span class="bs-label">Downloads</span>
-						<span class="bs-item bs-active">Active: {data.summary.downloads.activeTokens}</span>
-						<span class="bs-item bs-expired">Expired: {data.summary.downloads.expiredTokens}</span>
-					</div>
-					<div class="bs-divider" aria-hidden="true"></div>
-					<div class="bs-group">
-						<span class="bs-label">Products</span>
-						<span class="bs-item">Published: {data.summary.products.published}</span>
-						<span class="bs-item bs-inactive">Inactive: {data.summary.products.inactive}</span>
+				<!-- Revenue & Sales -->
+				<section class="dashboard-group">
+					<h2 class="group-title">Revenue & Sales</h2>
+					<div class="charts-grid">
+						{#if revenue}
+							<AdminSection title="Revenue over time">
+								<AnalyticsChart type="line" data={toChart(revenue.trend)} color="#5a7a1a" valueFormatter={formatCurrency} loading={analyticsLoading} ariaLabel="Revenue over time" />
+								<div class="mini-stats">
+									<span><strong>{formatCurrency(revenue.paid)}</strong> Paid</span>
+									<span><strong>{formatCurrency(revenue.pending)}</strong> Pending</span>
+									<span><strong>{formatCurrency(revenue.failed)}</strong> Failed</span>
+									<span><strong>{formatCurrency(revenue.refunded)}</strong> Refunded</span>
+								</div>
+							</AdminSection>
+						{/if}
+						{#if orders}
+							<AdminSection title="Orders over time">
+								<AnalyticsChart type="bar" data={toChart(orders.daily)} color="#3b82f6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Orders over time" />
+								<div class="mini-stats">
+									<span><strong>{orders.paid}</strong> Paid</span>
+									<span><strong>{orders.pending}</strong> Pending</span>
+									<span><strong>{orders.failed}</strong> Failed</span>
+									<span><strong>{orders.refunded}</strong> Refunded</span>
+								</div>
+							</AdminSection>
+						{/if}
+						{#if customers}
+							<AdminSection title="Customer growth">
+								<AnalyticsChart type="line" data={toChart(customers.trend)} color="#8b5cf6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Customer growth" />
+								<div class="mini-stats">
+									<span><strong>{fmtNumber(customers.newCustomers)}</strong> New</span>
+									<span><strong>{fmtNumber(customers.returning)}</strong> Returning</span>
+									<span><strong>{fmtNumber(customers.verified)}</strong> Verified</span>
+								</div>
+							</AdminSection>
+						{/if}
 					</div>
 				</section>
 
-				{#if growth}
-					<AdminSection title="Growth (current vs previous period)">
-						<div class="growth-grid">
-							<AnalyticsComparisonCard label="Revenue" metric={growth.revenue} icon={IndianRupee} valueFormatter={formatCurrency} />
-							<AnalyticsComparisonCard label="Customers" metric={growth.customers} icon={Users} valueFormatter={fmtNumber} />
-							<AnalyticsComparisonCard label="Orders" metric={growth.orders} icon={ShoppingCart} valueFormatter={fmtNumber} />
-							<AnalyticsComparisonCard label="Downloads" metric={growth.downloads} icon={Download} valueFormatter={fmtNumber} />
+				<!-- Product Insights -->
+				<section class="dashboard-group">
+					<h2 class="group-title">Product Insights</h2>
+					<div class="charts-grid">
+						{#if products && products.topSelling.length > 0}
+							<AdminSection title="Top selling products">
+								<AnalyticsChart type="bar" data={toNamed(products.topSelling)} color="#5a7a1a" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Top selling products by orders" />
+							</AdminSection>
+						{/if}
+						{#if products && products.mostDownloaded.length > 0}
+							<AdminSection title="Most downloaded products">
+								<AnalyticsChart type="bar" data={toNamed(products.mostDownloaded)} color="#3b82f6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Most downloaded products" />
+							</AdminSection>
+						{/if}
+					</div>
+				</section>
+
+				<!-- Customer Insights -->
+				{#if customers}
+					<AdminSection title="Customer Insights">
+						<div class="insight-grid">
+							<EmailStatsCard label="New Customers" value={fmtNumber(customers.newCustomers)} icon={Users} variant="success" />
+							<EmailStatsCard label="Returning" value={fmtNumber(customers.returning)} icon={Users} />
+							<EmailStatsCard
+								label="Email Verified"
+								value={customers.total > 0 ? `${((customers.verified / customers.total) * 100).toFixed(0)}%` : '—'}
+								icon={Mail}
+								variant="success"
+							/>
+							<EmailStatsCard label="OAuth Accounts" value={fmtNumber(customers.oauth)} icon={Users} variant="warning" />
 						</div>
 					</AdminSection>
 				{/if}
 
-				<div class="charts-grid">
-					{#if revenue}
-						<AdminSection title="Revenue over time">
-							<AnalyticsChart type="line" data={toChart(revenue.trend)} color="#5a7a1a" valueFormatter={formatCurrency} loading={analyticsLoading} ariaLabel="Revenue over time" />
-							<div class="mini-stats">
-								<span><strong>{formatCurrency(revenue.paid)}</strong> Paid</span>
-								<span><strong>{formatCurrency(revenue.pending)}</strong> Pending</span>
-								<span><strong>{formatCurrency(revenue.failed)}</strong> Failed</span>
-								<span><strong>{formatCurrency(revenue.refunded)}</strong> Refunded</span>
-							</div>
-						</AdminSection>
-					{/if}
+				<!-- Communication Summary -->
+				{#if traffic}
+					<AdminSection title="Communication Summary">
+						<div class="insight-grid">
+							<EmailStatsCard label="Contact Messages" value={fmtNumber(traffic.contacts)} icon={MessageSquare} />
+							<EmailStatsCard label="Feedback" value={fmtNumber(traffic.feedback)} icon={Mail} />
+							<EmailStatsCard label="Newsletter Signups" value={fmtNumber(traffic.newsletter)} icon={Mail} variant="success" />
+							<EmailStatsCard label="Career Applications" value={fmtNumber(traffic.careers)} icon={Users} />
+						</div>
+					</AdminSection>
+				{/if}
 
-					{#if orders}
-						<AdminSection title="Orders over time">
-							<AnalyticsChart type="bar" data={toChart(orders.daily)} color="#3b82f6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Orders over time" />
-							<div class="mini-stats">
-								<span><strong>{orders.paid}</strong> Paid</span>
-								<span><strong>{orders.pending}</strong> Pending</span>
-								<span><strong>{orders.failed}</strong> Failed</span>
-								<span><strong>{orders.refunded}</strong> Refunded</span>
-							</div>
-						</AdminSection>
-					{/if}
-
-					{#if customers}
-						<AdminSection title="Customer growth">
-							<AnalyticsChart type="line" data={toChart(customers.trend)} color="#8b5cf6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Customer growth" />
-							<div class="mini-stats">
-								<span><strong>{customers.verified}</strong> Verified</span>
-								<span><strong>{customers.unverified}</strong> Unverified</span>
-								<span><strong>{customers.oauth}</strong> OAuth</span>
-								<span><strong>{customers.returning}</strong> Returning</span>
-							</div>
-						</AdminSection>
-					{/if}
-
-					{#if emails}
-						<AdminSection title="Email activity">
-							<AnalyticsChart type="line" data={toChart(emails.daily)} color="#14b8a6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Email activity" />
-							<div class="mini-stats">
-								<span><strong>{emails.sent}</strong> Sent</span>
-								<span><strong>{emails.failed}</strong> Failed</span>
-								<span><strong>{emails.queued}</strong> Queued</span>
-								<span><strong>{emails.successRate}%</strong> Success</span>
-							</div>
-						</AdminSection>
-					{/if}
-
-					{#if downloads}
-						<AdminSection title="Downloads over time">
-							<AnalyticsChart type="line" data={toChart(downloads.trend)} color="#d97706" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Downloads over time" />
-						</AdminSection>
-					{/if}
-
-					{#if products}
-						<AdminSection title="Top selling products">
-							<AnalyticsChart type="bar" data={toNamed(products.topSelling)} color="#5a7a1a" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Top selling products by orders" />
-							<div class="mini-stats">
-								<span><strong>{products.published}</strong> Published</span>
-								<span><strong>{products.draft}</strong> Draft</span>
-								<span><strong>{products.archived}</strong> Archived</span>
-							</div>
-						</AdminSection>
-					{/if}
-
-					{#if products && products.mostDownloaded.length > 0}
-						<AdminSection title="Most downloaded products">
-							<AnalyticsChart type="bar" data={toNamed(products.mostDownloaded)} color="#3b82f6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Most downloaded products" />
-						</AdminSection>
-					{/if}
-
-					{#if emails && emails.byType.length > 0}
-						<AdminSection title="Email types">
-							<AnalyticsChart type="pie" data={emailTypeChart(emails.byType)} valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Email types breakdown" />
-						</AdminSection>
-					{/if}
-
-					{#if traffic}
-						<AdminSection title="Internal traffic">
-							<AnalyticsChart type="bar" data={traffic.byCategory.map((c) => ({ label: c.category, value: c.count }))} color="#64748b" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Internal traffic by category" />
-						</AdminSection>
-					{/if}
-				</div>
+				<!-- Recent Activity -->
+				<AdminSection title="Recent Activity">
+					<ActivityTimeline entries={data.recentActivity || []} />
+				</AdminSection>
 
 				<!-- System Health -->
 				<section class="health-strip" aria-label="System health">
 					<span class="health-strip-label">System</span>
-					{#each Object.entries(data.systemHealth) as [key, status]}
+					{#each ['backend', 'database', 'storage', 'email', 'payments'] as key}
+						{@const status = data.systemHealth[key as keyof typeof data.systemHealth] || 'unknown'}
 						<span class="health-strip-item">
 							<span class="hs-dot" style="background: {healthColor(status)};" aria-hidden="true"></span>
 							{systemLabel(key)}
@@ -396,69 +374,26 @@
 	.kpi-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		gap: 0.75rem;
-		margin-bottom: 0.75rem;
-	}
-
-	.breakdown-strip {
-		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0.5rem 1rem;
-		padding: 0.65rem 1rem;
-		background: var(--color-glass-bg);
-		border: 1px solid var(--color-glass-border);
-		border-radius: 12px;
-		margin-bottom: 1.5rem;
-		font-size: 0.8rem;
-	}
-
-	.bs-group {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		flex-wrap: wrap;
-	}
-
-	.bs-label {
-		font-weight: 600;
-		opacity: 0.5;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-		font-size: 0.72rem;
-		margin-right: 0.15rem;
-	}
-
-	.bs-item {
-		opacity: 0.7;
-	}
-
-	.bs-paid { color: #5a7a1a; font-weight: 600; }
-	.bs-pending { color: #3b82f6; font-weight: 600; }
-	.bs-failed { color: #ef4444; font-weight: 600; }
-	.bs-active { color: #22c55e; font-weight: 600; }
-	.bs-expired { color: #ef4444; font-weight: 600; }
-	.bs-inactive { color: #ef4444; font-weight: 600; }
-
-	.bs-divider {
-		width: 1px;
-		height: 1.2rem;
-		background: var(--color-glass-border);
-		flex-shrink: 0;
-	}
-
-	.growth-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 		gap: 1rem;
+		margin-bottom: 2rem;
+	}
+
+	.dashboard-group {
+		margin-bottom: 2rem;
+	}
+
+	.group-title {
+		font-family: var(--font-heading);
+		font-size: 1.1rem;
+		font-weight: 700;
+		margin: 0 0 1rem;
+		color: var(--color-primary-green);
 	}
 
 	.charts-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
 		gap: 1.25rem;
-		margin-top: 1.5rem;
-		margin-bottom: 1.5rem;
 	}
 
 	.mini-stats {
@@ -466,13 +401,19 @@
 		flex-wrap: wrap;
 		gap: 1rem;
 		margin-top: 0.85rem;
-		font-size: 0.82rem;
-		opacity: 0.7;
+		font-size: 0.8rem;
+		opacity: 0.6;
 	}
 
 	.mini-stats strong {
 		font-weight: 700;
 		opacity: 0.9;
+	}
+
+	.insight-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		gap: 0.75rem;
 	}
 
 	.analytics-error {
@@ -491,7 +432,7 @@
 		background: var(--color-glass-bg);
 		border: 1px solid var(--color-glass-border);
 		border-radius: 12px;
-		margin-top: 1rem;
+		margin-top: 0.5rem;
 		font-size: 0.8rem;
 	}
 
@@ -537,13 +478,8 @@
 			grid-template-columns: 1fr;
 		}
 
-		.breakdown-strip {
-			flex-direction: column;
-			align-items: flex-start;
-		}
-
-		.bs-divider {
-			display: none;
+		.insight-grid {
+			grid-template-columns: repeat(2, 1fr);
 		}
 	}
 </style>
