@@ -149,6 +149,15 @@
 		return () => clearTimeout(timer);
 	});
 
+	// Lock body scroll when search is open
+	$effect(() => {
+		if (open) {
+			document.body.style.overflow = 'hidden';
+		} else {
+			document.body.style.overflow = '';
+		}
+	});
+
 	// Automatically focus the input when popover is toggled open
 	$effect(() => {
 		if (open && inputEl) {
@@ -233,6 +242,7 @@
 
 	onDestroy(() => {
 		document.removeEventListener('click', handleOutsideClick);
+		document.body.style.overflow = '';
 	});
 </script>
 
@@ -250,7 +260,6 @@
 	{#if open}
 		<div class="search-dropdown" role="dialog" aria-label="Search results" tabindex="-1" style={dropdownStyle.top ? `top:${dropdownStyle.top};right:${dropdownStyle.right}` : ''} use:portal bind:this={dropdownEl}>
 			<div class="search-input-wrapper">
-				<Search size={18} class="search-input-icon" aria-hidden="true" />
 				<input
 					type="text"
 					placeholder="Search products, orders, customers..."
@@ -397,17 +406,9 @@
 		align-items: center;
 	}
 
-	.search-input-icon {
-		position: absolute;
-		left: 1.5rem;
-		color: var(--color-text);
-		opacity: 0.45;
-		pointer-events: none;
-	}
-
 	.search-input {
 		width: 100%;
-		padding: 0.625rem 2.5rem 0.625rem 2.5rem;
+		padding: 0.625rem 0.875rem;
 		border: 1px solid var(--color-glass-border);
 		border-radius: 10px;
 		background: var(--color-glass-bg);
