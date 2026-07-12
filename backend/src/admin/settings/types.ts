@@ -1,5 +1,4 @@
 export type SettingsGroup =
-  | 'general'
   | 'brand'
   | 'email'
   | 'payments'
@@ -10,17 +9,6 @@ export type SettingsGroup =
   | 'notifications'
   | 'seo'
   | 'legal';
-
-export interface GeneralSettings {
-  applicationName: string;
-  companyName: string;
-  supportEmail: string;
-  contactEmail: string;
-  timezone: string;
-  language: string;
-  currency: string;
-  dateFormat: string;
-}
 
 export interface SocialLink {
   label: string;
@@ -126,7 +114,6 @@ export interface LegalSettings {
 }
 
 export type SettingsValueMap = {
-  general: GeneralSettings;
   brand: BrandSettings;
   email: EmailSettings;
   payments: PaymentsSettings;
@@ -153,16 +140,6 @@ const EMPTY_SOCIAL: SocialLink[] = [];
 const EMPTY_KEYWORDS: string[] = [];
 
 export const DEFAULT_SETTINGS: SettingsValueMap = {
-  general: {
-    applicationName: 'Tarkify',
-    companyName: 'Tarkify',
-    supportEmail: 'support@tarkify.com',
-    contactEmail: 'contact@tarkify.com',
-    timezone: 'UTC',
-    language: 'en',
-    currency: 'INR',
-    dateFormat: 'YYYY-MM-DD',
-  },
   brand: {
     logoUrl: '',
     faviconUrl: '',
@@ -250,7 +227,6 @@ export const DEFAULT_SETTINGS: SettingsValueMap = {
 };
 
 export const SETTINGS_GROUPS: SettingsGroup[] = [
-  'general',
   'brand',
   'email',
   'payments',
@@ -264,7 +240,6 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
 ];
 
 export const SETTINGS_GROUP_LABELS: Record<SettingsGroup, string> = {
-  general: 'General',
   brand: 'Brand',
   email: 'Email',
   payments: 'Payments',

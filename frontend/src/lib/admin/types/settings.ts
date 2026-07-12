@@ -1,5 +1,4 @@
 export type SettingsGroup =
-	| 'general'
 	| 'brand'
 	| 'email'
 	| 'payments'
@@ -14,17 +13,6 @@ export type SettingsGroup =
 export interface SocialLink {
 	label: string;
 	url: string;
-}
-
-export interface GeneralSettings {
-	applicationName: string;
-	companyName: string;
-	supportEmail: string;
-	contactEmail: string;
-	timezone: string;
-	language: string;
-	currency: string;
-	dateFormat: string;
 }
 
 export interface BrandSettings {
@@ -126,7 +114,6 @@ export interface LegalSettings {
 }
 
 export interface AllSettings {
-	general: GeneralSettings;
 	brand: BrandSettings;
 	email: EmailSettings;
 	payments: PaymentsSettings;
@@ -140,7 +127,6 @@ export interface AllSettings {
 }
 
 export const SETTINGS_GROUPS: SettingsGroup[] = [
-	'general',
 	'brand',
 	'email',
 	'payments',
@@ -154,7 +140,6 @@ export const SETTINGS_GROUPS: SettingsGroup[] = [
 ];
 
 export const SETTINGS_GROUP_LABELS: Record<SettingsGroup, string> = {
-	general: 'General',
 	brand: 'Brand',
 	email: 'Email',
 	payments: 'Payments',
@@ -228,33 +213,6 @@ const ROBOTS_OPTIONS: FieldOption[] = [
 ];
 
 export const SETTINGS_SECTIONS: SectionConfig[] = [
-	{
-		id: 'general',
-		label: 'General',
-		description: 'Core application identity and localization settings.',
-		fields: [
-			{ key: 'applicationName', label: 'Application Name', type: 'text', required: true },
-			{ key: 'companyName', label: 'Company Name', type: 'text', required: true },
-			{ key: 'supportEmail', label: 'Support Email', type: 'email', required: true },
-			{ key: 'contactEmail', label: 'Contact Email', type: 'email', required: true },
-			{
-				key: 'timezone',
-				label: 'Timezone',
-				type: 'text',
-				required: true,
-				placeholder: 'e.g. UTC, Asia/Kolkata'
-			},
-			{ key: 'language', label: 'Language', type: 'text', required: true, placeholder: 'e.g. en' },
-			{ key: 'currency', label: 'Currency', type: 'text', required: true, placeholder: 'e.g. INR' },
-			{
-				key: 'dateFormat',
-				label: 'Date Format',
-				type: 'text',
-				required: true,
-				placeholder: 'e.g. YYYY-MM-DD'
-			}
-		]
-	},
 	{
 		id: 'brand',
 		label: 'Brand',

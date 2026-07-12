@@ -2,7 +2,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { beforeNavigate } from '$app/navigation';
 	import {
-		SlidersHorizontal,
 		Palette,
 		Mail,
 		CreditCard,
@@ -24,7 +23,6 @@
 	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
 
 	const ICONS: Record<SettingsGroup, Component<any>> = {
-		general: SlidersHorizontal,
 		brand: Palette,
 		email: Mail,
 		payments: CreditCard,
@@ -45,7 +43,7 @@
 
 	let saved = $state<Record<string, any> | null>(null);
 	let draft = $state<Record<string, any> | null>(null);
-	let active = $state<SettingsGroup>('general');
+	let active = $state<SettingsGroup>('brand');
 	let loading = $state(true);
 	let loadError = $state<string | null>(null);
 	let states = $state<Record<string, GroupState>>({});

@@ -13,7 +13,6 @@ import type { AuditEvent } from '../../audit/types.js';
 type AuditMap = Record<SettingsGroup, AuditEvent>;
 
 export const SETTINGS_AUDIT_EVENTS: AuditMap = {
-  general: 'general_updated',
   brand: 'brand_updated',
   email: 'email_updated',
   payments: 'payments_updated',

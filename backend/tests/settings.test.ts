@@ -18,7 +18,7 @@ function mockSettingsRows(rows: Array<{ key: string; value: Record<string, unkno
       return Promise.resolve({ rows, rowCount: rows.length });
     }
     if (text.includes('INSERT INTO settings')) {
-      const key = text.includes('RETURNING') ? rows[0]?.key ?? 'general' : 'general';
+      const key = text.includes('RETURNING') ? rows[0]?.key ?? 'brand' : 'brand';
       return Promise.resolve({ rows: [{ id: 'id-1', key, value: {}, updated_at: new Date(), updated_by: 'u-1' }], rowCount: 1 });
     }
     return Promise.resolve({ rows: [], rowCount: 0 });
@@ -33,7 +33,7 @@ describe('Settings validation', () => {
 
   it('rejects an invalid email', async () => {
     const { parseGroup } = await import('../src/admin/settings/validation.ts');
-    expect(() => parseGroup('general', { supportEmail: 'nope' })).toThrow();
+    expect(() => parseGroup('email', { adminNotificationEmail: 'nope' })).toThrow();
   });
 
   it('rejects an invalid url', async () => {
@@ -66,33 +66,33 @@ describe('Settings service', () => {
     mockSettingsRows([]);
     const svc = await import('../src/admin/settings/service.ts');
     const all = await svc.getAllSettings();
-    expect(all.general.applicationName).toBe('Tarkify');
+    expect(all.email.adminNotificationEmail).toBe('admin@tarkify.com');
     expect(all.brand.primaryColor).toBe('#7b904b');
     expect(all.features.analytics).toBe(true);
   });
 
   it('merges stored values over defaults', async () => {
-    mockSettingsRows([{ key: 'general', value: { applicationName: 'CustomApp' } }]);
+    mockSettingsRows([{ key: 'email', value: { adminNotificationEmail: 'custom@x.com' } }]);
     const svc = await import('../src/admin/settings/service.ts');
-    const general = await svc.getSettings('general');
-    expect(general.applicationName).toBe('CustomApp');
-    expect(general.companyName).toBe('Tarkify');
+    const email = await svc.getSettings('email');
+    expect(email.adminNotificationEmail).toBe('custom@x.com');
+    expect(email.defaultFromName).toBe('Tarkify');
   });
 
   it('persists and audits an update', async () => {
     mockSettingsRows([]);
     const svc = await import('../src/admin/settings/service.ts');
     const updated = await svc.updateSettings(
-      'general',
-      { applicationName: 'NewName', companyName: 'NewCo', supportEmail: 'a@b.com', contactEmail: 'c@d.com', timezone: 'UTC', language: 'en', currency: 'INR', dateFormat: 'YYYY-MM-DD' },
+      'email',
+      { defaultFromName: 'NewName', replyToName: 'NewCo', adminNotificationEmail: 'a@b.com', emailFooter: '', signature: '', enableEmailSending: true, enableTestEmails: false },
       'admin-user-1',
       '127.0.0.1',
       'agent',
     );
-    expect(updated.applicationName).toBe('NewName');
+    expect(updated.defaultFromName).toBe('NewName');
 
     const auditInsert = mockDb.queries.find(
-      (q: any) => q.text.includes('INSERT INTO audit_logs') && q.params?.[1] === 'general_updated',
+      (q: any) => q.text.includes('INSERT INTO audit_logs') && q.params?.[1] === 'email_updated',
     );
     expect(auditInsert).toBeDefined();
 

@@ -33,17 +33,6 @@ const socialLinkSchema = z.object({
 
 // ─── Per-group schemas ──────────────────────────────────────────────────────
 
-export const generalSchema = z.object({
-  applicationName: z.string().trim().min(1, 'Application name is required').max(120, 'Name is too long'),
-  companyName: z.string().trim().min(1, 'Company name is required').max(160, 'Name is too long'),
-  supportEmail: requiredEmail,
-  contactEmail: requiredEmail,
-  timezone: z.string().trim().min(1, 'Timezone is required').max(64, 'Timezone is too long'),
-  language: z.string().trim().min(2, 'Language code is required').max(10, 'Language code is too long'),
-  currency: z.string().trim().min(3, 'Currency code is required').max(3, 'Use a 3-letter ISO code'),
-  dateFormat: z.string().trim().min(1, 'Date format is required').max(40, 'Format is too long'),
-});
-
 export const brandSchema = z.object({
   logoUrl: urlOrEmpty,
   faviconUrl: urlOrEmpty,
@@ -139,7 +128,6 @@ export const legalSchema = z.object({
 });
 
 export const groupSchemas: Record<SettingsGroup, z.ZodTypeAny> = {
-  general: generalSchema,
   brand: brandSchema,
   email: emailSchema,
   payments: paymentsSchema,

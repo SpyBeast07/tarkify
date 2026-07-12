@@ -49,7 +49,6 @@ export const AUDIT_EVENTS = {
 
   EMAIL_RESENT: 'email_resent',
   EMAIL_TEST_SENT: 'email_test_sent',
-  GENERAL_UPDATED: 'general_updated',
   BRAND_UPDATED: 'brand_updated',
   EMAIL_UPDATED: 'email_updated',
   PAYMENTS_UPDATED: 'payments_updated',
