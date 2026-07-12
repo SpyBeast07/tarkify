@@ -9,20 +9,6 @@ const app = new Hono<AppEnv>();
 
 app.use('*', requireAuth, requireRole('admin'));
 
-function clientIp(c: import('hono').Context): string | null {
-  return (
-    c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ||
-    c.req.header('x-real-ip') ||
-    null
-  );
-}
-
-function getUser(c: import('hono').Context<AppEnv>) {
-  const user = c.get('user');
-  if (!user) throw new Error('User not found in context');
-  return user;
-}
-
 function parseQuery(c: import('hono').Context): {
   params: Record<string, unknown>;
   error: string | null;
@@ -39,9 +25,7 @@ app.get('/', async (c) => {
   const { params, error } = parseQuery(c);
   if (error) return errorResponse(c, 'VALIDATION_ERROR', error, 400);
   try {
-    const user = getUser(c);
     const result = await audit.listAuditLogs(params as AuditListParams);
-    await audit.recordAuditViewed(user.id, clientIp(c), c.req.header('user-agent'));
     return c.json(result);
   } catch (err) {
     console.error('[admin/audit] Failed to list audit logs:', err);

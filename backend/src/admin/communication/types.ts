@@ -173,10 +173,6 @@ export interface CommunicationDetailResponse<T> {
 }
 
 export type CommunicationAction =
-  | 'contact_viewed'
-  | 'feedback_viewed'
-  | 'newsletter_viewed'
-  | 'careers_viewed'
   | 'contact_replied'
   | 'feedback_replied'
   | 'newsletter_replied'

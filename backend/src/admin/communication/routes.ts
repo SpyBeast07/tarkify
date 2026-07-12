@@ -112,11 +112,7 @@ communication.get('/contact', async (c) => {
 communication.get('/contact/:id', async (c) => {
   try {
     const id = c.req.param('id');
-    const user = getUser(c);
-    const data = await commService.getContact(id, user.id,
-      c.req.header('x-forwarded-for') || c.req.header('x-real-ip'),
-      c.req.header('user-agent'),
-    );
+    const data = await commService.getContact(id);
     if (!data) return errorResponse(c, 'NOT_FOUND', 'Contact message not found', 404);
     return c.json(data);
   } catch (err) {
@@ -203,11 +199,7 @@ communication.get('/feedback', async (c) => {
 communication.get('/feedback/:id', async (c) => {
   try {
     const id = c.req.param('id');
-    const user = getUser(c);
-    const data = await commService.getFeedback(id, user.id,
-      c.req.header('x-forwarded-for') || c.req.header('x-real-ip'),
-      c.req.header('user-agent'),
-    );
+    const data = await commService.getFeedback(id);
     if (!data) return errorResponse(c, 'NOT_FOUND', 'Feedback not found', 404);
     return c.json(data);
   } catch (err) {
@@ -294,11 +286,7 @@ communication.get('/newsletter', async (c) => {
 communication.get('/newsletter/:id', async (c) => {
   try {
     const id = c.req.param('id');
-    const user = getUser(c);
-    const data = await commService.getNewsletter(id, user.id,
-      c.req.header('x-forwarded-for') || c.req.header('x-real-ip'),
-      c.req.header('user-agent'),
-    );
+    const data = await commService.getNewsletter(id);
     if (!data) return errorResponse(c, 'NOT_FOUND', 'Newsletter subscriber not found', 404);
     return c.json(data);
   } catch (err) {
@@ -357,11 +345,7 @@ communication.get('/careers', async (c) => {
 communication.get('/careers/:id', async (c) => {
   try {
     const id = c.req.param('id');
-    const user = getUser(c);
-    const data = await commService.getCareer(id, user.id,
-      c.req.header('x-forwarded-for') || c.req.header('x-real-ip'),
-      c.req.header('user-agent'),
-    );
+    const data = await commService.getCareer(id);
     if (!data) return errorResponse(c, 'NOT_FOUND', 'Career application not found', 404);
     return c.json(data);
   } catch (err) {

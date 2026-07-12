@@ -1,5 +1,4 @@
 import * as paymentRepository from './repository.js';
-import { recordEvent } from '../../audit/service.js';
 import type { PaymentListParams, PaymentListResponse, PaymentListItem, PaymentDetail, PaymentAuditEntry, RefundInfo, ReceiptInfo } from './types.js';
 
 function toListResponse(
@@ -40,28 +39,6 @@ export async function getPayment(id: string): Promise<{
   ]);
 
   return { payment, refund, receipt, audit };
-}
-
-export async function recordPaymentViewed(
-  paymentId: string,
-  userId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(userId, 'payment_viewed' as any, {
-    payment_id: paymentId,
-  }, ipAddress, userAgent);
-}
-
-export async function recordReceiptViewed(
-  paymentId: string,
-  userId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(userId, 'receipt_viewed' as any, {
-    receipt_id: paymentId,
-  }, ipAddress, userAgent);
 }
 
 export async function getProductOptions(): Promise<{ id: string; name: string }[]> {

@@ -25,12 +25,6 @@ function getUser(c: import('hono').Context<AppEnv>) {
 app.get('/', async (c) => {
   try {
     const data = await settings.getAllSettings();
-    const user = getUser(c);
-    await settings.recordSettingsViewed(
-      user.id,
-      clientIp(c),
-      c.req.header('user-agent'),
-    );
     return c.json(data);
   } catch (err) {
     console.error('[admin/settings] Failed to load settings:', err);

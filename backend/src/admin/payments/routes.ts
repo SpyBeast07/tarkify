@@ -45,13 +45,6 @@ payments.get('/:id', async (c) => {
     if (!data) {
       return errorResponse(c, 'NOT_FOUND', 'Payment not found', 404);
     }
-    const user = c.get('user');
-    await paymentService.recordPaymentViewed(
-      id,
-      user!.id,
-      c.req.header('x-forwarded-for') || c.req.header('x-real-ip'),
-      c.req.header('user-agent'),
-    );
     return c.json(data);
   } catch (err) {
     console.error('[admin/payments] Failed to get payment:', err);

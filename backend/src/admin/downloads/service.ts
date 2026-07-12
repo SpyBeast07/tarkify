@@ -101,13 +101,4 @@ export async function regenerateToken(
   return tokenData;
 }
 
-export async function recordDownloadViewed(
-  downloadId: string,
-  userId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(userId, 'download_viewed' as any, {
-    download_token_id: downloadId,
-  }, ipAddress, userAgent);
-}
+

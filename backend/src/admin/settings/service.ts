@@ -66,10 +66,4 @@ export async function updateSettings<K extends SettingsGroup>(
   return parsed;
 }
 
-export async function recordSettingsViewed(
-  adminUserId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(adminUserId, 'settings_viewed', {}, ipAddress, userAgent);
-}
+

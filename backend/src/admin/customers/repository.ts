@@ -246,7 +246,7 @@ export async function getCustomerAuditLog(userId: string): Promise<CustomerAudit
     WHERE a.metadata->>'target_user_id' = $1
        OR (a.event IN ('account_suspended', 'account_reactivated', 'account_deleted',
                        'verification_resent', 'password_reset_requested',
-                       'customer_sessions_revoked', 'customer_viewed')
+                       'customer_sessions_revoked')
            AND a.metadata->>'target_user_id' = $1)
     ORDER BY a.created_at DESC
     LIMIT 100`,

@@ -7,9 +7,6 @@ import type {
   AuditOptions,
   AuditStats
 } from './types.js';
-import { recordEvent } from '../../audit/service.js';
-import type { AuditEvent } from '../../audit/types.js';
-
 const RELATED_KEYS = [
   'target_user_id',
   'target',
@@ -70,10 +67,4 @@ export function streamAuditRows(
   return repo.streamAuditRows(params, chunkSize);
 }
 
-export async function recordAuditViewed(
-  adminUserId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null
-): Promise<void> {
-  await recordEvent(adminUserId, 'audit_log_viewed' as AuditEvent, {}, ipAddress, userAgent);
-}
+

@@ -28,7 +28,7 @@ The platform preserves full backward compatibility with historical **guest purch
 | Downloads | ✅ Complete | Token-based, time-limited, path-traversal protected. |
 | Purchase Linking | ✅ Complete | Guest → user linking on email verification. |
 | Security Hardening | ✅ Complete | CSP, CORS, rate limiting, headers, input sanitization. |
-| Audit Logging | ✅ Complete | `audit_logs` table + service. |
+| Audit Logging | ✅ Complete | `audit_logs` table + service. Records only meaningful mutations — no page views. |
 | Deployment | ✅ Complete | Docker, Compose, migration runner, health/readiness. |
 | Admin Portal | ⏳ Planned | Next phase. See `ADMIN_PORTAL_ARCHITECTURE.md`. |
 | Analytics | ✅ Embedded in Dashboard | Integrated into `/admin` — no standalone Analytics page. |

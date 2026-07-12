@@ -17,11 +17,6 @@ export const AUDIT_EVENTS = {
   PRODUCT_ARCHIVED: 'product_archived',
   PRODUCT_RESTORED: 'product_restored',
 
-  ORDER_VIEWED: 'order_viewed',
-  PAYMENT_VIEWED: 'payment_viewed',
-  RECEIPT_VIEWED: 'receipt_viewed',
-
-  CUSTOMER_VIEWED: 'customer_viewed',
   CUSTOMER_SUSPENDED: 'customer_suspended',
   CUSTOMER_REACTIVATED: 'customer_reactivated',
   CUSTOMER_DELETED: 'customer_deleted',
@@ -29,14 +24,9 @@ export const AUDIT_EVENTS = {
   PASSWORD_RESET_REQUESTED: 'password_reset_requested',
   CUSTOMER_SESSIONS_REVOKED: 'customer_sessions_revoked',
 
-  DOWNLOAD_VIEWED: 'download_viewed',
   TOKEN_REVOKED: 'token_revoked',
   TOKEN_REGENERATED: 'token_regenerated',
 
-  CONTACT_VIEWED: 'contact_viewed',
-  FEEDBACK_VIEWED: 'feedback_viewed',
-  NEWSLETTER_VIEWED: 'newsletter_viewed',
-  CAREERS_VIEWED: 'careers_viewed',
   CONTACT_REPLIED: 'contact_replied',
   FEEDBACK_REPLIED: 'feedback_replied',
   CONTACT_STATUS_CHANGED: 'contact_status_changed',
@@ -57,16 +47,8 @@ export const AUDIT_EVENTS = {
   TAG_ADDED: 'tag_added',
   TAG_REMOVED: 'tag_removed',
 
-  EMAIL_VIEWED: 'email_viewed',
   EMAIL_RESENT: 'email_resent',
   EMAIL_TEST_SENT: 'email_test_sent',
-  TEMPLATE_VIEWED: 'template_viewed',
-  PROVIDER_VIEWED: 'provider_viewed',
-
-  ANALYTICS_VIEWED: 'analytics_viewed',
-  SYSTEM_HEALTH_VIEWED: 'system_health_viewed',
-
-  SETTINGS_VIEWED: 'settings_viewed',
   GENERAL_UPDATED: 'general_updated',
   BRAND_UPDATED: 'brand_updated',
   EMAIL_UPDATED: 'email_updated',
@@ -79,7 +61,6 @@ export const AUDIT_EVENTS = {
   SEO_UPDATED: 'seo_updated',
   LEGAL_UPDATED: 'legal_updated',
 
-  AUDIT_LOG_VIEWED: 'audit_log_viewed',
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];

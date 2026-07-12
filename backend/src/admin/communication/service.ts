@@ -34,7 +34,7 @@ export async function listContacts(params: CommunicationListParams): Promise<Com
   return toListResponse(items, total, page, perPage);
 }
 
-export async function getContact(id: string, userId: string, ipAddress?: string | null, userAgent?: string | null): Promise<CommunicationDetailResponse<ContactMessageDetail> | null> {
+export async function getContact(id: string): Promise<CommunicationDetailResponse<ContactMessageDetail> | null> {
   const record = await repo.getContactMessage(id);
   if (!record) return null;
   const [notes, tags, audit] = await Promise.all([
@@ -42,7 +42,6 @@ export async function getContact(id: string, userId: string, ipAddress?: string 
     repo.getRecordTags('contact', id),
     repo.getAuditLog('contact', id),
   ]);
-  await recordAudit(userId, 'contact_viewed', 'contact', id, {}, ipAddress, userAgent);
   return { record, notes, tags, audit };
 }
 
@@ -96,7 +95,7 @@ export async function listFeedback(params: CommunicationListParams): Promise<Com
   return toListResponse(items, total, page, perPage);
 }
 
-export async function getFeedback(id: string, userId: string, ipAddress?: string | null, userAgent?: string | null): Promise<CommunicationDetailResponse<FeedbackDetail> | null> {
+export async function getFeedback(id: string): Promise<CommunicationDetailResponse<FeedbackDetail> | null> {
   const record = await repo.getFeedback(id);
   if (!record) return null;
   const [notes, tags, audit] = await Promise.all([
@@ -104,7 +103,6 @@ export async function getFeedback(id: string, userId: string, ipAddress?: string
     repo.getRecordTags('feedback', id),
     repo.getAuditLog('feedback', id),
   ]);
-  await recordAudit(userId, 'feedback_viewed', 'feedback', id, {}, ipAddress, userAgent);
   return { record, notes, tags, audit };
 }
 
@@ -159,7 +157,7 @@ export async function listNewsletter(params: CommunicationListParams): Promise<C
   return toListResponse(items, total, page, perPage);
 }
 
-export async function getNewsletter(id: string, userId: string, ipAddress?: string | null, userAgent?: string | null): Promise<CommunicationDetailResponse<NewsletterDetail> | null> {
+export async function getNewsletter(id: string): Promise<CommunicationDetailResponse<NewsletterDetail> | null> {
   const record = await repo.getNewsletterSubscriber(id);
   if (!record) return null;
   const [notes, tags, audit] = await Promise.all([
@@ -167,7 +165,6 @@ export async function getNewsletter(id: string, userId: string, ipAddress?: stri
     repo.getRecordTags('newsletter', id),
     repo.getAuditLog('newsletter', id),
   ]);
-  await recordAudit(userId, 'newsletter_viewed', 'newsletter', id, {}, ipAddress, userAgent);
   return { record, notes, tags, audit };
 }
 
@@ -196,7 +193,7 @@ export async function listCareers(params: CommunicationListParams): Promise<Comm
   return toListResponse(items, total, page, perPage);
 }
 
-export async function getCareer(id: string, userId: string, ipAddress?: string | null, userAgent?: string | null): Promise<CommunicationDetailResponse<CareerDetail> | null> {
+export async function getCareer(id: string): Promise<CommunicationDetailResponse<CareerDetail> | null> {
   const record = await repo.getCareerApplication(id);
   if (!record) return null;
   const [notes, tags, audit] = await Promise.all([
@@ -204,7 +201,6 @@ export async function getCareer(id: string, userId: string, ipAddress?: string |
     repo.getRecordTags('careers', id),
     repo.getAuditLog('careers', id),
   ]);
-  await recordAudit(userId, 'careers_viewed', 'careers', id, {}, ipAddress, userAgent);
   return { record, notes, tags, audit };
 }
 

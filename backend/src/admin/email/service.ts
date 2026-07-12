@@ -291,27 +291,4 @@ export async function resendEmail(
   return { id: result.id, status: result.status };
 }
 
-export async function recordEmailViewed(
-  id: string,
-  adminUserId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(adminUserId, AUDIT_EVENTS.EMAIL_VIEWED, { email_log_id: id }, ipAddress, userAgent);
-}
 
-export async function recordTemplateViewed(
-  adminUserId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(adminUserId, AUDIT_EVENTS.TEMPLATE_VIEWED, {}, ipAddress, userAgent);
-}
-
-export async function recordProviderViewed(
-  adminUserId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(adminUserId, AUDIT_EVENTS.PROVIDER_VIEWED, {}, ipAddress, userAgent);
-}

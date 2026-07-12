@@ -414,6 +414,29 @@ Setting changes are audited (`admin_settings_updated`). A `settings` table (or J
 
 Read-only. Sourced from the existing `audit_logs` table.
 
+#### Audit Policy
+
+The audit log records only actions that modify data, affect security, or are operationally important. Page views, read-only API requests, and passive navigation events are intentionally **not** recorded.
+
+**What is recorded:**
+- Authentication events (login, logout, password changes, account creation/deletion/suspension, session revocations)
+- Product mutations (create, update, publish, unpublish, archive, restore)
+- Customer mutations (suspend, reactivate, delete, verification resend, password reset requests, session revocations)
+- Download token mutations (revoke, regenerate)
+- Communication mutations (status changes, replies, archive, restore, delete, notes, tags)
+- Email actions (test sent, resend)
+- Settings changes (all groups)
+- Admin system actions
+
+**What is intentionally not recorded:**
+- Dashboard, analytics, or system health page views
+- Product, order, payment, customer, download, or email detail views (read-only)
+- Communication record views (contact, feedback, newsletter, career)
+- Settings page views
+- Audit log page views
+- Template or provider status views
+- Any other read-only API requests
+
 ---
 
 ## 8. Navigation
@@ -911,7 +934,7 @@ All endpoints require `requireAuth` + `requireRole('admin')`.
 | `product_archived` | POST archive |
 | `product_restored` | POST restore |
 
-Events logged via `backend/src/audit/service.ts` → `insertAuditLog()` with user ID, product metadata, IP, and user agent.
+Events logged via `backend/src/audit/service.ts` → `insertAuditLog()` with admin user ID, product metadata, IP, and user agent.
 
 ### Frontend Architecture
 
@@ -1066,7 +1089,10 @@ frontend/src/lib/admin/components/
 - Dashboard unchanged — product stats still work with new `status` column
 - Better Auth unchanged — auth still goes through existing `/api/auth/*` endpoints
 - Role enforcement — `requireAuth` + `requireRole('admin')` on every product route
-- All mutations create audit log entries
+- All product mutations create audit log entries
+- Page views are not recorded
+
+
 - All user inputs validated via Zod schemas
 - Soft delete only — archive never permanently deletes products
 - No duplicated UI — all components reuse existing admin primitives
@@ -1174,7 +1200,7 @@ The payment detail page shows a "Failure Details" section when `status === 'fail
 | `payment_viewed` | Admin views payment detail |
 | `receipt_viewed` | Admin views receipt tab |
 
-Events are recorded via `audit/service.ts` → `insertAuditLog()` with admin user ID, entity metadata, IP, and user agent. Only meaningful admin view actions are logged — no excessive audit noise.
+Events are recorded via `audit/service.ts` → `insertAuditLog()` with admin user ID, entity metadata, IP, and user agent. Only meaningful admin actions are logged — no excessive audit noise.
 
 ### Frontend Architecture
 
@@ -1337,7 +1363,9 @@ frontend/src/lib/admin/components/
 | File | Change |
 |------|--------|
 | `backend/src/admin/index.ts` | Mounted `/orders` and `/payments` routes |
-| `backend/src/audit/types.ts` | Added `order_viewed`, `payment_viewed`, `receipt_viewed` audit events |
+| `backend/src/audit/types.ts` | Defines all audit event types |
+
+
 | `frontend/src/routes/admin/+page.svelte` (formerly `dashboard/+page.svelte`) | Made Recent Orders table rows clickable (navigate to order detail) |
 | `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix (Phase 4) |
 
@@ -1353,7 +1381,9 @@ frontend/src/lib/admin/components/
 - Existing receipts unchanged — receipts use existing `purchases` data, no new storage
 - Existing webhooks unchanged — webhook routes handle refund/capture without admin involvement
 - Only ADMIN can access new routes — `requireAuth` + `requireRole('admin')` on every endpoint
-- All view actions create audit log entries (order viewed, payment viewed, receipt viewed)
+- Order/payment detail views do not create audit log entries
+
+
 - Read-only — no write endpoints for financial data
 - No duplicated UI — all components reuse existing admin primitives
 - No CSS duplication — all styles use existing design tokens
@@ -1592,8 +1622,8 @@ frontend/src/lib/admin/components/
 | File | Change |
 |------|--------|
 | `backend/src/admin/index.ts` | Mounted `/customers` routes |
-| `backend/src/audit/types.ts` | Added 7 customer audit events |
-| `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix (Phase 5) |
+| `backend/src/audit/types.ts` | Defines all audit event types |
+
 
 ### Verification
 
@@ -1607,7 +1637,10 @@ frontend/src/lib/admin/components/
 - Password reset flow unchanged — uses existing Better Auth `requestPasswordReset()`
 - Session management unchanged — direct DB operations for list/revoke, no session infra changes
 - Only ADMIN can access customer routes — `requireAuth` + `requireRole('admin')` on every endpoint
-- All admin actions create audit log entries with target `user_id`
+- Admin mutations create audit log entries with target `user_id`
+- Customer detail views do not create audit log entries
+
+
 - All soft-delete operations reversible by DB admin
 - No secrets exposed — passwords, tokens, and sensitive auth data never returned in API responses
 
@@ -1795,7 +1828,9 @@ frontend/src/lib/admin/components/
 | File | Change |
 |------|--------|
 | `backend/src/admin/index.ts` | Mounted `/downloads` routes |
-| `backend/src/audit/types.ts` | Added `download_viewed`, `token_revoked`, `token_regenerated` audit events |
+| `backend/src/audit/types.ts` | Defines all audit event types |
+
+
 | `frontend/src/routes/admin/+page.svelte` (formerly `dashboard/+page.svelte`) | Active Downloads stat in widget now clickable with status filter |
 | `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix (Phase 6) |
 
@@ -1811,7 +1846,10 @@ frontend/src/lib/admin/components/
 - Orders & Payments unchanged — no modifications to Phase 4 modules
 - Customer Management unchanged — no modifications to Phase 5 modules
 - Only ADMIN can access download routes — `requireAuth` + `requireRole('admin')` on every endpoint
-- All admin actions create audit log entries with `download_token_id` and `purchase_id` metadata
+- Admin download token mutations create audit log entries with `download_token_id` and `purchase_id` metadata
+- Download detail views do not create audit log entries
+
+
 - Regenerate reuses existing `purchaseService.generateDownloadToken()` — no new token generation code
 - No duplicated UI — all components reuse existing admin primitives
 - No CSS duplication — all styles use existing design tokens
@@ -1947,7 +1985,9 @@ frontend/src/routes/admin/communication/ (+page + 4 lists + 4 details)
 | File | Change |
 |------|--------|
 | `backend/src/admin/index.ts` | Mounted `/communication` routes |
-| `backend/src/audit/types.ts` | Added 23 communication audit events |
+| `backend/src/audit/types.ts` | Defines all audit event types |
+
+
 | `backend/src/email/service.ts` | Added `sendReplyEmail()` method (reuses `sendWithLogging`) |
 | `frontend/src/lib/admin/components/AdminSidebar.svelte` | Repointed Communication group to `/admin/communication/*` |
 | `docs/ADMIN_PORTAL_ARCHITECTURE.md` | This appendix (Phase 7) |
@@ -1961,5 +2001,6 @@ frontend/src/routes/admin/communication/ (+page + 4 lists + 4 details)
 - Email system unchanged — only added `sendReplyEmail` reusing existing `sendWithLogging`; customer-facing templates untouched
 - No duplicate communication logic — admin reads/writes go through the new module, reusing existing tables and email service
 - Existing contact/feedback/newsletter/careers forms continue working unchanged
-- All admin actions audited with `record_type`/`record_id` metadata
+- Admin actions audited with `record_type`/`record_id` metadata
+- Record views are not audited (read-only)
 - UI follows existing Admin Portal design system + shared components only

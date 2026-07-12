@@ -1,22 +1,12 @@
 import { Hono } from 'hono';
 import { requireAuth, requireRole } from '../../middleware/auth.js';
 import { errorResponse, type AppEnv } from '../../lib/response.js';
-import { recordEvent } from '../../audit/service.js';
-import { AUDIT_EVENTS } from '../../audit/types.js';
 import * as analytics from './service.js';
 import { analyticsQuerySchema, type AnalyticsQuery } from './validation.js';
 
 const app = new Hono<AppEnv>();
 
 app.use('*', requireAuth, requireRole('admin'));
-
-function clientIp(c: import('hono').Context): string | null {
-  return (
-    c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ||
-    c.req.header('x-real-ip') ||
-    null
-  );
-}
 
 async function handle(
   c: import('hono').Context<AppEnv>,
@@ -37,16 +27,7 @@ async function handle(
 }
 
 app.get('/overview', (c) =>
-  handle(c, async (q) => {
-    const data = await analytics.getOverview(q);
-    if (q.range === 'month' && !q.start && !q.end) {
-      const user = c.get('user');
-      if (user) {
-        await recordEvent(user.id, AUDIT_EVENTS.ANALYTICS_VIEWED, {}, clientIp(c), c.req.header('user-agent'));
-      }
-    }
-    return data;
-  }),
+  handle(c, (q) => analytics.getOverview(q)),
 );
 
 app.get('/revenue', (c) => handle(c, (q) => analytics.getRevenue(q)));

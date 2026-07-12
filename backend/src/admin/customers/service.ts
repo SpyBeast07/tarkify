@@ -136,13 +136,4 @@ export async function revokeSessions(
   return count;
 }
 
-export async function recordCustomerViewed(
-  customerId: string,
-  adminUserId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(adminUserId, 'customer_viewed' as any, {
-    target_user_id: customerId,
-  }, ipAddress, userAgent);
-}
+

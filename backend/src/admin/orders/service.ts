@@ -1,5 +1,4 @@
 import * as orderRepository from './repository.js';
-import { recordEvent } from '../../audit/service.js';
 import type { OrderListParams, OrderListResponse, OrderListItem, OrderDetail, OrderEntitlement, OrderDownloadToken, OrderEmailLog, OrderAuditEntry } from './types.js';
 
 function toListResponse(
@@ -42,39 +41,6 @@ export async function getOrder(id: string): Promise<{
   ]);
 
   return { order, entitlements, downloadTokens, emailLogs, audit };
-}
-
-export async function recordOrderViewed(
-  orderId: string,
-  userId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(userId, 'order_viewed' as any, {
-    order_id: orderId,
-  }, ipAddress, userAgent);
-}
-
-export async function recordPaymentViewed(
-  purchaseId: string,
-  userId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(userId, 'payment_viewed' as any, {
-    payment_id: purchaseId,
-  }, ipAddress, userAgent);
-}
-
-export async function recordReceiptViewed(
-  purchaseId: string,
-  userId: string,
-  ipAddress?: string | null,
-  userAgent?: string | null,
-): Promise<void> {
-  await recordEvent(userId, 'receipt_viewed' as any, {
-    receipt_id: purchaseId,
-  }, ipAddress, userAgent);
 }
 
 export async function getProductOptions(): Promise<{ id: string; name: string }[]> {

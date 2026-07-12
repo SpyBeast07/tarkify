@@ -23,9 +23,7 @@ function clientIp(c: any): string | null {
 
 email.get('/templates', async (c) => {
   try {
-    const user = getUser(c);
     const templates = await emailService.getTemplates();
-    await emailService.recordTemplateViewed(user.id, clientIp(c), c.req.header('user-agent'));
     return c.json(templates);
   } catch (err) {
     console.error('[admin/email] Failed to list templates:', err);
@@ -35,9 +33,7 @@ email.get('/templates', async (c) => {
 
 email.get('/provider', async (c) => {
   try {
-    const user = getUser(c);
     const status = await emailService.getProviderStatus();
-    await emailService.recordProviderViewed(user.id, clientIp(c), c.req.header('user-agent'));
     return c.json(status);
   } catch (err) {
     console.error('[admin/email] Failed to get provider status:', err);
@@ -89,10 +85,8 @@ email.get('/', async (c) => {
 email.get('/:id', async (c) => {
   try {
     const id = c.req.param('id');
-    const user = getUser(c);
     const detail = await emailService.getEmail(id);
     if (!detail) return errorResponse(c, 'NOT_FOUND', 'Email log not found', 404);
-    await emailService.recordEmailViewed(id, user.id, clientIp(c), c.req.header('user-agent'));
     return c.json(detail);
   } catch (err) {
     console.error('[admin/email] Failed to get email:', err);
