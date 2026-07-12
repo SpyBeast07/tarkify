@@ -55,6 +55,10 @@ export interface PurchaseReceiptEmailData {
   purchaseDate: string;
   receiptUrl?: string;
   accountUrl: string;
+  /** Optional tax breakdown. When present (tax enabled), the receipt shows it. */
+  taxAmount?: number;
+  totalAmount?: number;
+  taxRate?: number;
 }
 
 export interface DownloadEmailData {
@@ -97,6 +101,12 @@ export interface NewsletterConfirmationEmailData {
 export interface NewsletterUnsubscribedEmailData {
   email: string;
   userName?: string;
+}
+
+export interface CareerAcknowledgementEmailData {
+  email: string;
+  name: string;
+  position: string;
 }
 
 export interface AdminNotificationEmailData {

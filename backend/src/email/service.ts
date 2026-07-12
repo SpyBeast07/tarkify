@@ -16,6 +16,7 @@ import type {
   NewsletterEmailData,
   NewsletterConfirmationEmailData,
   NewsletterUnsubscribedEmailData,
+  CareerAcknowledgementEmailData,
   AdminNotificationEmailData,
   FeedbackEmailData,
 } from './types.js';
@@ -28,6 +29,7 @@ import { buildContactAcknowledgementEmail } from './templates/contact-acknowledg
 import { buildNewsletterEmail } from './templates/newsletter-email.js';
 import { buildNewsletterConfirmationEmail } from './templates/newsletter-confirmation.js';
 import { buildNewsletterUnsubscribedEmail } from './templates/newsletter-unsubscribed.js';
+import { buildCareerAcknowledgementEmail } from './templates/career-acknowledgement.js';
 import { buildAdminNotificationEmail } from './templates/admin-notification.js';
 import { buildFeedbackNotificationEmail } from './templates/feedback-notification.js';
 import { buildFeedbackAcknowledgementEmail } from './templates/feedback-acknowledgement.js';
@@ -44,6 +46,7 @@ const TEMPLATE_CATEGORIES: Record<string, EmailCategory | null> = {
   sendNewsletterConfirmation: null,   // transactional — just subscribed
   sendNewsletterUnsubscribed: null,   // transactional — just unsubscribed
   sendNewsletterEmail: 'newsletter',
+  sendCareerAcknowledgement: 'product',
   sendAdminNotification: null,        // internal — skip
   sendTestEmail: null,                // dev — skip
 };
@@ -134,6 +137,11 @@ export class EmailService {
   async sendNewsletterUnsubscribed(data: NewsletterUnsubscribedEmailData): Promise<SendEmailResult> {
     const html = buildNewsletterUnsubscribedEmail(data);
     return this.sendWithLogging(data.email, 'Subscription removed', html, 'sendNewsletterUnsubscribed');
+  }
+
+  async sendCareerAcknowledgement(data: CareerAcknowledgementEmailData): Promise<SendEmailResult> {
+    const html = buildCareerAcknowledgementEmail(data);
+    return this.sendWithLogging(data.email, 'We received your application', html, 'sendCareerAcknowledgement');
   }
 
   async sendAdminNotification(data: AdminNotificationEmailData): Promise<SendEmailResult> {

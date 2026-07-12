@@ -3,17 +3,14 @@ export type SettingsGroup =
   | 'notifications';
 
 export interface PaymentsSettings {
-  enablePayments: boolean;
   maintenanceMode: boolean;
-  acceptedCurrency: string;
   taxEnabled: boolean;
-  receiptPrefix: string;
 }
 
 export interface NotificationsSettings {
   adminEmailAlerts: boolean;
   paymentAlerts: boolean;
-  downloadAlerts: boolean;
+  feedbackAlerts: boolean;
   contactAlerts: boolean;
   careerAlerts: boolean;
   newsletterAlerts: boolean;
@@ -37,16 +34,13 @@ export interface SettingsRow {
 
 export const DEFAULT_SETTINGS: SettingsValueMap = {
   payments: {
-    enablePayments: true,
     maintenanceMode: false,
-    acceptedCurrency: 'INR',
     taxEnabled: false,
-    receiptPrefix: 'INV-',
   },
   notifications: {
     adminEmailAlerts: true,
     paymentAlerts: true,
-    downloadAlerts: true,
+    feedbackAlerts: true,
     contactAlerts: true,
     careerAlerts: true,
     newsletterAlerts: true,

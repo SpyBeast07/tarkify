@@ -51,6 +51,8 @@ export interface Purchase {
   razorpay_signature: string | null;
   status: PurchaseStatus;
   amount: number;
+  tax_amount: number;
+  total_amount: number;
   currency: string;
   created_at: Date;
   updated_at: Date;

@@ -107,7 +107,10 @@
             <span class="row-product">{payment.product_name}</span>
           </div>
           <div class="col-amount">
-            <span class="row-amount">{formatPrice(payment.amount, payment.currency)}</span>
+            <span class="row-amount">{formatPrice(payment.tax_amount > 0 ? payment.total_amount : payment.amount, payment.currency)}</span>
+            {#if payment.tax_amount > 0}
+              <span class="row-tax">incl. {formatPrice(payment.tax_amount, payment.currency)} GST</span>
+            {/if}
           </div>
           <div class="col-status">
             <StatusBadge status={statusLabel(payment.status)} />
@@ -194,6 +197,14 @@
   .row-amount {
     font-weight: 600;
     font-family: var(--font-heading);
+  }
+
+  .row-tax {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 400;
+    opacity: 0.6;
+    margin-top: 0.15rem;
   }
 
   .row-date {

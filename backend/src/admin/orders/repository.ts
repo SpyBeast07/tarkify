@@ -101,6 +101,8 @@ export async function listOrders(params: OrderListParams): Promise<{ orders: Ord
       pr.name AS product_name,
       pr.slug AS product_slug,
       p.amount,
+      p.tax_amount,
+      p.total_amount,
       p.currency,
       p.status,
       p.payment_provider,
@@ -138,6 +140,8 @@ export async function getOrderById(id: string): Promise<OrderDetail | null> {
       p.razorpay_signature,
       p.status,
       p.amount,
+      p.tax_amount,
+      p.total_amount,
       p.currency,
       p.created_at,
       p.updated_at

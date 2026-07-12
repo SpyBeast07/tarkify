@@ -21,6 +21,7 @@
 	let flowState: PurchaseFlowState = $state('collecting_email');
 	let errorMessage = $state('');
 	let downloadToken = $state<string | undefined>(undefined);
+	let maintenanceMode = $state(false);
 
 	let isEmailValid = $derived(validateEmail(email));
 
@@ -31,6 +32,7 @@
 				flowState = 'collecting_email';
 				errorMessage = '';
 				downloadToken = undefined;
+				maintenanceMode = false;
 				wasOpen = true;
 			}
 			if (flowState === 'checkout_open') {
@@ -42,13 +44,13 @@
 					dialogEl.showModal();
 				}
 			}
-		} else {
-			wasOpen = false;
-			if (dialogEl?.open) {
-				dialogEl.close();
-			}
 		}
 	});
+
+	function dismissMaintenance() {
+		maintenanceMode = false;
+		errorMessage = '';
+	}
 
 	function handleClose() {
 		if (flowState === 'checkout_open') {
@@ -79,8 +81,15 @@
 			// Step 2: Open Razorpay Checkout
 			await openCheckout(order, email, handlePaymentSuccess, handlePaymentDismiss);
 		} catch (error) {
-			flowState = 'error';
-			errorMessage = error instanceof Error ? error.message : 'Failed to start checkout';
+			const code = (error as Error & { code?: string })?.code;
+			if (code === 'MAINTENANCE_MODE') {
+				maintenanceMode = true;
+				flowState = 'error';
+				errorMessage = error instanceof Error ? error.message : 'Payments are temporarily unavailable.';
+			} else {
+				flowState = 'error';
+				errorMessage = error instanceof Error ? error.message : 'Failed to start checkout';
+			}
 		}
 	}
 
@@ -143,36 +152,43 @@
 					<ShoppingBag size={28} />
 				</div>
 				<h3 class="purchase-title">Purchase {productName}</h3>
-				<p class="purchase-subtitle">
-					Enter your email to receive your license and download access.
-				</p>
 
-				<form
-					onsubmit={(e) => {
-						e.preventDefault();
-						handlePurchase();
-					}}
-					class="purchase-form"
-				>
-					<div class="purchase-input-group">
-						<Mail size={18} class="purchase-input-icon" />
-						<input
-							type="email"
-							bind:value={email}
-							placeholder="you@example.com"
-							class="purchase-email-input"
-							required
-							autocomplete="email"
-						/>
-					</div>
-					<button
-						type="submit"
-						class="btn btn-primary purchase-submit-btn"
-						disabled={!isEmailValid}
+				{#if maintenanceMode}
+					<p class="purchase-subtitle purchase-maintenance">
+						Payments are temporarily paused for maintenance. Please try again later.
+					</p>
+				{:else}
+					<p class="purchase-subtitle">
+						Enter your email to receive your license and download access.
+					</p>
+
+					<form
+						onsubmit={(e) => {
+							e.preventDefault();
+							handlePurchase();
+						}}
+						class="purchase-form"
 					>
-						Continue to Payment
-					</button>
-				</form>
+						<div class="purchase-input-group">
+							<Mail size={18} class="purchase-input-icon" />
+							<input
+								type="email"
+								bind:value={email}
+								placeholder="you@example.com"
+								class="purchase-email-input"
+								required
+								autocomplete="email"
+							/>
+						</div>
+						<button
+							type="submit"
+							class="btn btn-primary purchase-submit-btn"
+							disabled={!isEmailValid}
+						>
+							Continue to Payment
+						</button>
+					</form>
+				{/if}
 			</div>
 		{/if}
 
@@ -369,6 +385,16 @@
 		line-height: 1.6;
 		max-width: 340px;
 		margin: 0 0 0.75rem;
+	}
+
+	.purchase-maintenance {
+		opacity: 1;
+		color: var(--color-warning, #b45309);
+		font-weight: 600;
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--color-warning-border, rgba(180, 83, 9, 0.3));
+		border-radius: 12px;
+		background: var(--color-warning-bg, rgba(180, 83, 9, 0.08));
 	}
 
 	.purchase-form {

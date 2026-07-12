@@ -13,6 +13,9 @@ import * as purchaseService from '../services/purchase.service.js';
 import { emailService } from '../email/index.js';
 import { config } from '../config.js';
 import { validateEmail } from '../communication/shared/validators.js';
+import { getSettings } from '../admin/settings/service.js';
+import { computePricing, TAX_RATE } from '../services/pricing.js';
+import { notify } from '../lib/notifications.js';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { CreateOrderRequest, VerifyPaymentRequest } from '../types/index.js';
 
@@ -58,6 +61,18 @@ payments.post('/create-order', async (c) => {
     return payError(c, 'INVALID_PRODUCT', reason || 'Product not available', 400);
   }
 
+  // Maintenance Mode: block new payment initiation. Existing purchases and
+  // downloads continue to work; only the act of starting a new payment is blocked.
+  const paymentsSettings = await getSettings('payments');
+  if (paymentsSettings.maintenanceMode) {
+    return payError(
+      c,
+      'MAINTENANCE_MODE',
+      'Payments are temporarily paused for maintenance. Please try again later.',
+      503,
+    );
+  }
+
   // Determine if this is a logged-in user purchasing for themselves.
   const authUser = c.get('user');
   const isLoggedInUser = authUser !== null && authUser.email.toLowerCase() === email.toLowerCase();
@@ -70,11 +85,15 @@ payments.post('/create-order', async (c) => {
     return payError(c, 'ALREADY_PURCHASED', 'You already own this product. Download it from your confirmation email.', 409);
   }
 
+  // Compute the final price. Tax (GST) is applied here in one shared location
+  // so the Razorpay order amount, stored totals, receipt, and displays agree.
+  const pricing = computePricing(product.price, paymentsSettings.taxEnabled);
+
   try {
     // Create Razorpay order with a safe receipt ID (guaranteed ≤40 chars).
     const receipt = razorpayService.generateReceipt(product.slug);
     const order = await razorpayService.createOrder(
-      product.price,
+      pricing.totalAmount,
       product.currency,
       receipt
     );
@@ -90,7 +109,9 @@ payments.post('/create-order', async (c) => {
       order.id,
       product.price,
       product.currency,
-      currentUserId
+      currentUserId,
+      pricing.taxAmount,
+      pricing.totalAmount
     );
 
     if (!purchase) {
@@ -100,10 +121,17 @@ payments.post('/create-order', async (c) => {
 
     return c.json({
       orderId: order.id,
-      amount: product.price,
+      amount: pricing.totalAmount,
       currency: product.currency,
       key: razorpayService.getPublicKey(),
       productName: product.name,
+      tax: {
+        baseAmount: pricing.baseAmount,
+        taxAmount: pricing.taxAmount,
+        totalAmount: pricing.totalAmount,
+        taxRate: pricing.taxRate,
+        taxEnabled: pricing.taxEnabled,
+      },
     });
   } catch (error) {
     console.error('Failed to create order:', error);
@@ -142,11 +170,13 @@ payments.post('/verify', async (c) => {
 
   if (!isValid) {
     console.error('Payment signature verification failed for order:', razorpay_order_id);
-    emailService.sendAdminNotification({
-      subject: 'Payment verification failed',
-      message: `Payment signature verification failed for order ${razorpay_order_id}. Possible tampering.`,
-      metadata: { orderId: razorpay_order_id, paymentId: razorpay_payment_id },
-    }).catch((err) => console.error('[payment] sendAdminNotification failed:', err));
+    notify('paymentAlerts', () =>
+      emailService.sendAdminNotification({
+        subject: 'Payment verification failed',
+        message: `Payment signature verification failed for order ${razorpay_order_id}. Possible tampering.`,
+        metadata: { orderId: razorpay_order_id, paymentId: razorpay_payment_id },
+      }),
+    ).catch((err) => console.error('[payment] sendAdminNotification failed:', err));
     return payError(c, 'VERIFICATION_FAILED', 'Payment verification failed. Contact support if payment was deducted.', 400);
   }
 
@@ -186,14 +216,34 @@ payments.post('/verify', async (c) => {
       `Payment verified: purchase=${updatedPurchase.id} order=${razorpay_order_id} payment=${razorpay_payment_id}`
     );
 
-    // Fire-and-forget purchase receipt + download emails.
+    // Fire-and-forget: customer transactional emails (always sent) + the
+    // admin "New Order" notification (gated by adminEmailAlerts).
     const buyerEmail = updatedPurchase.guest_email;
     if (buyerEmail) {
+      // Admin "New Order" notification — gated by adminEmailAlerts.
+      notify('adminEmailAlerts', () =>
+        emailService.sendAdminNotification({
+          subject: 'New order completed',
+          message: `A new order was completed for ${updatedPurchase.product_id} (order ${updatedPurchase.razorpay_order_id}).`,
+          metadata: {
+            orderId: updatedPurchase.razorpay_order_id,
+            paymentId: updatedPurchase.razorpay_payment_id,
+            email: buyerEmail,
+            amount: updatedPurchase.total_amount || updatedPurchase.amount,
+            currency: updatedPurchase.currency,
+          },
+        }),
+      ).catch((err) => console.error('[payment] sendAdminNotification (new order) failed:', err));
+
       productService.getProductById(updatedPurchase.product_id).then((product) => {
         const productSlug = product?.slug;
         const productName = product?.name ?? 'Product';
         const accountUrl = `${config.frontendUrl}/account`;
+        const taxRate = updatedPurchase.tax_amount > 0 && updatedPurchase.total_amount > 0
+          ? TAX_RATE
+          : 0;
 
+        // Purchase receipt — always sent (customer transactional email).
         emailService.sendPurchaseReceipt({
           email: buyerEmail,
           productName,
@@ -203,16 +253,22 @@ payments.post('/verify', async (c) => {
           razorpayOrderId: updatedPurchase.razorpay_order_id,
           purchaseDate: formatPurchaseDate(updatedPurchase.updated_at ?? updatedPurchase.created_at),
           accountUrl,
+          taxAmount: updatedPurchase.tax_amount > 0 ? updatedPurchase.tax_amount : undefined,
+          totalAmount: updatedPurchase.tax_amount > 0 ? updatedPurchase.total_amount : undefined,
+          taxRate,
         }).catch((err) => {
           console.error('[payment] sendPurchaseReceipt failed:', err);
-          emailService.sendAdminNotification({
-            subject: 'Email send failure — purchase receipt',
-            message: `Failed to send purchase receipt email to ${buyerEmail}.`,
-            metadata: { email: buyerEmail, error: String(err), orderId: updatedPurchase.razorpay_order_id },
-          }).catch((adminErr) => console.error('[payment] sendAdminNotification (receipt failure) failed:', adminErr));
+          notify('systemAlerts', () =>
+            emailService.sendAdminNotification({
+              subject: 'Email send failure — purchase receipt',
+              message: `Failed to send purchase receipt email to ${buyerEmail}.`,
+              metadata: { email: buyerEmail, error: String(err), orderId: updatedPurchase.razorpay_order_id },
+            }),
+          ).catch((adminErr) => console.error('[payment] sendAdminNotification (receipt failure) failed:', adminErr));
         });
 
         if (productSlug) {
+          // Download email — always sent (customer transactional email).
           emailService.sendDownloadEmail({
             email: buyerEmail,
             productName,
@@ -221,11 +277,13 @@ payments.post('/verify', async (c) => {
             accountUrl,
           }).catch((err) => {
             console.error('[payment] sendDownloadEmail failed:', err);
-            emailService.sendAdminNotification({
-              subject: 'Email send failure — download email',
-              message: `Failed to send download email to ${buyerEmail}.`,
-              metadata: { email: buyerEmail, error: String(err), orderId: updatedPurchase.razorpay_order_id },
-            }).catch((adminErr) => console.error('[payment] sendAdminNotification (download failure) failed:', adminErr));
+            notify('systemAlerts', () =>
+              emailService.sendAdminNotification({
+                subject: 'Email send failure — download email',
+                message: `Failed to send download email to ${buyerEmail}.`,
+                metadata: { email: buyerEmail, error: String(err), orderId: updatedPurchase.razorpay_order_id },
+              }),
+            ).catch((adminErr) => console.error('[payment] sendAdminNotification (download failure) failed:', adminErr));
           });
         }
       }).catch((err) => console.error('[payment] getProductById failed:', err));

@@ -30,7 +30,9 @@ export async function createOrder(
 
 		if (!response.ok) {
 			const error: PaymentError = await response.json();
-			throw new Error(error.message || 'Failed to create order');
+			const err = new Error(error.message || 'Failed to create order');
+			(err as Error & { code?: string }).code = error.error;
+			throw err;
 		}
 
 		return response.json();
@@ -70,7 +72,9 @@ export async function verifyPayment(
 
 		if (!response.ok) {
 			const error: PaymentError = await response.json();
-			throw new Error(error.message || 'Payment verification failed');
+			const err = new Error(error.message || 'Payment verification failed');
+			(err as Error & { code?: string }).code = error.error;
+			throw err;
 		}
 
 		return response.json();

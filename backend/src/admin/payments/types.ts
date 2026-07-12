@@ -8,6 +8,8 @@ export interface PaymentListItem {
   customer_email: string;
   product_name: string;
   amount: number;
+  tax_amount: number;
+  total_amount: number;
   currency: string;
   status: PurchaseStatus;
   payment_provider: string;
@@ -30,6 +32,8 @@ export interface PaymentDetail {
   razorpay_signature: string | null;
   status: PurchaseStatus;
   amount: number;
+  tax_amount: number;
+  total_amount: number;
   currency: string;
   created_at: string;
   updated_at: string;

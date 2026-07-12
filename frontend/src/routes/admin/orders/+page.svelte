@@ -25,6 +25,8 @@
 		customer_name: string | null;
 		customer_id: string | null;
 		amount: number;
+		tax_amount: number;
+		total_amount: number;
 		currency: string;
 		status: string;
 		payment_id: string | null;
@@ -253,7 +255,14 @@
 									<span class="customer-email">{order.customer_email}</span>
 								</div>
 							</td>
-							<td class="amount-cell">{formatPrice(order.amount, order.currency)}</td>
+							<td class="amount-cell">
+								{#if order.tax_amount > 0}
+									{formatPrice(order.total_amount, order.currency)}
+									<span class="tax-note">incl. {formatPrice(order.tax_amount, order.currency)} GST</span>
+								{:else}
+									{formatPrice(order.amount, order.currency)}
+								{/if}
+							</td>
 							<td><OrderStatusBadge status={order.status} /></td>
 							<td class="id-cell">
 								{#if order.payment_id}
@@ -341,6 +350,14 @@
 	.amount-cell {
 		font-weight: 600;
 		font-variant-numeric: tabular-nums;
+	}
+
+	.tax-note {
+		display: block;
+		font-size: 0.72rem;
+		font-weight: 400;
+		opacity: 0.6;
+		margin-top: 0.15rem;
 	}
 
 	.date-cell {

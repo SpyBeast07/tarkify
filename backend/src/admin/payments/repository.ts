@@ -94,6 +94,8 @@ export async function listPayments(params: PaymentListParams): Promise<{ payment
       COALESCE(u.email, p.guest_email) AS customer_email,
       pr.name AS product_name,
       p.amount,
+      p.tax_amount,
+      p.total_amount,
       p.currency,
       p.status,
       p.payment_provider,
@@ -128,6 +130,8 @@ export async function getPaymentById(id: string): Promise<PaymentDetail | null> 
       p.razorpay_signature,
       p.status,
       p.amount,
+      p.tax_amount,
+      p.total_amount,
       p.currency,
       p.created_at,
       p.updated_at

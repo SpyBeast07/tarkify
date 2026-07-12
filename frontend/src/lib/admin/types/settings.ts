@@ -3,17 +3,14 @@ export type SettingsGroup =
 	| 'notifications';
 
 export interface PaymentsSettings {
-	enablePayments: boolean;
 	maintenanceMode: boolean;
-	acceptedCurrency: string;
 	taxEnabled: boolean;
-	receiptPrefix: string;
 }
 
 export interface NotificationsSettings {
 	adminEmailAlerts: boolean;
 	paymentAlerts: boolean;
-	downloadAlerts: boolean;
+	feedbackAlerts: boolean;
 	contactAlerts: boolean;
 	careerAlerts: boolean;
 	newsletterAlerts: boolean;
@@ -72,31 +69,22 @@ export const SETTINGS_SECTIONS: SectionConfig[] = [
 		label: 'Payments',
 		description: 'Payment and receipt behavior. Gateway secrets are managed outside the app.',
 		fields: [
-			{ key: 'enablePayments', label: 'Enable Payments', type: 'toggle' },
 			{ key: 'maintenanceMode', label: 'Maintenance Mode', type: 'toggle' },
-			{
-				key: 'acceptedCurrency',
-				label: 'Accepted Currency',
-				type: 'text',
-				required: true,
-				placeholder: 'e.g. INR'
-			},
-			{ key: 'taxEnabled', label: 'Tax Enabled', type: 'toggle' },
-			{ key: 'receiptPrefix', label: 'Receipt Prefix', type: 'text', required: true }
+			{ key: 'taxEnabled', label: 'Tax Enabled', type: 'toggle' }
 		]
 	},
 	{
 		id: 'notifications',
 		label: 'Notifications',
-		description: 'Choose which events trigger admin alerts.',
+		description: 'Choose which events send admin notifications. Customer transactional emails (receipts, download links, acknowledgements, confirmations) are always sent.',
 		fields: [
-			{ key: 'adminEmailAlerts', label: 'Admin Email Alerts', type: 'toggle' },
-			{ key: 'paymentAlerts', label: 'Payment Alerts', type: 'toggle' },
-			{ key: 'downloadAlerts', label: 'Download Alerts', type: 'toggle' },
-			{ key: 'contactAlerts', label: 'Contact Alerts', type: 'toggle' },
-			{ key: 'careerAlerts', label: 'Career Alerts', type: 'toggle' },
-			{ key: 'newsletterAlerts', label: 'Newsletter Alerts', type: 'toggle' },
-			{ key: 'systemAlerts', label: 'System Alerts', type: 'toggle' }
+			{ key: 'adminEmailAlerts', label: 'New Order Notifications', type: 'toggle', help: 'Notify admins when a new order is completed.' },
+			{ key: 'paymentAlerts', label: 'Payment Issue Notifications', type: 'toggle', help: 'Notify admins about payment failures, refunds, and webhook errors.' },
+			{ key: 'feedbackAlerts', label: 'Feedback Notifications', type: 'toggle', help: 'Notify admins when new feedback is submitted.' },
+			{ key: 'contactAlerts', label: 'Contact Form Notifications', type: 'toggle', help: 'Notify admins when a contact form is submitted.' },
+			{ key: 'careerAlerts', label: 'Career Application Notifications', type: 'toggle', help: 'Notify admins when a career application is received.' },
+			{ key: 'newsletterAlerts', label: 'Newsletter Notifications', type: 'toggle', help: 'Notify admins when someone subscribes to the newsletter.' },
+			{ key: 'systemAlerts', label: 'System Notifications', type: 'toggle', help: 'Notify admins about email delivery failures.' }
 		]
 	}
 ];

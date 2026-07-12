@@ -24,6 +24,7 @@ export type {
   NewsletterEmailData,
   NewsletterConfirmationEmailData,
   NewsletterUnsubscribedEmailData,
+  CareerAcknowledgementEmailData,
   AdminNotificationEmailData,
 } from './types.js';
 
@@ -52,6 +53,7 @@ export { buildFeedbackAcknowledgementEmail } from './templates/feedback-acknowle
 export { buildNewsletterEmail } from './templates/newsletter-email.js';
 export { buildNewsletterConfirmationEmail } from './templates/newsletter-confirmation.js';
 export { buildNewsletterUnsubscribedEmail } from './templates/newsletter-unsubscribed.js';
+export { buildCareerAcknowledgementEmail } from './templates/career-acknowledgement.js';
 export { buildAdminNotificationEmail } from './templates/admin-notification.js';
 
 export { canSendEmail, getEmailPreferences, updateEmailPreferences, extractEmailPreferences } from './preferences/service.js';

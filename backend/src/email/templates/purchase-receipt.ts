@@ -12,6 +12,11 @@ import type { PurchaseReceiptEmailData } from '../types.js';
 export function buildPurchaseReceiptEmail(data: PurchaseReceiptEmailData): string {
   const price = formatPrice(data.amount, data.currency);
   const name = data.userName ?? 'there';
+  const hasTax = typeof data.taxAmount === 'number' && typeof data.totalAmount === 'number' && data.taxAmount > 0;
+  const taxLabel = data.taxRate ? `GST (${Math.round(data.taxRate * 100)}%)` : 'GST';
+  const taxValue = hasTax ? data.taxAmount as number : 0;
+  const totalValue = hasTax ? data.totalAmount as number : data.amount;
+  const total = formatPrice(totalValue, data.currency);
 
   return EmailLayout({
     title: `Receipt for ${data.productName}`,
@@ -35,7 +40,13 @@ export function buildPurchaseReceiptEmail(data: PurchaseReceiptEmailData): strin
       ${InfoCard({ label: 'Razorpay Payment ID', value: data.razorpayPaymentId })}
       ${InfoCard({ label: 'Order ID', value: data.razorpayOrderId })}
       ${InfoCard({ label: 'Purchase Date', value: data.purchaseDate })}
+      ${hasTax ? `
+      ${InfoCard({ label: 'Product Price', value: price })}
+      ${InfoCard({ label: taxLabel, value: formatPrice(taxValue, data.currency) })}
+      ${InfoCard({ label: 'Total Payable', value: total })}
+      ` : `
       ${InfoCard({ label: 'Amount Paid', value: price })}
+      `}
       ${InfoCard({ label: 'Email', value: data.email })}
 
       ${data.receiptUrl ? `

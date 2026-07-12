@@ -45,7 +45,9 @@ export async function createPurchase(
   razorpayOrderId: string,
   amount: number,
   currency: string,
-  userId?: string
+  userId?: string,
+  taxAmount: number = 0,
+  totalAmount: number = amount
 ): Promise<Purchase | null> {
   const normalisedEmail = normaliseEmail(email);
 
@@ -66,26 +68,28 @@ export async function createPurchase(
   // Use INSERT ... SELECT ... WHERE NOT EXISTS to atomically check for existing
   // active purchases. For guests, checks by guest_email. For logged-in users, checks by user_id.
   const result = await query<Purchase>(
-    `INSERT INTO purchases (user_id, guest_email, product_id, razorpay_order_id, amount, currency, status)
-     SELECT
-       CASE WHEN $6::uuid IS NOT NULL THEN $6::uuid ELSE NULL END,
-       $1,
-       $2,
-       $3,
-       $4,
-       $5,
-       'created'
-     WHERE NOT EXISTS (
-       SELECT 1 FROM purchases p
-       WHERE p.product_id = $2
-         AND p.status IN ('created', 'paid')
-         AND (
-           ($6::uuid IS NULL AND p.guest_email = $1) OR
-           ($6::uuid IS NOT NULL AND p.user_id = $6::uuid)
-         )
-     )
-     RETURNING *`,
-    [normalisedEmail, productId, razorpayOrderId, amount, currency, userId ?? null]
+    `INSERT INTO purchases (user_id, guest_email, product_id, razorpay_order_id, amount, tax_amount, total_amount, currency, status)
+      SELECT
+        CASE WHEN $6::uuid IS NOT NULL THEN $6::uuid ELSE NULL END,
+        $1,
+        $2,
+        $3,
+        $4,
+        $7,
+        $8,
+        $5,
+        'created'
+      WHERE NOT EXISTS (
+        SELECT 1 FROM purchases p
+        WHERE p.product_id = $2
+          AND p.status IN ('created', 'paid')
+          AND (
+            ($6::uuid IS NULL AND p.guest_email = $1) OR
+            ($6::uuid IS NOT NULL AND p.user_id = $6::uuid)
+          )
+      )
+      RETURNING *`,
+    [normalisedEmail, productId, razorpayOrderId, amount, currency, userId ?? null, taxAmount, totalAmount]
   );
   return result.rows[0] ?? null;
 }

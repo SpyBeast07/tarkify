@@ -2,6 +2,7 @@ import { normalizeEmail } from '../shared/sanitizers.js';
 import { validateNewsletterForm, toNewsletterFormData } from './validation.js';
 import { tryInsertSubscriber, archiveSubscriber } from './repository.js';
 import { emailService } from '../../email/index.js';
+import { notify } from '../../lib/notifications.js';
 import { config } from '../../config.js';
 
 export interface NewsletterServiceResult {
@@ -41,8 +42,18 @@ export async function subscribeToNewsletter(
 
   if (isNew) {
     const unsubscribeUrl = `${config.frontendUrl}/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}`;
+    // Customer confirmation — always sent (customer transactional email).
     emailService.sendNewsletterConfirmation({ email, unsubscribeUrl })
       .catch((err) => console.error('[newsletter] sendNewsletterConfirmation failed:', err));
+
+    // Admin notification — gated by the Newsletter Notifications toggle.
+    notify('newsletterAlerts', () =>
+      emailService.sendAdminNotification({
+        subject: 'New newsletter subscriber',
+        message: `${email} has subscribed to the newsletter.`,
+        metadata: { email },
+      }),
+    ).catch((err) => console.error('[newsletter] sendAdminNotification (signup) failed:', err));
   }
 
   return { success: true, alreadySubscribed: false };
@@ -55,6 +66,7 @@ export async function unsubscribeFromNewsletter(
   const archived = await archiveSubscriber(normalised);
 
   if (archived) {
+    // Customer unsubscribe confirmation — always sent (customer transactional email).
     emailService.sendNewsletterUnsubscribed({ email: normalised })
       .catch((err) => console.error('[newsletter] sendNewsletterUnsubscribed failed:', err));
   }

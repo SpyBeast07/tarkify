@@ -38,6 +38,8 @@
 		razorpay_signature: string | null;
 		status: string;
 		amount: number;
+		tax_amount: number;
+		total_amount: number;
 		currency: string;
 		created_at: string;
 		updated_at: string;
@@ -169,9 +171,24 @@
 										<span class="detail-value"><PaymentStatusBadge status={payment.status} /></span>
 									</div>
 									<div class="detail-item">
-										<span class="detail-label">Amount</span>
+										<span class="detail-label">Product Price</span>
 										<span class="detail-value price">{formatPrice(payment.amount, payment.currency)}</span>
 									</div>
+									{#if payment.tax_amount > 0}
+										<div class="detail-item">
+											<span class="detail-label">GST (18%)</span>
+											<span class="detail-value price">{formatPrice(payment.tax_amount, payment.currency)}</span>
+										</div>
+										<div class="detail-item">
+											<span class="detail-label">Total Payable</span>
+											<span class="detail-value price">{formatPrice(payment.total_amount, payment.currency)}</span>
+										</div>
+									{:else}
+										<div class="detail-item">
+											<span class="detail-label">Amount</span>
+											<span class="detail-value price">{formatPrice(payment.amount, payment.currency)}</span>
+										</div>
+									{/if}
 									<div class="detail-item">
 										<span class="detail-label">Currency</span>
 										<span class="detail-value">{payment.currency}</span>

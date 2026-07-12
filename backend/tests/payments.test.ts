@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, beforeAll, mock } from 'bun:test';
 import crypto from 'crypto';
+import { resetSettingsCache } from '../src/admin/settings/service.js';
 
 const keySecret = process.env.RAZORPAY_KEY_SECRET || 'xxxxxxxxxxxxxxxxxxxxxxxx';
 
@@ -53,6 +54,7 @@ beforeAll(async () => {
 describe('Payments API Route', () => {
   beforeEach(() => {
     mockDb.reset();
+    resetSettingsCache();
   });
 
   describe('POST /api/payments/create-order', () => {
@@ -85,6 +87,90 @@ describe('Payments API Route', () => {
       expect(data).toHaveProperty('amount', 2900);
       expect(data).toHaveProperty('currency', 'INR');
       expect(data).toHaveProperty('key');
+    });
+
+    it('blocks new orders when Maintenance Mode is enabled', async () => {
+      mockDb.queryMock.mockImplementation((text: string) => {
+        if (text.includes('FROM settings')) {
+          return Promise.resolve({
+            rows: [
+              {
+                id: 's-1',
+                key: 'payments',
+                value: { maintenanceMode: true, taxEnabled: false },
+                updated_at: new Date(),
+                updated_by: null,
+              },
+            ],
+            rowCount: 1,
+          });
+        }
+        if (text.includes('products')) {
+          return Promise.resolve({ rows: [FIXTURES.product], rowCount: 1 });
+        }
+        return Promise.resolve({ rows: [], rowCount: 0 });
+      });
+
+      const res = await app.request('/api/payments/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productSlug: 'devbeast',
+          email: 'user@example.com',
+        }),
+      });
+
+      expect(res.status).toBe(503);
+      const data = await res.json();
+      expect(data.error).toBe('MAINTENANCE_MODE');
+    });
+
+    it('includes tax breakdown in the order response when Tax Enabled', async () => {
+      mockDb.queryMock.mockImplementation((text: string) => {
+        if (text.includes('FROM settings')) {
+          return Promise.resolve({
+            rows: [
+              {
+                id: 's-1',
+                key: 'payments',
+                value: { maintenanceMode: false, taxEnabled: true },
+                updated_at: new Date(),
+                updated_by: null,
+              },
+            ],
+            rowCount: 1,
+          });
+        }
+        if (text.includes('products')) {
+          return Promise.resolve({ rows: [FIXTURES.product], rowCount: 1 });
+        }
+        if (text.includes('entitlements')) {
+          return Promise.resolve({ rows: [], rowCount: 0 });
+        }
+        if (text.includes('INSERT INTO purchases')) {
+          return Promise.resolve({ rows: [FIXTURES.purchase], rowCount: 1 });
+        }
+        return Promise.resolve({ rows: [], rowCount: 0 });
+      });
+
+      const res = await app.request('/api/payments/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productSlug: 'devbeast',
+          email: 'user@example.com',
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      // base 2900 + 18% GST (522) = 3422
+      expect(data.amount).toBe(3422);
+      expect(data.tax).toBeDefined();
+      expect(data.tax.taxEnabled).toBe(true);
+      expect(data.tax.baseAmount).toBe(2900);
+      expect(data.tax.taxAmount).toBe(522);
+      expect(data.tax.totalAmount).toBe(3422);
     });
 
     it('rejects order for non-existent or inactive products', async () => {

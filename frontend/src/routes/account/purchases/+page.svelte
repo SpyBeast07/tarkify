@@ -94,7 +94,10 @@
             <StatusBadge status={statusLabel(purchase.status)} />
           </div>
           <div class="purchase-meta">
-            <span>{formatPrice(purchase.amount, purchase.currency)}</span>
+            <span>{formatPrice(purchase.tax_amount > 0 ? purchase.total_amount : purchase.amount, purchase.currency)}</span>
+            {#if purchase.tax_amount > 0}
+              <span class="meta-tax">incl. {formatPrice(purchase.tax_amount, purchase.currency)} GST</span>
+            {/if}
             <span class="meta-sep">&middot;</span>
             <span>{formatDate(purchase.created_at)}</span>
           </div>

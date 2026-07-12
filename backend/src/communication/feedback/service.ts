@@ -3,6 +3,7 @@ import { Limits } from '../shared/validators.js';
 import { validateFeedbackForm, toFeedbackFormData } from './validation.js';
 import { insertFeedback } from './repository.js';
 import { emailService } from '../../email/index.js';
+import { notify } from '../../lib/notifications.js';
 import type { FeedbackRecord } from './types.js';
 
 export interface FeedbackServiceResult {
@@ -50,9 +51,12 @@ export async function submitFeedback(
     message: sanitized.message,
   };
 
-  emailService.sendFeedbackNotification(emailData)
+  // Admin notification — gated by the Feedback Notifications toggle.
+  notify('feedbackAlerts', () => emailService.sendFeedbackNotification(emailData))
     .catch((err) => console.error('[feedback] sendFeedbackNotification failed:', err));
 
+  // Applicant acknowledgement is essential transactional functionality and is
+  // always sent (no dedicated toggle controls it).
   if (sanitized.email) {
     emailService.sendFeedbackAcknowledgement(emailData)
       .catch((err) => console.error('[feedback] sendFeedbackAcknowledgement failed:', err));

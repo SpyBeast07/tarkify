@@ -39,6 +39,8 @@
 		razorpay_signature: string | null;
 		status: string;
 		amount: number;
+		tax_amount: number;
+		total_amount: number;
 		currency: string;
 		created_at: string;
 		updated_at: string;
@@ -224,9 +226,24 @@
 								<AdminSectionHeader title="Payment Information" />
 								<div class="detail-list">
 									<div class="detail-item">
-										<span class="detail-label">Amount</span>
+										<span class="detail-label">Product Price</span>
 										<span class="detail-value price">{formatPrice(order.amount, order.currency)}</span>
 									</div>
+									{#if order.tax_amount > 0}
+										<div class="detail-item">
+											<span class="detail-label">GST (18%)</span>
+											<span class="detail-value price">{formatPrice(order.tax_amount, order.currency)}</span>
+										</div>
+										<div class="detail-item">
+											<span class="detail-label">Total Payable</span>
+											<span class="detail-value price">{formatPrice(order.total_amount, order.currency)}</span>
+										</div>
+									{:else}
+										<div class="detail-item">
+											<span class="detail-label">Amount</span>
+											<span class="detail-value price">{formatPrice(order.amount, order.currency)}</span>
+										</div>
+									{/if}
 									<div class="detail-item">
 										<span class="detail-label">Currency</span>
 										<span class="detail-value">{order.currency}</span>

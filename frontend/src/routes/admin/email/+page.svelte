@@ -3,7 +3,7 @@
 	import { Search, SlidersHorizontal, Mail, Plus, Send } from '@lucide/svelte';
 	import { listEmails, getStats, getTemplates } from '$lib/admin/api/email';
 	import { AdminApiError } from '$lib/admin/api/client';
-	import type { EmailListParams } from '$lib/admin/api/email';
+	import type { EmailListParams, EmailLogRecord } from '$lib/admin/api/email';
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminEmptyState from '$lib/admin/components/AdminEmptyState.svelte';
@@ -22,18 +22,6 @@
 	import AdminGrid from '$lib/admin/components/AdminGrid.svelte';
 	import AdminStack from '$lib/admin/components/AdminStack.svelte';
 
-	interface EmailListItem {
-		id: string;
-		recipient: string;
-		template: string;
-		status: string;
-		provider: string;
-		provider_id: string | null;
-		sent_at: string;
-		error: string | null;
-		subject: string | null;
-	}
-
 	interface Stats {
 		total: number;
 		sent: number;
@@ -44,7 +32,7 @@
 		retrying: number;
 	}
 
-	let emails = $state<EmailListItem[]>([]);
+	let emails = $state<EmailLogRecord[]>([]);
 	let stats = $state<Stats | null>(null);
 	let templateOptions = $state<string[]>([]);
 	let total = $state(0);
@@ -144,8 +132,9 @@
 		});
 	}
 
-	function subjectOf(e: EmailListItem): string {
-		if (e.subject) return e.subject;
+	function subjectOf(e: EmailLogRecord): string {
+		const subject = e.metadata?.subject;
+		if (typeof subject === 'string' && subject.length > 0) return subject;
 		return '—';
 	}
 </script>

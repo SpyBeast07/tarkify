@@ -108,9 +108,24 @@
           <StatusBadge status={statusLabel(p.status)} />
         </div>
         <div class="detail-field">
-          <span class="detail-label">Amount</span>
+          <span class="detail-label">Product Price</span>
           <span class="detail-value">{formatPrice(p.amount, p.currency)}</span>
         </div>
+        {#if p.tax_amount > 0}
+          <div class="detail-field">
+            <span class="detail-label">GST (18%)</span>
+            <span class="detail-value">{formatPrice(p.tax_amount, p.currency)}</span>
+          </div>
+          <div class="detail-field">
+            <span class="detail-label">Total Payable</span>
+            <span class="detail-value">{formatPrice(p.total_amount, p.currency)}</span>
+          </div>
+        {:else}
+          <div class="detail-field">
+            <span class="detail-label">Amount</span>
+            <span class="detail-value">{formatPrice(p.amount, p.currency)}</span>
+          </div>
+        {/if}
         <div class="detail-field">
           <span class="detail-label">Payment Provider</span>
           <span class="detail-value">{p.payment_provider}</span>

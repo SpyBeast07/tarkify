@@ -7,6 +7,8 @@ export interface OrderListItem {
   product_name: string;
   product_slug: string;
   amount: number;
+  tax_amount: number;
+  total_amount: number;
   currency: string;
   status: PurchaseStatus;
   payment_provider: string;
@@ -32,6 +34,8 @@ export interface OrderDetail {
   razorpay_signature: string | null;
   status: PurchaseStatus;
   amount: number;
+  tax_amount: number;
+  total_amount: number;
   currency: string;
   created_at: string;
   updated_at: string;

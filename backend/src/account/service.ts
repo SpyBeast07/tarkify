@@ -8,6 +8,8 @@ export interface DashboardData {
     productName: string;
     productSlug: string;
     amount: number;
+    taxAmount: number;
+    totalAmount: number;
     currency: string;
     status: string;
     createdAt: string;
@@ -25,6 +27,8 @@ export interface PurchaseRow {
   razorpay_signature: string | null;
   status: string;
   amount: number;
+  tax_amount: number;
+  total_amount: number;
   currency: string;
   created_at: string;
   updated_at: string;
@@ -46,6 +50,8 @@ export interface BillingRow {
   product_name: string;
   product_slug: string;
   amount: number;
+  tax_amount: number;
+  total_amount: number;
   currency: string;
   status: string;
   razorpay_order_id: string;
@@ -75,12 +81,14 @@ export async function getDashboard(userId: string): Promise<DashboardData> {
       product_name: string;
       product_slug: string;
       amount: number;
+      tax_amount: number;
+      total_amount: number;
       currency: string;
       status: string;
       created_at: string;
     }>(
       `SELECT p.id, pr.name as product_name, pr.slug as product_slug,
-              p.amount, p.currency, p.status,
+              p.amount, p.tax_amount, p.total_amount, p.currency, p.status,
               p.created_at::text as created_at
        FROM purchases p
        JOIN products pr ON pr.id = p.product_id
@@ -99,6 +107,8 @@ export async function getDashboard(userId: string): Promise<DashboardData> {
       productName: r.product_name,
       productSlug: r.product_slug,
       amount: r.amount,
+      taxAmount: r.tax_amount,
+      totalAmount: r.total_amount,
       currency: r.currency,
       status: r.status,
       createdAt: r.created_at,
@@ -122,7 +132,7 @@ export async function getUserPurchases(
       `SELECT p.id, p.product_id,
               pr.name as product_name, pr.slug as product_slug,
               p.payment_provider, p.razorpay_order_id, p.razorpay_payment_id,
-              p.razorpay_signature, p.status, p.amount, p.currency,
+              p.razorpay_signature, p.status, p.amount, p.tax_amount, p.total_amount, p.currency,
               p.created_at::text as created_at, p.updated_at::text as updated_at
        FROM purchases p
        JOIN products pr ON pr.id = p.product_id
@@ -154,7 +164,7 @@ export async function getUserPurchaseById(
     `SELECT p.id, p.product_id,
             pr.name as product_name, pr.slug as product_slug,
             p.payment_provider, p.razorpay_order_id, p.razorpay_payment_id,
-            p.razorpay_signature, p.status, p.amount, p.currency,
+            p.razorpay_signature, p.status, p.amount, p.tax_amount, p.total_amount, p.currency,
             p.created_at::text as created_at, p.updated_at::text as updated_at
      FROM purchases p
      JOIN products pr ON pr.id = p.product_id
@@ -206,7 +216,7 @@ export async function getBillingHistory(
     ),
     query<BillingRow>(
       `SELECT p.id, pr.name as product_name, pr.slug as product_slug,
-              p.amount, p.currency, p.status,
+              p.amount, p.tax_amount, p.total_amount, p.currency, p.status,
               p.razorpay_order_id, p.razorpay_payment_id,
               p.created_at::text as created_at
        FROM purchases p

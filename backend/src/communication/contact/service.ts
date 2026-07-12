@@ -3,6 +3,7 @@ import { Limits } from '../shared/validators.js';
 import { validateContactForm, toContactFormData } from './validation.js';
 import { insertContactMessage } from './repository.js';
 import { emailService } from '../../email/index.js';
+import { notify } from '../../lib/notifications.js';
 import type { ContactMessage } from './types.js';
 
 export interface ContactServiceResult {
@@ -49,10 +50,12 @@ export async function submitContact(
     message: sanitized.message,
   };
 
+  // Customer acknowledgement — always sent (customer transactional email).
   emailService.sendContactAcknowledgement(emailData)
     .catch((err) => console.error('[contact] sendContactAcknowledgement failed:', err));
 
-  emailService.sendContactNotification(emailData)
+  // Admin notification — gated by the Contact Form Notifications toggle.
+  notify('contactAlerts', () => emailService.sendContactNotification(emailData))
     .catch((err) => console.error('[contact] sendContactNotification failed:', err));
 
   return { success: true, data: record };

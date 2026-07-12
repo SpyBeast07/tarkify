@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'bun:test';
 import { mock } from 'bun:test';
+import { resetSettingsCache } from '../src/admin/settings/service.ts';
 
 let mockDb: any;
 
@@ -10,6 +11,7 @@ beforeAll(async () => {
 
 beforeEach(() => {
   mockDb.reset();
+  resetSettingsCache();
 });
 
 function mockSettingsRows(rows: Array<{ key: string; value: Record<string, unknown> }>) {
@@ -26,20 +28,17 @@ function mockSettingsRows(rows: Array<{ key: string; value: Record<string, unkno
 }
 
 describe('Settings validation', () => {
-  it('rejects an invalid accepted currency', async () => {
-    const { parseGroup } = await import('../src/admin/settings/validation.ts');
-    expect(() => parseGroup('payments', { acceptedCurrency: 'XY' })).toThrow();
-  });
-
-  it('rejects an invalid receipt prefix', async () => {
-    const { parseGroup } = await import('../src/admin/settings/validation.ts');
-    expect(() => parseGroup('payments', { receiptPrefix: '' })).toThrow();
-  });
-
   it('coerces boolean defaults', async () => {
     const { parseGroup } = await import('../src/admin/settings/validation.ts');
     const parsed = parseGroup('notifications', {});
     expect(parsed.adminEmailAlerts).toBe(true);
+  });
+
+  it('coerces payments defaults', async () => {
+    const { parseGroup } = await import('../src/admin/settings/validation.ts');
+    const parsed = parseGroup('payments', {});
+    expect(parsed.maintenanceMode).toBe(false);
+    expect(parsed.taxEnabled).toBe(false);
   });
 });
 
@@ -48,16 +47,16 @@ describe('Settings service', () => {
     mockSettingsRows([]);
     const svc = await import('../src/admin/settings/service.ts');
     const all = await svc.getAllSettings();
-    expect(all.payments.enablePayments).toBe(true);
+    expect(all.payments.maintenanceMode).toBe(false);
     expect(all.notifications.adminEmailAlerts).toBe(true);
   });
 
   it('merges stored values over defaults', async () => {
-    mockSettingsRows([{ key: 'payments', value: { enablePayments: false } }]);
+    mockSettingsRows([{ key: 'payments', value: { maintenanceMode: true } }]);
     const svc = await import('../src/admin/settings/service.ts');
     const payments = await svc.getSettings('payments');
-    expect(payments.enablePayments).toBe(false);
-    expect(payments.acceptedCurrency).toBe('INR');
+    expect(payments.maintenanceMode).toBe(true);
+    expect(payments.taxEnabled).toBe(false);
   });
 
   it('persists and audits an update', async () => {
@@ -65,12 +64,13 @@ describe('Settings service', () => {
     const svc = await import('../src/admin/settings/service.ts');
     const updated = await svc.updateSettings(
       'payments',
-      { enablePayments: false, maintenanceMode: true, acceptedCurrency: 'USD', taxEnabled: true, receiptPrefix: 'R-' },
+      { maintenanceMode: true, taxEnabled: true },
       'admin-user-1',
       '127.0.0.1',
       'agent',
     );
-    expect(updated.enablePayments).toBe(false);
+    expect(updated.maintenanceMode).toBe(true);
+    expect(updated.taxEnabled).toBe(true);
 
     const auditInsert = mockDb.queries.find(
       (q: any) => q.text.includes('INSERT INTO audit_logs') && q.params?.[1] === 'payments_updated',
@@ -85,7 +85,7 @@ describe('Settings service', () => {
     mockSettingsRows([]);
     const svc = await import('../src/admin/settings/service.ts');
     await expect(
-      svc.updateSettings('payments', { acceptedCurrency: 'X' }, 'admin-user-1'),
+      svc.updateSettings('payments', { maintenanceMode: 'not-a-bool' }, 'admin-user-1'),
     ).rejects.toThrow();
   });
 });

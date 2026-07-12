@@ -3,12 +3,21 @@
  * Mirrors the backend API contracts.
  */
 
+export interface TaxBreakdown {
+	baseAmount: number;
+	taxAmount: number;
+	totalAmount: number;
+	taxRate: number;
+	taxEnabled: boolean;
+}
+
 export interface CreateOrderResponse {
 	orderId: string;
 	amount: number;
 	currency: string;
 	key: string;
 	productName: string;
+	tax?: TaxBreakdown;
 }
 
 export interface VerifyPaymentResponse {

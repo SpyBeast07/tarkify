@@ -20,6 +20,8 @@ export interface DashboardData {
     productName: string;
     productSlug: string;
     amount: number;
+    taxAmount: number;
+    totalAmount: number;
     currency: string;
     status: string;
     createdAt: string;
@@ -39,6 +41,8 @@ export interface PurchaseRow {
   razorpay_signature: string | null;
   status: string;
   amount: number;
+  tax_amount: number;
+  total_amount: number;
   currency: string;
   created_at: string;
   updated_at: string;
@@ -76,6 +80,8 @@ export interface BillingRow {
   product_name: string;
   product_slug: string;
   amount: number;
+  tax_amount: number;
+  total_amount: number;
   currency: string;
   status: string;
   razorpay_order_id: string;

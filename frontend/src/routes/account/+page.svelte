@@ -165,7 +165,7 @@
               <div class="activity-info">
                 <span class="activity-product">{item.productName}</span>
                 <span class="activity-meta">
-                  {formatPrice(item.amount, item.currency)} &middot; {item.status}
+                  {formatPrice(item.taxAmount > 0 ? item.totalAmount : item.amount, item.currency)} &middot; {item.status}
                 </span>
               </div>
               <div class="activity-right">
