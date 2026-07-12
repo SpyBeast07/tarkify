@@ -132,12 +132,12 @@
 		cursor: pointer;
 	}
 
-	[data-theme='dark'] .admin-select-field {
+	:global([data-theme='dark']) .admin-select-field {
 		background: rgba(0, 36, 0, 0.15);
 		color: var(--color-white);
 	}
 
-	[data-theme='dark'] .admin-select-field option {
+	:global([data-theme='dark']) .admin-select-field option {
 		background: var(--color-light-bg);
 		color: var(--color-text);
 	}
@@ -166,7 +166,7 @@
 		box-shadow: 0 0 0 3px rgba(123, 144, 75, 0.12);
 	}
 
-	[data-theme='dark'] .admin-select-field:focus:not(:disabled) {
+	:global([data-theme='dark']) .admin-select-field:focus:not(:disabled) {
 		background: rgba(0, 36, 0, 0.25);
 		border-color: var(--color-accent-green);
 		box-shadow: 0 0 0 3px rgba(123, 144, 75, 0.12);

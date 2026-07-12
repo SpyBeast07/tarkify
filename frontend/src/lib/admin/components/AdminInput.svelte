@@ -112,7 +112,7 @@
 		outline: none;
 	}
 
-	[data-theme='dark'] .admin-input-field {
+	:global([data-theme='dark']) .admin-input-field {
 		background: rgba(0, 36, 0, 0.15);
 		color: var(--color-white);
 	}
@@ -132,7 +132,7 @@
 		box-shadow: 0 0 0 3px rgba(123, 144, 75, 0.12);
 	}
 
-	[data-theme='dark'] .admin-input-field:focus:not(:disabled) {
+	:global([data-theme='dark']) .admin-input-field:focus:not(:disabled) {
 		background: rgba(0, 36, 0, 0.25);
 		border-color: var(--color-accent-green);
 		box-shadow: 0 0 0 3px rgba(123, 144, 75, 0.12);

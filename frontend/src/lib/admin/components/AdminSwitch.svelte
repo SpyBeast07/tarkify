@@ -53,7 +53,7 @@
 		flex-shrink: 0;
 	}
 
-	[data-theme='dark'] .admin-switch {
+	:global([data-theme='dark']) .admin-switch {
 		background: rgba(255, 255, 255, 0.1);
 	}
 

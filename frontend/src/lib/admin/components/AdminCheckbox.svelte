@@ -79,7 +79,7 @@
 		flex-shrink: 0;
 	}
 
-	[data-theme='dark'] .admin-checkbox-custom {
+	:global([data-theme='dark']) .admin-checkbox-custom {
 		background: rgba(0, 36, 0, 0.15);
 	}
 

@@ -46,7 +46,7 @@
 		background: rgba(255, 255, 255, 0.1);
 	}
 
-	[data-theme='dark'] .admin-table :global(th) {
+	:global([data-theme='dark']) .admin-table :global(th) {
 		background: rgba(0, 0, 0, 0.2);
 	}
 
