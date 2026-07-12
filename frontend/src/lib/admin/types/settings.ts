@@ -3,6 +3,7 @@ export type SettingsGroup = 'payments' | 'notifications';
 export interface PaymentsSettings {
 	maintenanceMode: boolean;
 	taxEnabled: boolean;
+	taxRate: number;
 }
 
 export interface NotificationsSettings {
@@ -27,7 +28,7 @@ export const SETTINGS_GROUP_LABELS: Record<SettingsGroup, string> = {
 	notifications: 'Admin Notification Preferences'
 };
 
-export type FieldType = 'text' | 'toggle';
+export type FieldType = 'text' | 'number' | 'toggle';
 
 export interface FieldOption {
 	value: string;
@@ -44,6 +45,7 @@ export interface FieldConfig {
 	options?: FieldOption[];
 	min?: number;
 	max?: number;
+	step?: number;
 	readOnly?: boolean;
 }
 
@@ -63,7 +65,8 @@ export const SETTINGS_SECTIONS: SectionConfig[] = [
 		description: 'Payment and receipt behavior. Gateway secrets are managed outside the app.',
 		fields: [
 			{ key: 'maintenanceMode', label: 'Maintenance Mode', type: 'toggle' },
-			{ key: 'taxEnabled', label: 'Tax Enabled', type: 'toggle' }
+			{ key: 'taxEnabled', label: 'Tax Enabled', type: 'toggle' },
+			{ key: 'taxRate', label: 'Tax Rate (%)', type: 'number', min: 0, max: 100, step: 0.01, help: 'Tax percentage applied when Tax Enabled is on. Default: 18%.' }
 		]
 	},
 	{

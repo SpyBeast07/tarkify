@@ -5,6 +5,7 @@ export type SettingsGroup =
 export interface PaymentsSettings {
   maintenanceMode: boolean;
   taxEnabled: boolean;
+  taxRate: number;
 }
 
 export interface NotificationsSettings {
@@ -36,6 +37,7 @@ export const DEFAULT_SETTINGS: SettingsValueMap = {
   payments: {
     maintenanceMode: false,
     taxEnabled: false,
+    taxRate: 18,
   },
   notifications: {
     adminEmailAlerts: true,

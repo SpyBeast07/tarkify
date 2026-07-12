@@ -30,13 +30,16 @@
 		<label class="field-label" for="{config.key}-input">{config.label}</label>
 		<AdminInput
 			id={config.key}
-			type="text"
+			type={config.type === 'number' ? 'number' : 'text'}
 			bind:value
 			disabled={fieldDisabled}
 			required={config.required}
 			placeholder={config.placeholder}
 			{error}
 			help={config.help}
+			min={config.min}
+			max={config.max}
+			step={config.step}
 		/>
 	</div>
 {/if}
