@@ -57,9 +57,9 @@
 
 	let showFilters = $state(false);
 	let statusOptions = $state<string[]>([]);
+	let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 	async function loadCustomers() {
-		loading = true;
 		error = null;
 		try {
 			const params = new URLSearchParams();
@@ -103,13 +103,12 @@
 		loadCustomers();
 	});
 
-	function handleSearch() {
-		page = 1;
-		loadCustomers();
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') handleSearch();
+	function onSearchInput() {
+		if (searchTimer) clearTimeout(searchTimer);
+		searchTimer = setTimeout(() => {
+			page = 1;
+			loadCustomers();
+		}, 300);
 	}
 
 	function goToPage(p: number) {
@@ -132,6 +131,7 @@
 		dateTo = '';
 		sort = 'newest';
 		page = 1;
+		if (searchTimer) clearTimeout(searchTimer);
 		loadCustomers();
 	}
 
@@ -165,7 +165,7 @@
 					type="text"
 					bind:value={search}
 					placeholder="Search by name or email..."
-					onkeydown={handleKeydown}
+					oninput={onSearchInput}
 					aria-label="Search customers"
 					icon={Search}
 				/>

@@ -53,9 +53,9 @@
 
 	let showFilters = $state(false);
 	let productOptions = $state<Array<{ id: string; name: string }>>([]);
+	let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 	async function loadDownloads() {
-		loading = true;
 		error = null;
 		try {
 			const params = new URLSearchParams();
@@ -96,13 +96,12 @@
 		loadDownloads();
 	});
 
-	function handleSearch() {
-		page = 1;
-		loadDownloads();
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') handleSearch();
+	function onSearchInput() {
+		if (searchTimer) clearTimeout(searchTimer);
+		searchTimer = setTimeout(() => {
+			page = 1;
+			loadDownloads();
+		}, 300);
 	}
 
 	function goToPage(p: number) {
@@ -121,6 +120,7 @@
 		productFilter = '';
 		sort = 'newest';
 		page = 1;
+		if (searchTimer) clearTimeout(searchTimer);
 		loadDownloads();
 	}
 </script>
@@ -144,7 +144,7 @@
 					type="text"
 					bind:value={search}
 					placeholder="Search by customer, product, or token..."
-					onkeydown={handleKeydown}
+					oninput={onSearchInput}
 					aria-label="Search downloads"
 					icon={Search}
 				/>

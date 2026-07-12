@@ -56,10 +56,10 @@
 
 	let showFilters = $state(false);
 	let statusOptions = $state<string[]>([]);
+	let searchTimer: ReturnType<typeof setTimeout> | null = null;
 	let productOptions = $state<Array<{ id: string; name: string }>>([]);
 
 	async function loadOrders() {
-		loading = true;
 		error = null;
 		try {
 			const params = new URLSearchParams();
@@ -106,13 +106,12 @@
 		loadOrders();
 	});
 
-	function handleSearch() {
-		page = 1;
-		loadOrders();
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') handleSearch();
+	function onSearchInput() {
+		if (searchTimer) clearTimeout(searchTimer);
+		searchTimer = setTimeout(() => {
+			page = 1;
+			loadOrders();
+		}, 300);
 	}
 
 	function goToPage(p: number) {
@@ -134,6 +133,7 @@
 		dateTo = '';
 		sort = 'newest';
 		page = 1;
+		if (searchTimer) clearTimeout(searchTimer);
 		loadOrders();
 	}
 </script>
@@ -156,7 +156,7 @@
 					type="text"
 					bind:value={search}
 					placeholder="Search by name, email, order ID, or payment ID..."
-					onkeydown={handleKeydown}
+					oninput={onSearchInput}
 					aria-label="Search orders"
 					icon={Search}
 				/>

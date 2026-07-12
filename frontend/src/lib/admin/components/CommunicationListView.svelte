@@ -62,9 +62,9 @@
 	let selected = $state<Set<string>>(new Set());
 	let bulkLoading = $state(false);
 	let bulkError = $state<string | null>(null);
+	let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 	async function load() {
-		loading = true;
 		error = null;
 		const params: ListParams = {
 			search: search || undefined,
@@ -89,13 +89,12 @@
 
 	onMount(load);
 
-	function handleSearch() {
-		page = 1;
-		load();
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') handleSearch();
+	function onSearchInput() {
+		if (searchTimer) clearTimeout(searchTimer);
+		searchTimer = setTimeout(() => {
+			page = 1;
+			load();
+		}, 300);
 	}
 
 	function goToPage(p: number) {
@@ -109,6 +108,7 @@
 		sort = 'newest';
 		archivedFilter = '';
 		page = 1;
+		if (searchTimer) clearTimeout(searchTimer);
 		load();
 	}
 
@@ -177,7 +177,7 @@
 				type="text"
 				bind:value={search}
 				placeholder={searchPlaceholder}
-				onkeydown={handleKeydown}
+				oninput={onSearchInput}
 				aria-label={`Search ${title}`}
 			/>
 		</div>

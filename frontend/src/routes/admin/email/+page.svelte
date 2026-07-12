@@ -63,9 +63,9 @@
 	let sort = $state('newest');
 
 	let showFilters = $state(false);
+	let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 	async function load() {
-		loading = true;
 		error = null;
 		try {
 			const listParams: EmailListParams = {};
@@ -108,13 +108,12 @@
 
 	onMount(load);
 
-	function handleSearch() {
-		page = 1;
-		load();
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') handleSearch();
+	function onSearchInput() {
+		if (searchTimer) clearTimeout(searchTimer);
+		searchTimer = setTimeout(() => {
+			page = 1;
+			load();
+		}, 300);
 	}
 
 	function goToPage(p: number) {
@@ -131,6 +130,7 @@
 		dateTo = '';
 		sort = 'newest';
 		page = 1;
+		if (searchTimer) clearTimeout(searchTimer);
 		load();
 	}
 
@@ -191,7 +191,7 @@
 						type="text"
 						bind:value={search}
 						placeholder="Search recipient, subject, or type..."
-						onkeydown={handleKeydown}
+						oninput={onSearchInput}
 						aria-label="Search emails"
 						icon={Search}
 					/>

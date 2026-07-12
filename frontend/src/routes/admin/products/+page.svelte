@@ -58,9 +58,9 @@
 
 	let showFilters = $state(false);
 	let categories = $state<string[]>([]);
+	let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 	async function loadProducts() {
-		loading = true;
 		error = null;
 		try {
 			const params = new URLSearchParams();
@@ -102,13 +102,12 @@
 		loadProducts();
 	});
 
-	function handleSearch() {
-		page = 1;
-		loadProducts();
-	}
-
-	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter') handleSearch();
+	function onSearchInput() {
+		if (searchTimer) clearTimeout(searchTimer);
+		searchTimer = setTimeout(() => {
+			page = 1;
+			loadProducts();
+		}, 300);
 	}
 
 	function goToPage(p: number) {
@@ -129,6 +128,7 @@
 		categoryFilter = '';
 		sort = 'newest';
 		page = 1;
+		if (searchTimer) clearTimeout(searchTimer);
 		loadProducts();
 	}
 </script>
@@ -147,7 +147,7 @@
 					type="text"
 					bind:value={search}
 					placeholder="Search by name or slug..."
-					onkeydown={handleKeydown}
+					oninput={onSearchInput}
 					aria-label="Search products"
 					icon={Search}
 				/>

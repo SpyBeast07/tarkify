@@ -74,7 +74,6 @@
 	);
 
 	async function load() {
-		loading = true;
 		error = null;
 		try {
 			const res = await getAuditLogs(params);

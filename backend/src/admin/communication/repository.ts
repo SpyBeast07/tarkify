@@ -10,19 +10,16 @@ import type {
   CommunicationListParams,
 } from './types.js';
 
-function buildListWhere(params: CommunicationListParams): { clause: string; values: unknown[] } {
+function buildListWhere(params: CommunicationListParams, searchColumns: string[]): { clause: string; values: unknown[] } {
   const conditions: string[] = [];
   const values: unknown[] = [];
   let idx = 1;
 
   if (params.search) {
-    conditions.push(`(
-      COALESCE(r.name, '') ILIKE $${idx}
-      OR COALESCE(r.email, '') ILIKE $${idx}
-      OR COALESCE(r.subject, '') ILIKE $${idx}
-      OR COALESCE(r.product, '') ILIKE $${idx}
-      OR COALESCE(r.message, '') ILIKE $${idx}
-    )`);
+    const likeConditions = searchColumns
+      .map((col) => `COALESCE(r.${col}, '') ILIKE $${idx}`)
+      .join('\n      OR ');
+    conditions.push(`(\n      ${likeConditions}\n    )`);
     values.push(`%${params.search}%`);
     idx++;
   }
@@ -71,7 +68,7 @@ export async function listContactMessages(params: CommunicationListParams): Prom
   const page = Math.max(1, params.page ?? 1);
   const perPage = Math.min(100, Math.max(1, params.perPage ?? 20));
   const offset = (page - 1) * perPage;
-  const { clause, values } = buildListWhere( params);
+  const { clause, values } = buildListWhere(params, ['name', 'email', 'company', 'subject', 'message']);
 
   const countResult = await query<{ count: number }>(
     `SELECT COUNT(*)::int AS count FROM contact_messages r ${clause}`, values,
@@ -133,7 +130,7 @@ export async function listFeedback(params: CommunicationListParams): Promise<{ i
   const page = Math.max(1, params.page ?? 1);
   const perPage = Math.min(100, Math.max(1, params.perPage ?? 20));
   const offset = (page - 1) * perPage;
-  const { clause, values } = buildListWhere( params);
+  const { clause, values } = buildListWhere(params, ['name', 'email', 'product', 'message']);
 
   const countResult = await query<{ count: number }>(
     `SELECT COUNT(*)::int AS count FROM feedback r ${clause}`, values,
@@ -195,7 +192,7 @@ export async function listNewsletterSubscribers(params: CommunicationListParams)
   const page = Math.max(1, params.page ?? 1);
   const perPage = Math.min(100, Math.max(1, params.perPage ?? 20));
   const offset = (page - 1) * perPage;
-  const { clause, values } = buildListWhere( params);
+  const { clause, values } = buildListWhere(params, ['email']);
 
   const countResult = await query<{ count: number }>(
     `SELECT COUNT(*)::int AS count FROM newsletter_subscribers r ${clause}`, values,
@@ -244,7 +241,7 @@ export async function listCareerApplications(params: CommunicationListParams): P
   const page = Math.max(1, params.page ?? 1);
   const perPage = Math.min(100, Math.max(1, params.perPage ?? 20));
   const offset = (page - 1) * perPage;
-  const { clause, values } = buildListWhere( params);
+  const { clause, values } = buildListWhere(params, ['name', 'email', 'phone', 'cover_letter']);
 
   const countResult = await query<{ count: number }>(
     `SELECT COUNT(*)::int AS count FROM career_applications r ${clause}`, values,
