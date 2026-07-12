@@ -68,7 +68,7 @@ export function buildPasswordResetEmail(data: PasswordResetEmailData): string {
           <td style="padding:0 ${theme.spacing.lg};font-family:${theme.text.muted.fontFamily};font-size:${theme.text.muted.fontSize};color:${theme.text.muted.color};line-height:${theme.text.muted.lineHeight};">
             <p style="margin:0 0 ${theme.spacing.sm} 0;">
               Need help?
-              <a href="mailto:support@tarkify.com" style="color:${theme.link.color};text-decoration:${theme.link.decoration};">Contact support</a>
+              <a href="mailto:support@tarkify.qzz.io" style="color:${theme.link.color};text-decoration:${theme.link.decoration};">Contact support</a>
             </p>
           </td>
         </tr>

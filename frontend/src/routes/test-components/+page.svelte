@@ -28,7 +28,7 @@
 	let testSelectValue = $state('Option A');
 
 	let markdownText = $state(
-		'## Markdown Heading\nThis is **bold** text and a [link to Tarkify](https://tarkify.com).\n* List item one\n* List item two'
+		'## Markdown Heading\nThis is **bold** text and a [link to Tarkify](https://tarkify.qzz.io).\n* List item one\n* List item two'
 	);
 	let parsedHtml = $derived(parseMarkdown(markdownText));
 

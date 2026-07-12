@@ -31,13 +31,13 @@ export function renderAllPreviews(): PreviewItem[] {
 
   const verification = buildVerificationEmail({
     email: 'user@example.com',
-    verificationUrl: 'https://tarkify.com/verify?token=abc123',
+    verificationUrl: 'https://tarkify.qzz.io/verify?token=abc123',
     userName: 'Jane',
   });
 
   const passwordReset = buildPasswordResetEmail({
     email: 'user@example.com',
-    resetUrl: 'https://tarkify.com/reset-password?token=xyz789',
+    resetUrl: 'https://tarkify.qzz.io/reset-password?token=xyz789',
     userName: 'Jane',
   });
 
@@ -51,16 +51,16 @@ export function renderAllPreviews(): PreviewItem[] {
     razorpayOrderId: 'order_DEF456UVW',
     purchaseDate: now,
     receiptUrl: 'https://razorpay.com/receipt/abc',
-    accountUrl: 'https://tarkify.com/account',
+    accountUrl: 'https://tarkify.qzz.io/account',
   });
 
   const download = buildDownloadEmail({
     email: 'user@example.com',
     userName: 'Jane',
     productName: 'Premium Course Bundle',
-    downloadUrl: 'https://tarkify.com/download?token=dl_abc123',
+    downloadUrl: 'https://tarkify.qzz.io/download?token=dl_abc123',
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    accountUrl: 'https://tarkify.com/account',
+    accountUrl: 'https://tarkify.qzz.io/account',
   });
 
   const contactNotification = buildContactNotificationEmail({
@@ -101,7 +101,7 @@ export function renderAllPreviews(): PreviewItem[] {
   const newsletterConfirmation = buildNewsletterConfirmationEmail({
     email: 'subscriber@example.com',
     userName: 'Jane',
-    unsubscribeUrl: 'https://tarkify.com/newsletter/unsubscribe?token=sub_abc123',
+    unsubscribeUrl: 'https://tarkify.qzz.io/newsletter/unsubscribe?token=sub_abc123',
   });
 
   const newsletterUnsubscribed = buildNewsletterUnsubscribedEmail({
@@ -116,7 +116,7 @@ export function renderAllPreviews(): PreviewItem[] {
       name: 'John Smith',
       email: 'john@example.com',
       phone: '+1-555-0123',
-      resume_url: 'https://storage.tarkify.com/uploads/resume.pdf',
+      resume_url: 'https://storage.tarkify.qzz.io/uploads/resume.pdf',
       portfolio_url: 'https://johnsmith.dev',
     },
   });

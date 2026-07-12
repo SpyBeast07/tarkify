@@ -54,7 +54,7 @@ for (const file of files) {
   for (const link of linkMatches) {
     // Check for href
     check(checks, /href=(["'])/.test(link), 'All <a> have href', `Missing href in: ${link.substring(0, 60)}`);
-    if (link.includes('href="mailto:support@tarkify.com')) {
+    if (link.includes('href="mailto:support@tarkify.qzz.io')) {
       // mailto links are fine without target
     } else if (link.includes('href="')) {
       check(checks, /target="_blank"/.test(link), 'External <a> has target="_blank"', `Missing target in: ${link.substring(0, 60)}`);

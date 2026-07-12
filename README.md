@@ -79,7 +79,7 @@ The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), B
 | Variable | Required | Default | Purpose | Production Note |
 | --- | --- | --- | --- | --- |
 | `RESEND_API_KEY` | Production only | — | Resend API key for sending emails. | Create at https://resend.com/api-keys. Optional in dev (emails are logged). |
-| `FROM_EMAIL` | Optional | `noreply@tarkify.com` | Sender address displayed to recipients. | Must use a domain verified in the Resend dashboard. |
+| `FROM_EMAIL` | Optional | `noreply@tarkify.qzz.io` | Sender address displayed to recipients. | Must use a domain verified in the Resend dashboard. |
 | `REPLY_TO_EMAIL` | Optional | `support@tarkify.qzz.io` | Reply-to header on all outgoing emails. | Set to a monitored support mailbox. |
 | `ADMIN_EMAIL` | Required | — | Recipient for admin notifications (contact forms, career applications). | Set to a monitored administrator mailbox. |
 | `EMAIL_PROVIDER` | Optional | `resend` | Email provider name. | Only `resend` is implemented. |

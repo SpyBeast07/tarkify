@@ -66,7 +66,7 @@ describe('Settings service', () => {
     mockSettingsRows([]);
     const svc = await import('../src/admin/settings/service.ts');
     const all = await svc.getAllSettings();
-    expect(all.email.adminNotificationEmail).toBe('admin@tarkify.com');
+    expect(all.email.adminNotificationEmail).toBe('admin@tarkify.qzz.io');
     expect(all.brand.primaryColor).toBe('#7b904b');
     expect(all.features.analytics).toBe(true);
   });

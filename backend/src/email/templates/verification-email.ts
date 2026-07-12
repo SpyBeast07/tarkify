@@ -57,7 +57,7 @@ export function buildVerificationEmail(data: VerificationEmailData): string {
           <td style="padding:0 ${theme.spacing.lg};font-family:${theme.text.muted.fontFamily};font-size:${theme.text.muted.fontSize};color:${theme.text.muted.color};line-height:${theme.text.muted.lineHeight};">
             <p style="margin:0;">
               Need help? Contact us at
-              <a href="mailto:support@tarkify.com" style="color:${theme.link.color};text-decoration:${theme.link.decoration};">support@tarkify.com</a>
+              <a href="mailto:support@tarkify.qzz.io" style="color:${theme.link.color};text-decoration:${theme.link.decoration};">support@tarkify.qzz.io</a>
             </p>
           </td>
         </tr>

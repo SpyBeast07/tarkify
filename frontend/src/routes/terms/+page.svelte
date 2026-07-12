@@ -123,7 +123,7 @@
 					<div class="legal-card-body">
 						<p>
 							Welcome to Tarkify ("Company," "we," "us," or "our"). By accessing or using our
-							website located at <a href="/">tarkify.com</a>, our software, API, and custom AI
+							website located at <a href="/">tarkify.qzz.io</a>, our software, API, and custom AI
 							agents (collectively, the "Services"), you agree to be bound by these Terms of Service
 							("Terms"). If you do not agree to these Terms, please do not access or use our
 							Services.
@@ -348,7 +348,7 @@
 						<p>If you have any questions about these Terms, please contact the Tarkify team:</p>
 						<ul>
 							<li>Email: <a href="mailto:tarkify.ai@gmail.com">tarkify.ai@gmail.com</a></li>
-							<li>Website Contact Form: <a href="/contact">tarkify.com/contact</a></li>
+							<li>Website Contact Form: <a href="/contact">tarkify.qzz.io/contact</a></li>
 						</ul>
 					</div>
 				</section>

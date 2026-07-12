@@ -390,7 +390,7 @@
 						</p>
 						<ul>
 							<li>Email: <a href="mailto:tarkify.ai@gmail.com">tarkify.ai@gmail.com</a></li>
-							<li>Website Contact Form: <a href="/contact">tarkify.com/contact</a></li>
+							<li>Website Contact Form: <a href="/contact">tarkify.qzz.io/contact</a></li>
 						</ul>
 					</div>
 				</section>

@@ -151,7 +151,7 @@ export const DEFAULT_SETTINGS: SettingsValueMap = {
   email: {
     defaultFromName: 'Tarkify',
     replyToName: 'Tarkify Support',
-    adminNotificationEmail: 'admin@tarkify.com',
+    adminNotificationEmail: 'admin@tarkify.qzz.io',
     emailFooter: '© Tarkify. All rights reserved.',
     signature: '— The Tarkify Team',
     enableEmailSending: true,

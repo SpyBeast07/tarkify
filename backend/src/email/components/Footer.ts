@@ -27,7 +27,7 @@ export function Footer(props?: FooterProps): string {
             line-height:${theme.lineHeights.base};
           ">
             If you have any questions, reply to this email or contact us at
-            <a href="mailto:support@tarkify.com" style="color:${theme.colors.accentGreen};text-decoration:${theme.link.decoration};">support@tarkify.com</a>
+            <a href="mailto:support@tarkify.qzz.io" style="color:${theme.colors.accentGreen};text-decoration:${theme.link.decoration};">support@tarkify.qzz.io</a>
           </p>
           ${unsubscribeUrl ? `
             <p style="margin:${theme.spacing.sm} 0 0 0;">
