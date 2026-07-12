@@ -6,11 +6,11 @@ import { Button } from '../components/Button.js';
 import { Divider } from '../components/Divider.js';
 import { Signature } from '../components/Signature.js';
 import { theme } from '../styles/theme.js';
+import { formatPrice } from '../../lib/currency.js';
 import type { PurchaseReceiptEmailData } from '../types.js';
 
 export function buildPurchaseReceiptEmail(data: PurchaseReceiptEmailData): string {
-  const formattedAmount = (data.amount / 100).toFixed(2);
-  const price = `${formattedAmount} ${data.currency}`;
+  const price = formatPrice(data.amount, data.currency);
   const name = data.userName ?? 'there';
 
   return EmailLayout({

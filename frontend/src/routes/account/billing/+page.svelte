@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getContext } from 'svelte';
+  import { formatPrice } from '$lib/utils/currency';
   import {
     CreditCard, AlertTriangle, RefreshCw, Copy
   } from '@lucide/svelte';
@@ -51,17 +52,6 @@
     return new Date(iso).toLocaleDateString('en-US', {
       month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
     });
-  }
-
-  function formatAmount(amount: number, currency: string): string {
-    try {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: currency,
-      }).format(amount / 100);
-    } catch {
-      return `${currency} ${(amount / 100).toFixed(2)}`;
-    }
   }
 
   function statusLabel(status: string): string {
@@ -117,7 +107,7 @@
             <span class="row-product">{payment.product_name}</span>
           </div>
           <div class="col-amount">
-            <span class="row-amount">{formatAmount(payment.amount, payment.currency)}</span>
+            <span class="row-amount">{formatPrice(payment.amount, payment.currency)}</span>
           </div>
           <div class="col-status">
             <StatusBadge status={statusLabel(payment.status)} />

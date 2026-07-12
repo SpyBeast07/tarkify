@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'bun:test';
+import { formatPrice } from '../src/lib/currency.js';
 
 describe('Purchase Service', () => {
   describe('normaliseEmail', () => {
@@ -55,19 +56,13 @@ describe('Purchase Service', () => {
   });
 
   describe('price formatting', () => {
-    function formatPrice(paise: number, currency: string = 'INR'): string {
-      const value = (paise / 100).toFixed(currency === 'INR' ? 0 : 2);
-      if (currency === 'INR') return `₹${value}`;
-      return `${currency} ${value}`;
-    }
-
     it('formats INR price from paise', () => {
       expect(formatPrice(2900)).toBe('₹29');
       expect(formatPrice(100)).toBe('₹1');
     });
 
     it('formats USD price from cents', () => {
-      expect(formatPrice(2999, 'USD')).toBe('USD 29.99');
+      expect(formatPrice(2999, 'USD')).toBe('$30');
     });
 
     it('handles zero', () => {

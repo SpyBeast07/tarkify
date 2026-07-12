@@ -2,6 +2,7 @@
 	import { FileText, ExternalLink } from '@lucide/svelte';
 	import SectionCard from '$lib/components/ui/SectionCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+	import { formatPrice } from '$lib/utils/currency';
 
 	interface ReceiptData {
 		receipt_number: string;
@@ -31,18 +32,6 @@
 			hour: '2-digit',
 			minute: '2-digit'
 		});
-	}
-
-	function formatPrice(amount: number, currency: string): string {
-		try {
-			return new Intl.NumberFormat('en-IN', {
-				style: 'currency',
-				currency: currency || 'INR',
-				maximumFractionDigits: 0
-			}).format(amount);
-		} catch {
-			return `${currency} ${amount}`;
-		}
 	}
 </script>
 

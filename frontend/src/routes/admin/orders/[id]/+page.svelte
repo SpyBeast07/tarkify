@@ -2,7 +2,9 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { ArrowLeft, CreditCard } from '@lucide/svelte';
+	import { formatPrice } from '$lib/utils/currency';
 	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
+
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminSection from '$lib/admin/components/AdminSection.svelte';
@@ -118,18 +120,6 @@
 	}
 
 	onMount(loadOrder);
-
-	function formatPrice(price: number, currency: string): string {
-		try {
-			return new Intl.NumberFormat('en-IN', {
-				style: 'currency',
-				currency: currency || 'INR',
-				maximumFractionDigits: 0
-			}).format(price / 100);
-		} catch {
-			return `${currency} ${price}`;
-		}
-	}
 
 	function formatDate(dateStr: string): string {
 		if (!dateStr) return '—';

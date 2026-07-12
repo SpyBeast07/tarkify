@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatPrice } from '$lib/utils/currency';
 	import { fade, fly, scale } from 'svelte/transition';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -107,13 +108,6 @@
 			});
 		}
 	});
-
-	function formatPrice(paise: number): string {
-		const currency = productFromApi?.currency ?? 'INR';
-		const value = (paise / 100).toFixed(currency === 'INR' ? 0 : 2);
-		if (currency === 'INR') return `₹${value}`;
-		return `${currency} ${value}`;
-	}
 
 	let breadcrumbLd = $derived(
 		solution

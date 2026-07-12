@@ -17,6 +17,7 @@
 		Link as LinkIcon, History, Activity,
 		Mail, Lock, LogOut, Trash2, RotateCcw, XCircle
 	} from '@lucide/svelte';
+	import { formatPrice } from '$lib/utils/currency';
 	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
@@ -172,17 +173,6 @@
 		return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
 	}
 
-	function formatPrice(price: number, currency: string): string {
-		try {
-			return new Intl.NumberFormat('en-IN', {
-				style: 'currency',
-				currency: currency || 'INR',
-				maximumFractionDigits: 0
-			}).format(price / 100);
-		} catch {
-			return `${currency} ${price}`;
-		}
-	}
 
 	function tokenStatus(token: CustomerDownload): string {
 		const now = new Date();

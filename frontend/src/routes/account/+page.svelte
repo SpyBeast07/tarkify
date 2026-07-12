@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getContext } from 'svelte';
+  import { formatPrice } from '$lib/utils/currency';
   import {
     Package, Download, Clock, Calendar,
     Mail, CheckCircle, ArrowRight, RefreshCw, AlertTriangle
@@ -164,7 +165,7 @@
               <div class="activity-info">
                 <span class="activity-product">{item.productName}</span>
                 <span class="activity-meta">
-                  {item.currency} {(item.amount / 100).toFixed(2)} &middot; {item.status}
+                  {formatPrice(item.amount, item.currency)} &middot; {item.status}
                 </span>
               </div>
               <div class="activity-right">

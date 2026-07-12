@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPrice } from '$lib/utils/currency';
   import { getContext } from 'svelte';
   import { page } from '$app/stores';
   import {
@@ -108,7 +109,7 @@
         </div>
         <div class="detail-field">
           <span class="detail-label">Amount</span>
-          <span class="detail-value">{p.currency} {(p.amount / 100).toFixed(2)}</span>
+          <span class="detail-value">{formatPrice(p.amount, p.currency)}</span>
         </div>
         <div class="detail-field">
           <span class="detail-label">Payment Provider</span>

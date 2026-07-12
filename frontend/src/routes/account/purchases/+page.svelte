@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { formatPrice } from '$lib/utils/currency';
   import {
     Receipt, ArrowRight, AlertTriangle, RefreshCw
   } from '@lucide/svelte';
@@ -93,7 +94,7 @@
             <StatusBadge status={statusLabel(purchase.status)} />
           </div>
           <div class="purchase-meta">
-            <span>{purchase.currency} {(purchase.amount / 100).toFixed(2)}</span>
+            <span>{formatPrice(purchase.amount, purchase.currency)}</span>
             <span class="meta-sep">&middot;</span>
             <span>{formatDate(purchase.created_at)}</span>
           </div>

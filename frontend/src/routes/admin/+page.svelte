@@ -10,6 +10,7 @@
 		Percent,
 		MessageSquare,
 	} from '@lucide/svelte';
+	import { formatRupees } from '$lib/utils/currency';
 	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
 	import {
 		type AnalyticsQuery,
@@ -148,7 +149,7 @@
 	}
 
 	function formatCurrency(amount: number): string {
-		return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount);
+		return formatRupees(amount);
 	}
 
 	const fmtNumber = (n: number) => n.toLocaleString('en-IN');
