@@ -4,7 +4,6 @@
 	import { Menu, LogOut, Sun, Moon } from '@lucide/svelte';
 	import AdminBreadcrumbs from './AdminBreadcrumbs.svelte';
 	import AdminSearch from './AdminSearch.svelte';
-	import AdminNotificationMenu from './AdminNotificationMenu.svelte';
 	import { signOut } from '$lib/api/auth';
 	import type { AuthState } from '$lib/context/auth.svelte';
 
@@ -59,8 +58,6 @@
 
 	<div class="header-right">
 		<AdminSearch />
-		<AdminNotificationMenu />
-
 		<button
 			class="header-action theme-btn"
 			onclick={(e) => { e.preventDefault(); themeState.toggleTheme(); }}

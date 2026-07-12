@@ -156,34 +156,34 @@
 		{#if product}
 			<AdminPageHeader title={product.name} description={product.short_description || `Slug: ${product.slug}`}>
 				<AdminButtonGroup align="right">
-					<Button variant="ghost" href="/admin/products" size="sm">
+					<Button variant="ghost" href="/admin/products" size="sm" class="btn-with-icon">
 						<ArrowLeft size={16} />
 						Back
 					</Button>
-					<Button variant="secondary" href={`/admin/products/${product.id}/edit`} size="sm">
+					<Button variant="secondary" href={`/admin/products/${product.id}/edit`} size="sm" class="btn-with-icon">
 						<Edit size={16} />
 						Edit
 					</Button>
 					{#if product.status === 'draft'}
-						<Button variant="primary" onclick={() => (showPublishDialog = true)} size="sm">
+						<Button variant="primary" onclick={() => (showPublishDialog = true)} size="sm" class="btn-with-icon">
 							<Send size={16} />
 							Publish
 						</Button>
 					{/if}
 					{#if product.status === 'published'}
-						<Button variant="secondary" onclick={() => (showUnpublishDialog = true)} size="sm">
+						<Button variant="secondary" onclick={() => (showUnpublishDialog = true)} size="sm" class="btn-with-icon">
 							<RotateCcw size={16} />
 							Unpublish
 						</Button>
 					{/if}
 					{#if product.status === 'archived'}
-						<Button variant="secondary" onclick={() => (showRestoreDialog = true)} size="sm">
+						<Button variant="secondary" onclick={() => (showRestoreDialog = true)} size="sm" class="btn-with-icon">
 							<RotateCcw size={16} />
 							Restore
 						</Button>
 					{/if}
 					{#if product.status !== 'archived'}
-						<Button variant="danger" onclick={() => (showArchiveDialog = true)} size="sm">
+						<Button variant="danger" onclick={() => (showArchiveDialog = true)} size="sm" class="btn-with-icon">
 							<Archive size={16} />
 							Archive
 						</Button>
