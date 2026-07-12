@@ -9,7 +9,7 @@
 	} from '$lib/admin/api/communication';
 	import { AdminApiError } from '$lib/admin/api/client';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
+	import AdminTextarea from './AdminTextarea.svelte';
 
 	interface Props {
 		recordType: RecordType;
@@ -92,8 +92,7 @@
 	{/if}
 
 	<div class="note-add">
-		<Input
-			type="textarea"
+		<AdminTextarea
 			bind:value={newNote}
 			placeholder="Add an internal note (not visible to customer)..."
 			rows={3}
@@ -149,7 +148,7 @@
 
 	.note-item {
 		padding: 0.75rem 1rem;
-		background: rgba(0, 0, 0, 0.12);
+		background: rgba(0, 0, 0, 0.05);
 		border: 1px solid var(--color-glass-border);
 		border-radius: 12px;
 	}
@@ -178,6 +177,7 @@
 		margin: 0;
 		white-space: pre-wrap;
 		word-break: break-word;
+		color: var(--color-text);
 	}
 
 	.note-add {

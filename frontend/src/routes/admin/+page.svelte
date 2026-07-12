@@ -5,11 +5,9 @@
 		Users,
 		Download,
 		Package,
-		Plus,
 		IndianRupee,
 		Mail,
 		Percent,
-		Settings,
 		MessageSquare,
 	} from '@lucide/svelte';
 	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
@@ -194,17 +192,11 @@
 <AdminPageContainer>
 	<AdminPageHeader title="Dashboard" description="Executive overview of business performance, sales, and key metrics.">
 		<AdminButtonGroup align="right" class="dashboard-actions">
-			<Button variant="outline" size="sm" href="/admin/products">
-				<Plus size={14} aria-hidden="true" /> New Product
-			</Button>
+			<Button variant="outline" size="sm" href="/admin/products">New Product</Button>
 			<Button variant="outline" size="sm" href="/admin/orders">Orders</Button>
 			<Button variant="outline" size="sm" href="/admin/customers">Customers</Button>
-			<Button variant="outline" size="sm" href="/admin/communication">
-				<MessageSquare size={14} aria-hidden="true" /> Communication
-			</Button>
-			<Button variant="outline" size="sm" href="/admin/settings">
-				<Settings size={14} aria-hidden="true" /> Settings
-			</Button>
+			<Button variant="outline" size="sm" href="/admin/communication">Communication</Button>
+			<Button variant="outline" size="sm" href="/admin/settings">Settings</Button>
 		</AdminButtonGroup>
 	</AdminPageHeader>
 

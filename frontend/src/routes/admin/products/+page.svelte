@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Plus, Search, SlidersHorizontal } from '@lucide/svelte';
+	import { Search } from '@lucide/svelte';
 	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
@@ -146,7 +146,6 @@
 <AdminPageContainer>
 	<AdminPageHeader title="Products" description="Manage your product catalog">
 		<Button href="/admin/products/new" variant="primary">
-			<Plus size={16} />
 			New Product
 		</Button>
 	</AdminPageHeader>
@@ -164,7 +163,6 @@
 				/>
 			</div>
 			<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
-				<SlidersHorizontal size={16} />
 				Filters
 			</Button>
 		</AdminToolbar>

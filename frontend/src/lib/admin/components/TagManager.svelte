@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Plus, X, Tag as TagIcon, Pencil } from '@lucide/svelte';
+	import { Plus, X, Pencil } from '@lucide/svelte';
 	import {
 		type RecordType,
 		type CommTag,
@@ -13,7 +13,7 @@
 		deleteTag
 	} from '$lib/admin/api/communication';
 	import { AdminApiError } from '$lib/admin/api/client';
-	import Input from '$lib/components/ui/Input.svelte';
+	import AdminInput from './AdminInput.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 
 	interface Props {
@@ -168,7 +168,9 @@
 	</div>
 
 	<div class="tag-add">
-		<Input bind:value={newTagName} placeholder="New tag name..." maxlength={100} />
+		<div class="tag-input-wrap">
+			<AdminInput bind:value={newTagName} placeholder="New tag name..." maxlength={100} />
+		</div>
 		<input type="color" bind:value={newTagColor} class="color-input" aria-label="Tag color" />
 		<Button variant="secondary" size="sm" disabled={adding || !newTagName.trim()} onclick={handleCreate}>
 			<Plus size={14} />
@@ -181,30 +183,34 @@
 			<h4 class="tag-subtitle">Available Tags</h4>
 			<div class="tag-list">
 				{#each availableTags as tag (tag.id)}
-					<span class="tag-available">
-						<span class="tag-chip" style="--tag-color: {tag.color}">
-							<span class="tag-dot"></span>
-							{tag.name}
-							<button
-								class="tag-assign"
-								onclick={() => handleAssign(tag)}
-								aria-label={`Assign tag ${tag.name}`}
-							>
-								<Plus size={12} />
+					<div class="tag-available-wrapper">
+						<span class="tag-available">
+							<span class="tag-chip" style="--tag-color: {tag.color}">
+								<span class="tag-dot"></span>
+								{tag.name}
+								<button
+									class="tag-assign"
+									onclick={() => handleAssign(tag)}
+									aria-label={`Assign tag ${tag.name}`}
+								>
+									<Plus size={12} />
+								</button>
+							</span>
+							<button class="tag-edit" onclick={() => { editingId = tag.id; editingName = tag.name; }} aria-label={`Edit tag ${tag.name}`}>
+								<Pencil size={12} />
 							</button>
 						</span>
-						<button class="tag-edit" onclick={() => { editingId = tag.id; editingName = tag.name; }} aria-label={`Edit tag ${tag.name}`}>
-							<Pencil size={12} />
-						</button>
 						{#if editingId === tag.id}
-							<span class="tag-edit-row">
-								<Input bind:value={editingName} class="tag-edit-input" maxlength={100} />
+							<div class="tag-edit-row">
+								<div class="tag-edit-input-wrap">
+									<AdminInput bind:value={editingName} class="tag-edit-input" maxlength={100} />
+								</div>
 								<Button variant="secondary" size="sm" onclick={() => handleEditSave(tag)}>Save</Button>
 								<Button variant="ghost" size="sm" onclick={() => (editingId = null)}>Cancel</Button>
 								<Button variant="danger" size="sm" onclick={() => handleDelete(tag)}>Delete</Button>
-							</span>
+							</div>
 						{/if}
-					</span>
+					</div>
 				{/each}
 			</div>
 		</div>
@@ -215,7 +221,7 @@
 	.tag-manager {
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
+		gap: 1.25rem;
 	}
 
 	.tag-error {
@@ -227,7 +233,7 @@
 	.tag-section {
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: 0.75rem;
 	}
 
 	.tag-subtitle {
@@ -248,7 +254,7 @@
 	.tag-list {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.5rem;
+		gap: 0.75rem;
 		align-items: center;
 	}
 
@@ -256,7 +262,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.4rem;
-		padding: 0.25rem 0.5rem;
+		padding: 0.25rem 0.6rem;
 		border-radius: 999px;
 		font-size: 0.8rem;
 		font-weight: 600;
@@ -294,6 +300,11 @@
 		display: flex;
 		gap: 0.5rem;
 		align-items: center;
+		max-width: 480px;
+	}
+
+	.tag-input-wrap {
+		flex: 1;
 	}
 
 	.color-input {
@@ -306,10 +317,16 @@
 		cursor: pointer;
 	}
 
+	.tag-available-wrapper {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
 	.tag-available {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.25rem;
+		gap: 0.35rem;
 	}
 
 	.tag-edit {
@@ -330,10 +347,9 @@
 		gap: 0.4rem;
 		align-items: center;
 		flex-wrap: wrap;
-		margin-left: 0.5rem;
 	}
 
-	:global(.tag-edit-input) {
+	.tag-edit-input-wrap {
 		min-width: 140px;
 	}
 </style>
