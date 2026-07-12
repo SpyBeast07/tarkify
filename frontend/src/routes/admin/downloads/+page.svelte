@@ -131,7 +131,7 @@
 
 <AdminPageContainer>
 	<AdminPageHeader title="Downloads" description="View and manage active entitlement download tokens">
-		<Button variant="ghost" disabled>
+		<Button variant="ghost" disabled class="btn-with-icon">
 			<Download size={16} />
 			{total} Tokens
 		</Button>
@@ -149,7 +149,7 @@
 					icon={Search}
 				/>
 			</div>
-			<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
+			<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)} class="btn-with-icon">
 				<SlidersHorizontal size={16} />
 				Filters
 			</Button>

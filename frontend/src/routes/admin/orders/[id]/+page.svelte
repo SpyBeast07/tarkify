@@ -156,11 +156,11 @@
 		{#if order}
 			<AdminPageHeader title={`Order #${order.id.substring(0, 8)}`} description={`Placed on ${formatDate(order.created_at)}`}>
 				<AdminButtonGroup align="right">
-					<Button variant="ghost" href="/admin/orders" size="sm">
+					<Button variant="ghost" href="/admin/orders" size="sm" class="btn-with-icon">
 						<ArrowLeft size={16} />
 						Back to Orders
 					</Button>
-					<Button variant="ghost" href={`/admin/payments/${order.id}`} size="sm">
+					<Button variant="ghost" href={`/admin/payments/${order.id}`} size="sm" class="btn-with-icon">
 						<CreditCard size={16} />
 						View Payment
 					</Button>

@@ -61,7 +61,7 @@
 						/>
 						<div style="margin-top: 1rem;">
 							<AdminButtonGroup align="left">
-								<Button type="submit" variant="primary" disabled={sending}>
+								<Button type="submit" variant="primary" disabled={sending} class="btn-with-icon">
 									{#if sending}
 										<Loader2 size={16} class="spin" />
 										Sending...

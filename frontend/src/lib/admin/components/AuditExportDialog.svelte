@@ -83,7 +83,7 @@
 
 			<div class="export-actions">
 				<Button variant="ghost" onclick={close}>Cancel</Button>
-				<Button variant="primary" disabled={downloading} onclick={triggerDownload}>
+				<Button variant="primary" disabled={downloading} onclick={triggerDownload} class="btn-with-icon">
 					<FileDown size={16} aria-hidden="true" />
 					{downloading ? 'Preparing…' : 'Download'}
 				</Button>

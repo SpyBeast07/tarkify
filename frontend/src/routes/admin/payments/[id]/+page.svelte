@@ -147,7 +147,7 @@
 		{#if payment}
 			<AdminPageHeader title={`Payment #${payment.id.substring(0, 8)}`} description={`${payment.payment_provider} · ${formatDate(payment.created_at)}`}>
 				<AdminButtonGroup align="right">
-					<Button variant="ghost" href="/admin/payments" size="sm">
+					<Button variant="ghost" href="/admin/payments" size="sm" class="btn-with-icon">
 						<ArrowLeft size={16} />
 						Back to Payments
 					</Button>

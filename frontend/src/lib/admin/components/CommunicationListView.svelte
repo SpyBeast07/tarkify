@@ -181,7 +181,7 @@
 				aria-label={`Search ${title}`}
 			/>
 		</div>
-		<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
+		<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)} class="btn-with-icon">
 			<SlidersHorizontal size={16} />
 			Filters
 		</Button>
@@ -226,11 +226,11 @@
 	{#if selected.size > 0}
 		<div class="bulk-bar" role="status">
 			<span>{selected.size} selected</span>
-			<Button variant="secondary" size="sm" disabled={bulkLoading} onclick={bulkArchive}>
+			<Button variant="secondary" size="sm" disabled={bulkLoading} onclick={bulkArchive} class="btn-with-icon">
 				<Archive size={14} />
 				Archive
 			</Button>
-			<Button variant="danger" size="sm" disabled={bulkLoading} onclick={bulkDelete}>
+			<Button variant="danger" size="sm" disabled={bulkLoading} onclick={bulkDelete} class="btn-with-icon">
 				<Trash2 size={14} />
 				Delete
 			</Button>

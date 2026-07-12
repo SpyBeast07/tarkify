@@ -172,7 +172,7 @@
 			<AdminInput bind:value={newTagName} placeholder="New tag name..." maxlength={100} />
 		</div>
 		<input type="color" bind:value={newTagColor} class="color-input" aria-label="Tag color" />
-		<Button variant="secondary" size="sm" disabled={adding || !newTagName.trim()} onclick={handleCreate}>
+		<Button variant="secondary" size="sm" disabled={adding || !newTagName.trim()} onclick={handleCreate} class="btn-with-icon">
 			<Plus size={14} />
 			Add
 		</Button>

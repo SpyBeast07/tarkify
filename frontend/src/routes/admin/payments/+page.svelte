@@ -164,7 +164,7 @@
 					icon={Search}
 				/>
 			</div>
-			<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
+			<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)} class="btn-with-icon">
 				<SlidersHorizontal size={16} />
 				Filters
 			</Button>

@@ -254,7 +254,7 @@
 				title={customer.display_name || customer.name || customer.email}
 				description={`Customer since ${shortDate(customer.created_at)}`}
 			>
-				<Button variant="ghost" href="/admin/customers" size="sm">
+				<Button variant="ghost" href="/admin/customers" size="sm" class="btn-with-icon">
 					<ArrowLeft size={16} />
 					Back to Customers
 				</Button>
@@ -384,7 +384,7 @@
 								<AdminSectionHeader title="Admin Actions" description="Perform administrative actions on this customer account. All actions are logged." />
 								<AdminButtonGroup align="left" class="actions-group">
 									{#if customer.email_verified}
-										<Button variant="ghost" size="sm" disabled title="Email already verified">
+										<Button variant="ghost" size="sm" disabled title="Email already verified" class="btn-with-icon">
 											<Mail size={14} />
 											Resend Verification
 										</Button>
@@ -392,6 +392,7 @@
 										<Button
 											variant="ghost"
 											size="sm"
+											class="btn-with-icon"
 											disabled={actionLoading !== null}
 											onclick={() => confirmThen('resend-verification')}
 										>
@@ -403,6 +404,7 @@
 									<Button
 										variant="ghost"
 										size="sm"
+										class="btn-with-icon"
 										disabled={actionLoading !== null}
 										onclick={() => confirmThen('reset-password')}
 									>
@@ -414,6 +416,7 @@
 										<Button
 											variant="ghost"
 											size="sm"
+											class="btn-with-icon"
 											disabled={actionLoading !== null}
 											onclick={() => confirmThen('suspend')}
 										>
@@ -424,6 +427,7 @@
 										<Button
 											variant="ghost"
 											size="sm"
+											class="btn-with-icon"
 											disabled={actionLoading !== null}
 											onclick={() => confirmThen('reactivate')}
 										>
@@ -435,6 +439,7 @@
 									<Button
 										variant="ghost"
 										size="sm"
+										class="btn-with-icon"
 										disabled={actionLoading !== null}
 										onclick={() => confirmThen('revoke-sessions')}
 									>
@@ -446,7 +451,7 @@
 										<Button
 											variant="ghost"
 											size="sm"
-											class="danger-btn"
+											class="btn-with-icon danger-btn"
 											disabled={actionLoading !== null}
 											onclick={() => confirmThen('delete')}
 										>
@@ -535,15 +540,16 @@
 			{:else if activeTab === 'sessions'}
 				<AdminSection title="Sessions">
 					<div class="section-actions">
-						<Button
-							variant="ghost"
-							size="sm"
-							disabled={actionLoading !== null}
-							onclick={() => confirmThen('revoke-sessions')}
-						>
-							<LogOut size={14} />
-							Terminate All Sessions
-						</Button>
+					<Button
+						variant="ghost"
+						size="sm"
+						class="btn-with-icon"
+						disabled={actionLoading !== null}
+						onclick={() => confirmThen('revoke-sessions')}
+					>
+						<LogOut size={14} />
+						Terminate All Sessions
+					</Button>
 					</div>
 					{#if sessions.length === 0}
 						<AdminEmptyState title="No active sessions" message="This customer has no active sessions." />

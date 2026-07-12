@@ -157,7 +157,7 @@
 <AdminPageContainer>
 	<AdminPageHeader title="Email Logs" description="Platform notification history and transmission diagnostics.">
 		<AdminButtonGroup align="right">
-			<Button variant="outline" href="/admin/email/test" size="sm">
+			<Button variant="outline" href="/admin/email/test" size="sm" class="btn-with-icon">
 				<Send size={15} aria-hidden="true" /> Send Test Email
 			</Button>
 		</AdminButtonGroup>
@@ -196,7 +196,7 @@
 						icon={Search}
 					/>
 				</div>
-				<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
+				<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)} class="btn-with-icon">
 					<SlidersHorizontal size={16} />
 					Filters
 				</Button>

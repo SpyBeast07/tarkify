@@ -183,7 +183,7 @@
 				description={`Created ${shortDate(download.created_at)}`}
 			>
 				<AdminButtonGroup align="right">
-					<Button variant="ghost" href="/admin/downloads" size="sm">
+					<Button variant="ghost" href="/admin/downloads" size="sm" class="btn-with-icon">
 						<ArrowLeft size={16} />
 						Back to Downloads
 					</Button>
@@ -191,7 +191,7 @@
 						View Order
 					</Button>
 					{#if download.customer_id}
-						<Button variant="ghost" href={`/admin/customers/${download.customer_id}`} size="sm">
+						<Button variant="ghost" href={`/admin/customers/${download.customer_id}`} size="sm" class="btn-with-icon">
 							<User size={16} />
 							View Customer
 						</Button>
@@ -264,7 +264,7 @@
 								</div>
 								{#if download.customer_id}
 									<div style="margin-top: 0.75rem;">
-										<Button variant="ghost" size="sm" href={`/admin/customers/${download.customer_id}`}>
+										<Button variant="ghost" size="sm" href={`/admin/customers/${download.customer_id}`} class="btn-with-icon">
 											<User size={14} />
 											View Customer Profile
 										</Button>
@@ -285,7 +285,7 @@
 									</div>
 								</div>
 								<div style="margin-top: 0.75rem;">
-									<Button variant="ghost" size="sm" href={`/admin/products/${download.product_id}`}>
+									<Button variant="ghost" size="sm" href={`/admin/products/${download.product_id}`} class="btn-with-icon">
 										<Package size={14} />
 										View Product
 									</Button>
@@ -306,6 +306,7 @@
 								<Button
 									variant="ghost"
 									size="sm"
+									class="btn-with-icon"
 									disabled={actionLoading !== null || download.status !== 'active'}
 									onclick={() => confirmThen('revoke')}
 								>
@@ -315,6 +316,7 @@
 								<Button
 									variant="ghost"
 									size="sm"
+									class="btn-with-icon"
 									disabled={actionLoading !== null}
 									onclick={() => confirmThen('regenerate')}
 								>

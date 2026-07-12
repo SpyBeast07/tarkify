@@ -180,12 +180,12 @@
 		{#if record}
 			<AdminPageHeader {title} description={`Submitted ${shortDate(record.created_at)}`}>
 				<AdminButtonGroup align="right">
-					<Button variant="ghost" href={backHref}>
+					<Button variant="ghost" href={backHref} class="btn-with-icon">
 						<ArrowLeft size={16} />
 						Back
 					</Button>
 					{#if canReply}
-						<Button variant="ghost" onclick={() => (replyOpen = true)}>
+						<Button variant="ghost" onclick={() => (replyOpen = true)} class="btn-with-icon">
 							<Reply size={16} />
 							Reply
 						</Button>
@@ -251,17 +251,17 @@
 
 							<AdminButtonGroup align="left" class="actions-group">
 								{#if record.status === 'ARCHIVED'}
-									<Button variant="ghost" size="sm" disabled={actionLoading} onclick={handleRestore}>
+									<Button variant="ghost" size="sm" disabled={actionLoading} onclick={handleRestore} class="btn-with-icon">
 										<RotateCcw size={14} />
 										Restore
 									</Button>
 								{:else}
-									<Button variant="ghost" size="sm" disabled={actionLoading} onclick={() => confirmThen('archive')}>
+									<Button variant="ghost" size="sm" disabled={actionLoading} onclick={() => confirmThen('archive')} class="btn-with-icon">
 										<Archive size={14} />
 										Archive
 									</Button>
 								{/if}
-								<Button variant="ghost" class="danger-btn" size="sm" disabled={actionLoading} onclick={() => confirmThen('delete')}>
+								<Button variant="ghost" class="btn-with-icon danger-btn" size="sm" disabled={actionLoading} onclick={() => confirmThen('delete')}>
 									<Trash2 size={14} />
 									Delete
 								</Button>

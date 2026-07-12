@@ -99,7 +99,7 @@
 			maxlength={5000}
 		/>
 		<div class="note-add-actions">
-			<Button variant="primary" size="sm" disabled={adding || !newNote.trim()} onclick={handleAdd}>
+			<Button variant="primary" size="sm" disabled={adding || !newNote.trim()} onclick={handleAdd} class="btn-with-icon">
 				<Plus size={14} />
 				Add Note
 			</Button>

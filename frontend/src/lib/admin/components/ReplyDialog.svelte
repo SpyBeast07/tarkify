@@ -78,7 +78,7 @@
 			/>
 			<div class="reply-actions">
 				<Button variant="ghost" size="sm" disabled={sending} onclick={() => onClose?.()}>Cancel</Button>
-				<Button variant="primary" size="sm" disabled={sending || !subject.trim() || !message.trim()} onclick={handleSend}>
+				<Button variant="primary" size="sm" disabled={sending || !subject.trim() || !message.trim()} onclick={handleSend} class="btn-with-icon">
 					<Send size={14} />
 					{sending ? 'Sending...' : 'Send Reply'}
 				</Button>

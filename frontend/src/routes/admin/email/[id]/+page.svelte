@@ -90,12 +90,12 @@
 		{#if email}
 			<AdminPageHeader title="Email Log Entry" description={subjectOf()}>
 				<AdminButtonGroup align="right">
-					<Button variant="ghost" href="/admin/email" size="sm">
+					<Button variant="ghost" href="/admin/email" size="sm" class="btn-with-icon">
 						<ArrowLeft size={16} />
 						Back
 					</Button>
 					{#if email.status === 'failed'}
-						<Button variant="ghost" onclick={() => (confirmResend = true)} size="sm">
+						<Button variant="ghost" onclick={() => (confirmResend = true)} size="sm" class="btn-with-icon">
 							<RotateCcw size={16} />
 							Resend
 						</Button>
@@ -152,7 +152,7 @@
 							</div>
 							{#if email.status === 'failed'}
 								<div style="margin-top: 1rem;">
-									<Button variant="ghost" size="sm" disabled={actionLoading} onclick={() => (confirmResend = true)}>
+									<Button variant="ghost" size="sm" disabled={actionLoading} onclick={() => (confirmResend = true)} class="btn-with-icon">
 										<RotateCcw size={14} />
 										Resend Email
 									</Button>

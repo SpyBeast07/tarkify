@@ -38,10 +38,10 @@
 	</div>
 
 	<div class="actions">
-		<Button variant="ghost" size="sm" disabled={!dirty || saving} onclick={onReset}>
+		<Button variant="ghost" size="sm" disabled={!dirty || saving} onclick={onReset} class="btn-with-icon">
 			<RotateCcw size={15} aria-hidden="true" /> Reset
 		</Button>
-		<Button variant="primary" size="sm" disabled={!dirty || saving} onclick={onSave}>
+		<Button variant="primary" size="sm" disabled={!dirty || saving} onclick={onSave} class="btn-with-icon">
 			<Save size={15} aria-hidden="true" />
 			{saving ? 'Saving…' : 'Save'}
 		</Button>

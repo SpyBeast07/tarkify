@@ -156,7 +156,7 @@
 
 <AdminPageContainer>
 	<AdminPageHeader title="Audit Logs" description="Complete activity trail across the platform.">
-		<Button variant="ghost" size="sm" onclick={() => (exportOpen = true)}>
+		<Button variant="ghost" size="sm" onclick={() => (exportOpen = true)} class="btn-with-icon">
 			<Download size={15} aria-hidden="true" /> Export
 		</Button>
 	</AdminPageHeader>
@@ -185,7 +185,7 @@
 					/>
 				</div>
 				<AdminButtonGroup align="right" class="toolbar-actions">
-					<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
+					<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)} class="btn-with-icon">
 						<SlidersHorizontal size={15} aria-hidden="true" /> Filters
 						{#if activeFilterCount > 0}
 							<span class="filter-badge">{activeFilterCount}</span>

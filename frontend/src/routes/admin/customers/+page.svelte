@@ -152,7 +152,7 @@
 
 <AdminPageContainer>
 	<AdminPageHeader title="Customers" description="View and manage customer accounts">
-		<Button variant="ghost" disabled>
+		<Button variant="ghost" disabled class="btn-with-icon">
 			<Users size={16} />
 			{total} Total
 		</Button>
@@ -170,7 +170,7 @@
 					icon={Search}
 				/>
 			</div>
-			<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
+			<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)} class="btn-with-icon">
 				<SlidersHorizontal size={16} />
 				Filters
 				{#if filteredCount() > 0}

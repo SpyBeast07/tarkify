@@ -62,7 +62,7 @@
 <AdminPageContainer>
 	<AdminPage {loading} {error} onRetry={load}>
 		<AdminPageHeader title="Audit Entry">
-			<Button variant="ghost" size="sm" href="/admin/audit">
+			<Button variant="ghost" size="sm" href="/admin/audit" class="btn-with-icon">
 				<ArrowLeft size={15} aria-hidden="true" /> Back to Audit Logs
 			</Button>
 		</AdminPageHeader>
