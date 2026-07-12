@@ -44,6 +44,11 @@
 					dialogEl.showModal();
 				}
 			}
+		} else {
+			wasOpen = false;
+			if (dialogEl?.open) {
+				dialogEl.close();
+			}
 		}
 	});
 
@@ -53,6 +58,17 @@
 	}
 
 	function handleClose() {
+		if (flowState === 'creating_order' || flowState === 'verifying') {
+			return;
+		}
+		// Close the native dialog element; the `onclose` handler propagates
+		// the state change up to the parent via the `onclose` prop.
+		dialogEl?.close();
+	}
+
+	function handleNativeClose() {
+		// During `checkout_open` the dialog is closed programmatically to
+		// reveal the Razorpay overlay — keep the modal open in that case.
 		if (flowState === 'checkout_open') {
 			return;
 		}
@@ -129,7 +145,7 @@
 <dialog
 	bind:this={dialogEl}
 	class="purchase-dialog"
-	onclose={handleClose}
+	onclose={handleNativeClose}
 	onclick={handleBackdropClick}
 	oncancel={(e) => {
 		if (flowState === 'creating_order' || flowState === 'verifying') {
