@@ -34,19 +34,22 @@ import { buildAdminNotificationEmail } from './templates/admin-notification.js';
 import { buildFeedbackNotificationEmail } from './templates/feedback-notification.js';
 import { buildFeedbackAcknowledgementEmail } from './templates/feedback-acknowledgement.js';
 
+// Customer transactional emails are mapped to `null` so they ALWAYS send and
+// bypass the per-user preference gate in `canSendEmail`. Only the newsletter
+// broadcast remains category-gated (user can opt out of marketing/newsletter).
 const TEMPLATE_CATEGORIES: Record<string, EmailCategory | null> = {
   sendVerificationEmail: null,        // security — always send
   sendPasswordResetEmail: null,       // security — always send
-  sendPurchaseReceipt: 'billing',
-  sendDownloadEmail: 'billing',
+  sendPurchaseReceipt: null,          // customer transactional — always send
+  sendDownloadEmail: null,            // customer transactional — always send
   sendContactNotification: null,      // goes to admin, not user
-  sendContactAcknowledgement: 'product',
+  sendContactAcknowledgement: null,   // customer transactional — always send
   sendFeedbackNotification: null,      // goes to admin, not user
-  sendFeedbackAcknowledgement: 'product',
+  sendFeedbackAcknowledgement: 'product', // soft acknowledgement — user opt-out honoured
   sendNewsletterConfirmation: null,   // transactional — just subscribed
   sendNewsletterUnsubscribed: null,   // transactional — just unsubscribed
-  sendNewsletterEmail: 'newsletter',
-  sendCareerAcknowledgement: 'product',
+  sendNewsletterEmail: 'newsletter',  // marketing broadcast — user opt-out honoured
+  sendCareerAcknowledgement: null,    // customer transactional — always send
   sendAdminNotification: null,        // internal — skip
   sendTestEmail: null,                // dev — skip
 };

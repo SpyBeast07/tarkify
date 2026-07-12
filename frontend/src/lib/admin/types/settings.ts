@@ -1,6 +1,4 @@
-export type SettingsGroup =
-	| 'payments'
-	| 'notifications';
+export type SettingsGroup = 'payments' | 'notifications';
 
 export interface PaymentsSettings {
 	maintenanceMode: boolean;
@@ -22,19 +20,14 @@ export interface AllSettings {
 	notifications: NotificationsSettings;
 }
 
-export const SETTINGS_GROUPS: SettingsGroup[] = [
-	'payments',
-	'notifications'
-];
+export const SETTINGS_GROUPS: SettingsGroup[] = ['payments', 'notifications'];
 
 export const SETTINGS_GROUP_LABELS: Record<SettingsGroup, string> = {
 	payments: 'Payments',
-	notifications: 'Notifications'
+	notifications: 'Admin Notification Preferences'
 };
 
-export type FieldType =
-	| 'text'
-	| 'toggle';
+export type FieldType = 'text' | 'toggle';
 
 export interface FieldOption {
 	value: string;
@@ -75,16 +68,52 @@ export const SETTINGS_SECTIONS: SectionConfig[] = [
 	},
 	{
 		id: 'notifications',
-		label: 'Notifications',
-		description: 'Choose which events send admin notifications. Customer transactional emails (receipts, download links, acknowledgements, confirmations) are always sent.',
+		label: 'Admin Notification Preferences',
+		description:
+			'These settings control notifications sent to administrators only. Customer transactional emails (verification, password reset, receipts, download links, acknowledgements, confirmations, replies, test emails) are always sent and cannot be disabled here.',
 		fields: [
-			{ key: 'adminEmailAlerts', label: 'New Order Notifications', type: 'toggle', help: 'Notify admins when a new order is completed.' },
-			{ key: 'paymentAlerts', label: 'Payment Issue Notifications', type: 'toggle', help: 'Notify admins about payment failures, refunds, and webhook errors.' },
-			{ key: 'feedbackAlerts', label: 'Feedback Notifications', type: 'toggle', help: 'Notify admins when new feedback is submitted.' },
-			{ key: 'contactAlerts', label: 'Contact Form Notifications', type: 'toggle', help: 'Notify admins when a contact form is submitted.' },
-			{ key: 'careerAlerts', label: 'Career Application Notifications', type: 'toggle', help: 'Notify admins when a career application is received.' },
-			{ key: 'newsletterAlerts', label: 'Newsletter Notifications', type: 'toggle', help: 'Notify admins when someone subscribes to the newsletter.' },
-			{ key: 'systemAlerts', label: 'System Notifications', type: 'toggle', help: 'Notify admins about email delivery failures.' }
+			{
+				key: 'adminEmailAlerts',
+				label: 'New Order Notifications',
+				type: 'toggle',
+				help: 'Notify admins when a new order is completed.'
+			},
+			{
+				key: 'paymentAlerts',
+				label: 'Payment Issue Notifications',
+				type: 'toggle',
+				help: 'Notify admins about payment failures, refunds, and webhook errors.'
+			},
+			{
+				key: 'feedbackAlerts',
+				label: 'Feedback Notifications',
+				type: 'toggle',
+				help: 'Notify admins when new feedback is submitted.'
+			},
+			{
+				key: 'contactAlerts',
+				label: 'Contact Form Notifications',
+				type: 'toggle',
+				help: 'Notify admins when a contact form is submitted.'
+			},
+			{
+				key: 'careerAlerts',
+				label: 'Career Application Notifications',
+				type: 'toggle',
+				help: 'Notify admins when a career application is received.'
+			},
+			{
+				key: 'newsletterAlerts',
+				label: 'Newsletter Notifications',
+				type: 'toggle',
+				help: 'Notify admins when someone subscribes to the newsletter.'
+			},
+			{
+				key: 'systemAlerts',
+				label: 'System Notifications',
+				type: 'toggle',
+				help: 'Notify admins about email delivery failures.'
+			}
 		]
 	}
 ];

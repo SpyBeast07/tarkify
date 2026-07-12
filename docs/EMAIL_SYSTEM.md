@@ -60,6 +60,8 @@ sequenceDiagram
 - **Preference check** runs before every send. Mandatory categories (`security`) cannot be disabled.
 - **Categories**: `security` (mandatory), `billing`, `product`, `newsletter`, `marketing`.
 - Preferences stored in `users.preferences` JSONB; managed via account settings.
+- **Customer transactional emails are always sent** — `sendVerificationEmail`, `sendPasswordResetEmail`, `sendPurchaseReceipt`, `sendDownloadEmail`, `sendContactAcknowledgement`, `sendCareerAcknowledgement`, `sendNewsletterConfirmation`, `sendNewsletterUnsubscribed`, `sendReplyEmail`, and `sendTestEmail` bypass the preference check (their template category is `null`). They can never be disabled from the Admin Portal.
+- Only `sendNewsletterEmail` (marketing broadcast) and `sendFeedbackAcknowledgement` honour the per-user `newsletter`/`product` opt-out.
 
 ---
 
@@ -107,19 +109,24 @@ Theme tokens in `styles/theme.ts`. Preview all templates at `GET /api/email-prev
 
 | Template | Method | Category | Trigger |
 |----------|--------|----------|----------|
-| Verification | `sendVerificationEmail` | security (always) | Sign-up / resend |
-| Password reset | `sendPasswordResetEmail` | security (always) | Forgot password |
-| Purchase receipt | `sendPurchaseReceipt` | billing | Payment verified |
-| Download | `sendDownloadEmail` | billing | Payment verified |
+| Verification | `sendVerificationEmail` | always (transactional) | Sign-up / resend |
+| Password reset | `sendPasswordResetEmail` | always (transactional) | Forgot password |
+| Purchase receipt | `sendPurchaseReceipt` | always (transactional) | Payment verified |
+| Download | `sendDownloadEmail` | always (transactional) | Payment verified |
 | Contact notification | `sendContactNotification` | admin (always) | Contact form |
-| Contact acknowledgement | `sendContactAcknowledgement` | product | Contact form |
-| Newsletter | `sendNewsletterEmail` | newsletter | Admin broadcast |
-| Newsletter confirmation | `sendNewsletterConfirmation` | transactional | Subscribe |
-| Newsletter unsubscribed | `sendNewsletterUnsubscribed` | transactional | Unsubscribe |
+| Contact acknowledgement | `sendContactAcknowledgement` | always (transactional) | Contact form |
+| Feedback acknowledgement | `sendFeedbackAcknowledgement` | product (user opt-out) | Feedback submitted |
+| Career acknowledgement | `sendCareerAcknowledgement` | always (transactional) | Career application |
+| Newsletter | `sendNewsletterEmail` | newsletter (user opt-out) | Admin broadcast |
+| Newsletter confirmation | `sendNewsletterConfirmation` | always (transactional) | Subscribe |
+| Newsletter unsubscribed | `sendNewsletterUnsubscribed` | always (transactional) | Unsubscribe |
 | Admin notification | `sendAdminNotification` | internal (always) | Career application |
+| Admin reply | `sendReplyEmail` | always (transactional) | Reply to customer |
 | Test email | `sendTestEmail` | dev | `POST /api/test-email` |
 
-**Admin notifications** go to `ADMIN_EMAIL` (contact form, career applications).
+**Customer transactional emails always send** and are unaffected by any Admin setting.
+
+**Admin notifications** go to `ADMIN_EMAIL` (contact form, career applications, new orders, payment issues, feedback, newsletter activity, system/email failures). Which admin notifications are sent is controlled by the **Admin Notification Preferences** settings group (`notifications`): `adminEmailAlerts` (New Order), `paymentAlerts` (Payment Issues), `feedbackAlerts` (Feedback), `contactAlerts` (Contact Form), `careerAlerts` (Career Application), `newsletterAlerts` (Newsletter Activity), `systemAlerts` (System). Each toggle gates only its corresponding admin notification; all default to enabled.
 
 ---
 
