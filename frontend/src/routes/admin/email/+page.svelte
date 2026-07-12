@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Search, SlidersHorizontal, Mail, Plus, Send } from '@lucide/svelte';
-	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
+	import { listEmails, getStats, getTemplates } from '$lib/admin/api/email';
+	import { AdminApiError } from '$lib/admin/api/client';
+	import type { EmailListParams } from '$lib/admin/api/email';
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminEmptyState from '$lib/admin/components/AdminEmptyState.svelte';
@@ -42,16 +44,6 @@
 		retrying: number;
 	}
 
-	interface ResponseData {
-		emails: EmailListItem[];
-		stats: Stats;
-		templates: string[];
-		total: number;
-		page: number;
-		perPage: number;
-		totalPages: number;
-	}
-
 	let emails = $state<EmailListItem[]>([]);
 	let stats = $state<Stats | null>(null);
 	let templateOptions = $state<string[]>([]);
@@ -76,24 +68,37 @@
 		loading = true;
 		error = null;
 		try {
-			const params = new URLSearchParams();
-			if (search) params.set('search', search);
-			if (statusFilter) params.set('status', statusFilter);
-			if (templateFilter) params.set('template', templateFilter);
-			if (providerFilter) params.set('provider', providerFilter);
-			if (dateFrom) params.set('dateFrom', dateFrom);
-			if (dateTo) params.set('dateTo', dateTo);
-			params.set('sort', sort);
-			params.set('page', String(page));
-			params.set('perPage', String(perPage));
+			const listParams: EmailListParams = {};
+			if (search) listParams.search = search;
+			if (statusFilter) listParams.status = statusFilter as any;
+			if (templateFilter) listParams.template = templateFilter;
+			if (providerFilter) listParams.provider = providerFilter;
+			if (dateFrom) listParams.dateFrom = dateFrom;
+			if (dateTo) listParams.dateTo = dateTo;
+			listParams.sort = sort as 'newest' | 'oldest';
+			listParams.page = page;
+			listParams.perPage = perPage;
 
-			const res = await adminFetch<ResponseData>(`/emails?${params}`);
-			emails = res.emails;
-			stats = res.stats;
-			templateOptions = res.templates;
-			total = res.total;
-			page = res.page;
-			totalPages = res.totalPages;
+			const [listResult, statsResult, templatesResult] = await Promise.all([
+				listEmails(listParams),
+				getStats(),
+				getTemplates()
+			]);
+
+			emails = listResult.emails;
+			stats = {
+				total: statsResult.total,
+				sent: statsResult.sent,
+				failed: statsResult.failed,
+				logged: statsResult.logged,
+				skipped: statsResult.skipped,
+				queued: statsResult.queued,
+				retrying: statsResult.retrying
+			};
+			templateOptions = templatesResult.map((t) => t.key);
+			total = listResult.total;
+			page = listResult.page;
+			totalPages = listResult.totalPages;
 		} catch (err) {
 			error = err instanceof AdminApiError ? err.message : 'Failed to load email logs';
 		} finally {
