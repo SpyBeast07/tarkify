@@ -13,16 +13,8 @@ import type { AuditEvent } from '../../audit/types.js';
 type AuditMap = Record<SettingsGroup, AuditEvent>;
 
 export const SETTINGS_AUDIT_EVENTS: AuditMap = {
-  brand: 'brand_updated',
-  email: 'email_updated',
   payments: 'payments_updated',
-  oauth: 'oauth_updated',
-  security: 'security_updated',
-  storage: 'storage_updated',
-  features: 'features_updated',
   notifications: 'notifications_updated',
-  seo: 'seo_updated',
-  legal: 'legal_updated',
 } as const;
 
 function mergeDefaults<K extends SettingsGroup>(group: K, stored: Record<string, unknown> | null): SettingsValueMap[K] {

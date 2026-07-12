@@ -197,7 +197,7 @@
 			<Button variant="outline" size="sm" href="/admin/orders">Orders</Button>
 			<Button variant="outline" size="sm" href="/admin/customers">Customers</Button>
 			<Button variant="outline" size="sm" href="/admin/communication">Communication</Button>
-			<Button variant="outline" size="sm" href="/admin/settings">Settings</Button>
+			<Button variant="outline" size="sm" href="/admin/settings">Platform Settings</Button>
 		</AdminButtonGroup>
 	</AdminPageHeader>
 

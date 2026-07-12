@@ -43,7 +43,7 @@
 		},
 		{ href: '/admin/email', label: 'Email Center', icon: Mail },
 		{ href: '/admin/system', label: 'System', icon: Activity },
-		{ href: '/admin/settings', label: 'Settings', icon: Settings },
+		{ href: '/admin/settings', label: 'Platform Settings', icon: Settings },
 		{ href: '/admin/audit', label: 'Audit Logs', icon: Shield }
 	];
 

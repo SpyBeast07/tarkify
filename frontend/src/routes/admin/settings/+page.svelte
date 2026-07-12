@@ -2,16 +2,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { beforeNavigate } from '$app/navigation';
 	import {
-		Palette,
-		Mail,
 		CreditCard,
-		KeyRound,
-		Shield,
-		Database,
-		Sparkles,
-		Bell,
-		Search,
-		Scale
+		Bell
 	} from '@lucide/svelte';
 	import type { Component } from 'svelte';
 	import { getAllSettings, updateSettings, AdminApiError } from '$lib/admin/api/settings';
@@ -23,16 +15,8 @@
 	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
 
 	const ICONS: Record<SettingsGroup, Component<any>> = {
-		brand: Palette,
-		email: Mail,
 		payments: CreditCard,
-		oauth: KeyRound,
-		security: Shield,
-		storage: Database,
-		features: Sparkles,
-		notifications: Bell,
-		seo: Search,
-		legal: Scale
+		notifications: Bell
 	};
 
 	type GroupState = {
@@ -43,7 +27,7 @@
 
 	let saved = $state<Record<string, any> | null>(null);
 	let draft = $state<Record<string, any> | null>(null);
-	let active = $state<SettingsGroup>('brand');
+	let active = $state<SettingsGroup>('payments');
 	let loading = $state(true);
 	let loadError = $state<string | null>(null);
 	let states = $state<Record<string, GroupState>>({});
@@ -132,19 +116,19 @@
 </script>
 
 <svelte:head>
-	<title>Settings | Tarkify Admin</title>
+	<title>Platform Settings | Tarkify Admin</title>
 </svelte:head>
 
 <AdminPageContainer>
 	<AdminPageHeader
-		title="Settings"
+		title="Platform Settings"
 		description="Manage runtime application configuration. Secrets and deployment settings are managed outside the app."
 	/>
 
 	<AdminPage {loading} error={loadError} onRetry={load}>
 		{#if saved && draft}
 			<div class="settings-layout">
-				<nav class="settings-nav" aria-label="Settings sections">
+				<nav class="settings-nav" aria-label="Platform Settings sections">
 					{#each SETTINGS_SECTIONS as section (section.id)}
 						{@const SectionIcon = ICONS[section.id]}
 						<button

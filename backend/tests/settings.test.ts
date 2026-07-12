@@ -18,7 +18,7 @@ function mockSettingsRows(rows: Array<{ key: string; value: Record<string, unkno
       return Promise.resolve({ rows, rowCount: rows.length });
     }
     if (text.includes('INSERT INTO settings')) {
-      const key = text.includes('RETURNING') ? rows[0]?.key ?? 'brand' : 'brand';
+      const key = text.includes('RETURNING') ? rows[0]?.key ?? 'payments' : 'payments';
       return Promise.resolve({ rows: [{ id: 'id-1', key, value: {}, updated_at: new Date(), updated_by: 'u-1' }], rowCount: 1 });
     }
     return Promise.resolve({ rows: [], rowCount: 0 });
@@ -26,38 +26,20 @@ function mockSettingsRows(rows: Array<{ key: string; value: Record<string, unkno
 }
 
 describe('Settings validation', () => {
-  it('rejects an invalid hex color', async () => {
+  it('rejects an invalid accepted currency', async () => {
     const { parseGroup } = await import('../src/admin/settings/validation.ts');
-    expect(() => parseGroup('brand', { primaryColor: 'not-a-color' })).toThrow();
+    expect(() => parseGroup('payments', { acceptedCurrency: 'XY' })).toThrow();
   });
 
-  it('rejects an invalid email', async () => {
+  it('rejects an invalid receipt prefix', async () => {
     const { parseGroup } = await import('../src/admin/settings/validation.ts');
-    expect(() => parseGroup('email', { adminNotificationEmail: 'nope' })).toThrow();
-  });
-
-  it('rejects an invalid url', async () => {
-    const { parseGroup } = await import('../src/admin/settings/validation.ts');
-    expect(() => parseGroup('brand', { logoUrl: 'ftp://bad' })).toThrow();
-  });
-
-  it('accepts an empty optional url', async () => {
-    const { parseGroup } = await import('../src/admin/settings/validation.ts');
-    const parsed = parseGroup('brand', {
-      logoUrl: '',
-      faviconUrl: '',
-      primaryColor: '#7b904b',
-      secondaryColor: '#6366f1',
-      companyDescription: '',
-      socialLinks: [],
-    });
-    expect(parsed.logoUrl).toBe('');
+    expect(() => parseGroup('payments', { receiptPrefix: '' })).toThrow();
   });
 
   it('coerces boolean defaults', async () => {
     const { parseGroup } = await import('../src/admin/settings/validation.ts');
-    const parsed = parseGroup('features', {});
-    expect(parsed.downloads).toBe(true);
+    const parsed = parseGroup('notifications', {});
+    expect(parsed.adminEmailAlerts).toBe(true);
   });
 });
 
@@ -66,33 +48,32 @@ describe('Settings service', () => {
     mockSettingsRows([]);
     const svc = await import('../src/admin/settings/service.ts');
     const all = await svc.getAllSettings();
-    expect(all.email.adminNotificationEmail).toBe('admin@tarkify.qzz.io');
-    expect(all.brand.primaryColor).toBe('#7b904b');
-    expect(all.features.analytics).toBe(true);
+    expect(all.payments.enablePayments).toBe(true);
+    expect(all.notifications.adminEmailAlerts).toBe(true);
   });
 
   it('merges stored values over defaults', async () => {
-    mockSettingsRows([{ key: 'email', value: { adminNotificationEmail: 'custom@x.com' } }]);
+    mockSettingsRows([{ key: 'payments', value: { enablePayments: false } }]);
     const svc = await import('../src/admin/settings/service.ts');
-    const email = await svc.getSettings('email');
-    expect(email.adminNotificationEmail).toBe('custom@x.com');
-    expect(email.defaultFromName).toBe('Tarkify');
+    const payments = await svc.getSettings('payments');
+    expect(payments.enablePayments).toBe(false);
+    expect(payments.acceptedCurrency).toBe('INR');
   });
 
   it('persists and audits an update', async () => {
     mockSettingsRows([]);
     const svc = await import('../src/admin/settings/service.ts');
     const updated = await svc.updateSettings(
-      'email',
-      { defaultFromName: 'NewName', replyToName: 'NewCo', adminNotificationEmail: 'a@b.com', emailFooter: '', signature: '', enableEmailSending: true, enableTestEmails: false },
+      'payments',
+      { enablePayments: false, maintenanceMode: true, acceptedCurrency: 'USD', taxEnabled: true, receiptPrefix: 'R-' },
       'admin-user-1',
       '127.0.0.1',
       'agent',
     );
-    expect(updated.defaultFromName).toBe('NewName');
+    expect(updated.enablePayments).toBe(false);
 
     const auditInsert = mockDb.queries.find(
-      (q: any) => q.text.includes('INSERT INTO audit_logs') && q.params?.[1] === 'email_updated',
+      (q: any) => q.text.includes('INSERT INTO audit_logs') && q.params?.[1] === 'payments_updated',
     );
     expect(auditInsert).toBeDefined();
 
@@ -104,7 +85,7 @@ describe('Settings service', () => {
     mockSettingsRows([]);
     const svc = await import('../src/admin/settings/service.ts');
     await expect(
-      svc.updateSettings('security', { minimumLength: 2 }, 'admin-user-1'),
+      svc.updateSettings('payments', { acceptedCurrency: 'X' }, 'admin-user-1'),
     ).rejects.toThrow();
   });
 });

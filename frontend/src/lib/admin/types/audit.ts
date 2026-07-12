@@ -7,7 +7,7 @@ export type AuditModule =
 	| 'Customers'
 	| 'Communication'
 	| 'Emails'
-	| 'Settings'
+	| 'Platform Settings'
 	| 'System'
 	| 'Analytics'
 	| 'Admin';
@@ -23,7 +23,7 @@ export const AUDIT_MODULES: AuditModule[] = [
 	'Customers',
 	'Communication',
 	'Emails',
-	'Settings',
+	'Platform Settings',
 	'System',
 	'Analytics',
 	'Admin'

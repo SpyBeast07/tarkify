@@ -20,7 +20,7 @@
 		emails: 'Emails',
 		analytics: 'Analytics',
 		system: 'System',
-		settings: 'Settings',
+		settings: 'Platform Settings',
 		audit: 'Audit Logs',
 		login: 'Login'
 	};
