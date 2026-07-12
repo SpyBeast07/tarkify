@@ -15,6 +15,10 @@
 	import SearchResultCard from '$lib/admin/components/SearchResultCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
+	import AdminInput from '$lib/admin/components/AdminInput.svelte';
+	import AdminButtonGroup from '$lib/admin/components/AdminButtonGroup.svelte';
+
 	let query = $state('');
 	let module = $state<SearchModule | 'all'>('all');
 	let sort = $state<'relevance' | 'newest'>('relevance');
@@ -113,124 +117,93 @@
 	}
 </script>
 
-<AdminPageHeader title="Search" description="Find anything across the Tarkify platform">
-	{#if query && !loading}
-		<span class="result-count-badge">{getTotalCount()} results</span>
-	{/if}
-</AdminPageHeader>
+<svelte:head>
+	<title>Global Search | Tarkify Admin</title>
+</svelte:head>
 
-<AdminPage {loading} {error} onRetry={loadResults}>
-	{#if !query}
-		<AdminSection>
-			<AdminEmptyState
-				title="Enter a search query"
-				message="Type above to search across products, orders, customers, and more."
-			/>
-		</AdminSection>
-	{:else if loading && !results.length}
-		<AdminSection>
-			<AdminLoading variant="card" count={5} />
-		</AdminSection>
-	{:else if error}
-		<AdminSection>
-			<AdminError message={error} onRetry={loadResults} />
-		</AdminSection>
-	{:else if results.length === 0}
-		<AdminSection>
-			<AdminEmptyState
-				title="No results found"
-				message={`No matches for "${query}". Try a different search term.`}
-			/>
-		</AdminSection>
-	{:else}
-		<SearchFilterBar
-			bind:module
-			bind:sort
-			modules={moduleOptions}
-			onModuleChange={() => handleSearch()}
-			onSortChange={() => handleSearch()}
-		/>
-
-		<AdminSection>
-			<div class="results-grid" role="list" aria-label="Search results">
-				{#each results as result (result.id)}
-					<SearchResultCard {result} />
-				{/each}
-			</div>
-		</AdminSection>
-
-		{#if totalPages > 1}
-			<div class="pagination">
-				<span class="pagination-info">Page {pageNum} of {totalPages} ({total} total)</span>
-				<div class="pagination-buttons">
-					<Button variant="ghost" size="sm" disabled={pageNum <= 1} onclick={() => goToPage(pageNum - 1)}>
-						Previous
-					</Button>
-					{#each { length: Math.min(totalPages, 5) } as _, i}
-						{@const p = i + 1}
-						<Button variant={p === pageNum ? 'primary' : 'ghost'} size="sm" onclick={() => goToPage(p)}>
-							{p}
-						</Button>
-					{/each}
-					<Button variant="ghost" size="sm" disabled={pageNum >= totalPages} onclick={() => goToPage(pageNum + 1)}>
-						Next
-					</Button>
-				</div>
-			</div>
+<AdminPageContainer>
+	<AdminPageHeader title="Search" description="Find anything across the Tarkify platform">
+		{#if query && !loading}
+			<span class="result-count-badge">{getTotalCount()} results</span>
 		{/if}
-	{/if}
-</AdminPage>
+	</AdminPageHeader>
 
-<div class="search-bar-container">
-	<div class="search-bar glass">
-		<Search size={18} class="search-icon" aria-hidden="true" />
-		<input
+	<div class="search-bar-container">
+		<AdminInput
 			type="text"
 			bind:value={query}
 			placeholder="Search products, orders, customers..."
 			onkeydown={handleKeydown}
 			aria-label="Search query"
-			class="search-input"
+			icon={Search}
 		/>
 	</div>
-</div>
+
+	<AdminPage {loading} {error} onRetry={loadResults}>
+		{#if !query}
+			<AdminSection>
+				<AdminEmptyState
+					title="Enter a search query"
+					message="Type above to search across products, orders, customers, and more."
+				/>
+			</AdminSection>
+		{:else if loading && !results.length}
+			<AdminSection>
+				<AdminLoading variant="card" count={5} />
+			</AdminSection>
+		{:else}
+			{#if results.length === 0}
+				<AdminSection>
+					<AdminEmptyState
+						title="No results found"
+						message={`No matches for "${query}". Try a different search term.`}
+					/>
+				</AdminSection>
+			{:else}
+				<SearchFilterBar
+					bind:module
+					bind:sort
+					modules={moduleOptions}
+					onModuleChange={() => handleSearch()}
+					onSortChange={() => handleSearch()}
+				/>
+
+				<AdminSection>
+					<div class="results-grid" role="list" aria-label="Search results">
+						{#each results as result (result.id)}
+							<SearchResultCard {result} />
+						{/each}
+					</div>
+				</AdminSection>
+
+				{#if totalPages > 1}
+					<div class="pagination">
+						<span class="pagination-info">Page {pageNum} of {totalPages} ({total} total)</span>
+						<AdminButtonGroup align="right" class="pagination-buttons">
+							<Button variant="ghost" size="sm" disabled={pageNum <= 1} onclick={() => goToPage(pageNum - 1)}>
+								Previous
+							</Button>
+							{#each { length: Math.min(totalPages, 5) } as _, i}
+								{@const p = i + 1}
+								<Button variant={p === pageNum ? 'primary' : 'ghost'} size="sm" onclick={() => goToPage(p)}>
+									{p}
+								</Button>
+							{/each}
+							<Button variant="ghost" size="sm" disabled={pageNum >= totalPages} onclick={() => goToPage(pageNum + 1)}>
+								Next
+							</Button>
+						</AdminButtonGroup>
+					</div>
+				{/if}
+			{/if}
+		{/if}
+	</AdminPage>
+</AdminPageContainer>
 
 <style>
 	.search-bar-container {
-		margin-bottom: 1rem;
-	}
-
-	.search-bar {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.75rem 1rem;
-		border-radius: 14px;
-		transition: var(--transition-smooth);
-	}
-
-	.search-bar:focus-within {
-		border-color: var(--color-primary-green);
-		box-shadow: 0 0 0 3px rgba(39, 59, 9, 0.1);
-	}
-
-	:global(.search-icon) {
-		opacity: 0.4;
-		flex-shrink: 0;
-	}
-
-	.search-input {
-		flex: 1;
-		border: none;
-		background: transparent;
-		outline: none;
-		font-size: 0.95rem;
-		color: var(--color-text);
-		font-family: var(--font-main);
-	}
-
-	.search-input::placeholder {
-		opacity: 0.5;
+		margin-bottom: 1.5rem;
+		max-width: 600px;
 	}
 
 	.result-count-badge {
@@ -260,11 +233,5 @@
 	.pagination-info {
 		font-size: 0.85rem;
 		opacity: 0.6;
-	}
-
-	.pagination-buttons {
-		display: flex;
-		gap: 0.25rem;
-		align-items: center;
 	}
 </style>

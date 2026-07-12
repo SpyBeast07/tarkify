@@ -3,20 +3,26 @@
 	import { page } from '$app/stores';
 	import {
 		ArrowLeft, Download, User, Package,
-		History, Shield, RotateCcw, XCircle,
-		AlertTriangle
+		History, Shield, RotateCcw, XCircle
 	} from '@lucide/svelte';
 	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminSection from '$lib/admin/components/AdminSection.svelte';
-	import AdminTableContainer from '$lib/admin/components/AdminTableContainer.svelte';
 	import AdminEmptyState from '$lib/admin/components/AdminEmptyState.svelte';
-	import SectionCard from '$lib/components/ui/SectionCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import DownloadStatusBadge from '$lib/admin/components/DownloadStatusBadge.svelte';
 	import DownloadTokenCard from '$lib/admin/components/DownloadTokenCard.svelte';
 	import DownloadHistoryTable from '$lib/admin/components/DownloadHistoryTable.svelte';
+
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
+	import AdminCard from '$lib/admin/components/AdminCard.svelte';
+	import AdminGrid from '$lib/admin/components/AdminGrid.svelte';
+	import AdminStack from '$lib/admin/components/AdminStack.svelte';
+	import AdminTable from '$lib/admin/components/AdminTable.svelte';
+	import AdminDialog from '$lib/admin/components/AdminDialog.svelte';
+	import AdminSectionHeader from '$lib/admin/components/AdminSectionHeader.svelte';
+	import AdminButtonGroup from '$lib/admin/components/AdminButtonGroup.svelte';
 
 	let downloadId = $derived($page.params.id ?? '');
 
@@ -64,6 +70,7 @@
 	let actionError = $state<string | null>(null);
 	let actionSuccess = $state<string | null>(null);
 	let confirmAction = $state<string | null>(null);
+	let showConfirmDialog = $state(false);
 
 	let regeneratedToken = $state<{ id: string; token: string; expires_at: string } | null>(null);
 
@@ -112,6 +119,7 @@
 		actionError = null;
 		actionSuccess = null;
 		confirmAction = null;
+		showConfirmDialog = false;
 		regeneratedToken = null;
 		try {
 			if (action === 'regenerate') {
@@ -154,197 +162,179 @@
 
 	function confirmThen(action: string) {
 		confirmAction = action;
+		showConfirmDialog = true;
 	}
 
 	function cancelConfirm() {
 		confirmAction = null;
+		showConfirmDialog = false;
 	}
 </script>
 
-<AdminPage {loading} {error} onRetry={loadDownload}>
-	{#if download}
-		<AdminPageHeader
-			title="Download Token"
-			description={`Created ${shortDate(download.created_at)}`}
-		>
-			<Button variant="ghost" href="/admin/downloads">
-				<ArrowLeft size={16} />
-				Back to Downloads
-			</Button>
-			<Button variant="ghost" href={`/admin/orders/${download.purchase_id}`}>
-				View Order
-			</Button>
-			{#if download.customer_id}
-				<Button variant="ghost" href={`/admin/customers/${download.customer_id}`}>
-					<User size={16} />
-					View Customer
-				</Button>
-			{/if}
-		</AdminPageHeader>
+<svelte:head>
+	<title>Download Detail | Tarkify Admin</title>
+</svelte:head>
 
-		{#if actionSuccess}
-			<div class="alert alert-success" role="alert">
-				{actionSuccess}
-			</div>
-		{/if}
-		{#if actionError}
-			<div class="alert alert-error" role="alert">
-				{actionError}
-			</div>
-		{/if}
+<AdminPageContainer>
+	<AdminPage {loading} {error} onRetry={loadDownload}>
+		{#if download}
+			<AdminPageHeader
+				title="Download Token"
+				description={`Created ${shortDate(download.created_at)}`}
+			>
+				<AdminButtonGroup align="right">
+					<Button variant="ghost" href="/admin/downloads" size="sm">
+						<ArrowLeft size={16} />
+						Back to Downloads
+					</Button>
+					<Button variant="ghost" href={`/admin/orders/${download.purchase_id}`} size="sm">
+						View Order
+					</Button>
+					{#if download.customer_id}
+						<Button variant="ghost" href={`/admin/customers/${download.customer_id}`} size="sm">
+							<User size={16} />
+							View Customer
+						</Button>
+					{/if}
+				</AdminButtonGroup>
+			</AdminPageHeader>
 
-		{#if regeneratedToken}
-			<div class="alert alert-success" role="alert">
-				<strong>New token generated:</strong>
-				<code class="new-token">{regeneratedToken.token}</code>
-				(expires {formatDate(regeneratedToken.expires_at)})
-			</div>
-		{/if}
-
-		<div class="tab-bar">
-			<button class="tab" class:active={activeTab === 'overview'} onclick={() => (activeTab = 'overview')}>Overview</button>
-			<button class="tab" class:active={activeTab === 'history'} onclick={() => (activeTab = 'history')}>History ({history.length})</button>
-			<button class="tab" class:active={activeTab === 'audit'} onclick={() => (activeTab = 'audit')}>Audit</button>
-		</div>
-
-		{#if activeTab === 'overview'}
-			<div class="detail-grid">
-				<div class="detail-column detail-column-left">
-					<SectionCard title="Overview" icon={Download}>
-						<div class="detail-list">
-							<div class="detail-item">
-								<span class="detail-label">Status</span>
-								<span class="detail-value"><DownloadStatusBadge status={download.status} /></span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Created</span>
-								<span class="detail-value">{formatDate(download.created_at)}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Expires</span>
-								<span class="detail-value">{formatDate(download.expires_at)}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Total Tokens (Purchase)</span>
-								<span class="detail-value">{download.tokens_count}</span>
-							</div>
-						</div>
-					</SectionCard>
-
-					<SectionCard title="Customer" icon={User}>
-						<div class="detail-list">
-							<div class="detail-item">
-								<span class="detail-label">Name</span>
-								<span class="detail-value">{download.customer_name || 'Guest'}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Email</span>
-								<span class="detail-value">{download.customer_email}</span>
-							</div>
-						</div>
-						{#if download.customer_id}
-							<div style="margin-top: 0.75rem;">
-								<Button variant="ghost" size="sm" href={`/admin/customers/${download.customer_id}`}>
-									<User size={14} />
-									View Customer Profile
-								</Button>
-							</div>
-						{/if}
-					</SectionCard>
-
-					<SectionCard title="Product" icon={Package}>
-						<div class="detail-list">
-							<div class="detail-item">
-								<span class="detail-label">Name</span>
-								<span class="detail-value">{download.product_name}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Slug</span>
-								<span class="detail-value mono">{download.product_slug}</span>
-							</div>
-						</div>
-						<div style="margin-top: 0.75rem;">
-							<Button variant="ghost" size="sm" href={`/admin/products/${download.product_id}`}>
-								<Package size={14} />
-								View Product
-							</Button>
-						</div>
-					</SectionCard>
+			{#if actionSuccess}
+				<div class="alert alert-success" role="alert">
+					{actionSuccess}
 				</div>
+			{/if}
+			{#if actionError}
+				<div class="alert alert-error" role="alert">
+					{actionError}
+				</div>
+			{/if}
 
-				<div class="detail-column detail-column-right">
-					<SectionCard title="Download Token" icon={Shield}>
-						<DownloadTokenCard token={download.token} expiresAt={download.expires_at} />
-					</SectionCard>
+			{#if regeneratedToken}
+				<div class="alert alert-success" role="alert">
+					<strong>New token generated:</strong>
+					<code class="new-token">{regeneratedToken.token}</code>
+					(expires {formatDate(regeneratedToken.expires_at)})
+				</div>
+			{/if}
 
-					<SectionCard title="Admin Actions" icon={History}>
-						<p class="actions-desc">Manage this download token. All actions are logged.</p>
-						<div class="actions-grid">
-							<Button
-								variant="ghost"
-								size="sm"
-								disabled={actionLoading !== null || download.status !== 'active'}
-								onclick={() => confirmThen('revoke')}
-							>
-								<XCircle size={14} />
-								Revoke Token
-							</Button>
-							<Button
-								variant="ghost"
-								size="sm"
-								disabled={actionLoading !== null}
-								onclick={() => confirmThen('regenerate')}
-							>
-								<RotateCcw size={14} />
-								Regenerate Token
-							</Button>
-						</div>
+			<div class="tab-bar">
+				<button class="tab" class:active={activeTab === 'overview'} onclick={() => (activeTab = 'overview')}>Overview</button>
+				<button class="tab" class:active={activeTab === 'history'} onclick={() => (activeTab = 'history')}>History ({history.length})</button>
+				<button class="tab" class:active={activeTab === 'audit'} onclick={() => (activeTab = 'audit')}>Audit</button>
+			</div>
 
-						{#if confirmAction}
-							<div class="confirm-dialog" role="alertdialog" aria-labelledby="confirm-title">
-								<div class="confirm-content">
-									<div class="confirm-icon"><AlertTriangle size={20} /></div>
-									<h4 id="confirm-title">Confirm {confirmAction}</h4>
-									<p>
-										{confirmAction === 'revoke'
-											? 'This will immediately invalidate the current download token. The customer will lose access through this token. Entitlement remains unchanged.'
-											: 'This will invalidate the current token and generate a new one using the existing entitlement. The old token will no longer work.'}
-									</p>
-									<div class="confirm-buttons">
-										<Button
-											variant="primary"
-											size="sm"
-											disabled={actionLoading === confirmAction}
-											onclick={() => confirmAction && performAction(confirmAction)}
-										>
-											{actionLoading === confirmAction ? 'Processing...' : 'Confirm'}
-										</Button>
-										<Button
-											variant="ghost"
-											size="sm"
-											disabled={actionLoading !== null}
-											onclick={cancelConfirm}
-										>
-											Cancel
-										</Button>
+			{#if activeTab === 'overview'}
+				<AdminGrid cols={{ default: 1, md: 3 }} gap="md">
+					<div class="span-two-columns">
+						<AdminStack gap="md">
+							<AdminCard>
+								<AdminSectionHeader title="Overview" />
+								<div class="detail-list">
+									<div class="detail-item">
+										<span class="detail-label">Status</span>
+										<span class="detail-value"><DownloadStatusBadge status={download.status} /></span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Created</span>
+										<span class="detail-value">{formatDate(download.created_at)}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Expires</span>
+										<span class="detail-value">{formatDate(download.expires_at)}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Total Tokens (Purchase)</span>
+										<span class="detail-value">{download.tokens_count}</span>
 									</div>
 								</div>
-							</div>
-						{/if}
-					</SectionCard>
-				</div>
-			</div>
-		{:else if activeTab === 'history'}
-			<AdminSection title="Token History">
-				<DownloadHistoryTable entries={history} />
-			</AdminSection>
-		{:else if activeTab === 'audit'}
-			<AdminSection title="Audit Log">
-				{#if audit.length === 0}
-					<AdminEmptyState title="No audit entries" message="No administrative actions recorded for this token." />
-				{:else}
-					<AdminTableContainer>
-						<table>
+							</AdminCard>
+
+							<AdminCard>
+								<AdminSectionHeader title="Customer" />
+								<div class="detail-list">
+									<div class="detail-item">
+										<span class="detail-label">Name</span>
+										<span class="detail-value">{download.customer_name || 'Guest'}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Email</span>
+										<span class="detail-value">{download.customer_email}</span>
+									</div>
+								</div>
+								{#if download.customer_id}
+									<div style="margin-top: 0.75rem;">
+										<Button variant="ghost" size="sm" href={`/admin/customers/${download.customer_id}`}>
+											<User size={14} />
+											View Customer Profile
+										</Button>
+									</div>
+								{/if}
+							</AdminCard>
+
+							<AdminCard>
+								<AdminSectionHeader title="Product" />
+								<div class="detail-list">
+									<div class="detail-item">
+										<span class="detail-label">Name</span>
+										<span class="detail-value">{download.product_name}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Slug</span>
+										<span class="detail-value mono">{download.product_slug}</span>
+									</div>
+								</div>
+								<div style="margin-top: 0.75rem;">
+									<Button variant="ghost" size="sm" href={`/admin/products/${download.product_id}`}>
+										<Package size={14} />
+										View Product
+									</Button>
+								</div>
+							</AdminCard>
+						</AdminStack>
+					</div>
+
+					<AdminStack gap="md">
+						<AdminCard>
+							<AdminSectionHeader title="Download Token" />
+							<DownloadTokenCard token={download.token} expiresAt={download.expires_at} />
+						</AdminCard>
+
+						<AdminCard>
+							<AdminSectionHeader title="Admin Actions" description="Manage this download token. All actions are logged." />
+							<AdminButtonGroup align="left">
+								<Button
+									variant="ghost"
+									size="sm"
+									disabled={actionLoading !== null || download.status !== 'active'}
+									onclick={() => confirmThen('revoke')}
+								>
+									<XCircle size={14} />
+									Revoke Token
+								</Button>
+								<Button
+									variant="ghost"
+									size="sm"
+									disabled={actionLoading !== null}
+									onclick={() => confirmThen('regenerate')}
+								>
+									<RotateCcw size={14} />
+									Regenerate Token
+								</Button>
+							</AdminButtonGroup>
+						</AdminCard>
+					</AdminStack>
+				</AdminGrid>
+			{:else if activeTab === 'history'}
+				<AdminSection title="Token History">
+					<DownloadHistoryTable entries={history} />
+				</AdminSection>
+			{:else if activeTab === 'audit'}
+				<AdminSection title="Audit Log">
+					{#if audit.length === 0}
+						<AdminEmptyState title="No audit entries" message="No administrative actions recorded for this token." />
+					{:else}
+						<AdminTable>
 							<thead>
 								<tr>
 									<th>Event</th>
@@ -363,15 +353,32 @@
 									</tr>
 								{/each}
 							</tbody>
-						</table>
-					</AdminTableContainer>
-				{/if}
-			</AdminSection>
+						</AdminTable>
+					{/if}
+				</AdminSection>
+			{/if}
 		{/if}
-	{/if}
-</AdminPage>
+	</AdminPage>
+</AdminPageContainer>
+
+<AdminDialog
+	bind:open={showConfirmDialog}
+	title={`Confirm ${confirmAction}`}
+	message={confirmAction === 'revoke'
+		? 'This will immediately invalidate the current download token. The customer will lose access through this token. Entitlement remains unchanged.'
+		: 'This will invalidate the current token and generate a new one using the existing entitlement. The old token will no longer work.'}
+	confirmText={actionLoading ? 'Processing...' : 'Confirm'}
+	disabled={actionLoading !== null}
+	onconfirm={() => confirmAction && performAction(confirmAction)}
+	oncancel={cancelConfirm}
+	variant={confirmAction === 'revoke' ? 'danger' : 'primary'}
+/>
 
 <style>
+	.span-two-columns {
+		grid-column: span 2;
+	}
+
 	.tab-bar {
 		display: flex;
 		gap: 0;
@@ -431,19 +438,6 @@
 		opacity: 0.85;
 	}
 
-	.detail-grid {
-		display: grid;
-		grid-template-columns: 1fr 380px;
-		gap: 1.5rem;
-		align-items: start;
-	}
-
-	.detail-column {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
 	.detail-list {
 		display: flex;
 		flex-direction: column;
@@ -469,62 +463,13 @@
 		font-size: 0.95rem;
 		line-height: 1.5;
 		word-break: break-word;
+		color: var(--color-text);
 	}
 
 	.detail-value.mono {
 		font-family: var(--font-accent);
 		font-size: 0.85rem;
 		opacity: 0.65;
-	}
-
-	.actions-desc {
-		font-size: 0.8rem;
-		opacity: 0.5;
-		margin-bottom: 0.75rem;
-	}
-
-	.actions-grid {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-
-	.confirm-dialog {
-		margin-top: 1rem;
-		padding: 1rem;
-		border-radius: 12px;
-		background: rgba(220, 38, 38, 0.06);
-		border: 1px solid rgba(220, 38, 38, 0.15);
-	}
-
-	.confirm-content {
-		text-align: center;
-	}
-
-	.confirm-icon {
-		display: flex;
-		justify-content: center;
-		margin-bottom: 0.75rem;
-		opacity: 0.6;
-	}
-
-	.confirm-content h4 {
-		font-size: 1rem;
-		font-weight: 700;
-		margin-bottom: 0.5rem;
-		text-transform: capitalize;
-	}
-
-	.confirm-content p {
-		font-size: 0.85rem;
-		opacity: 0.7;
-		margin-bottom: 1rem;
-	}
-
-	.confirm-buttons {
-		display: flex;
-		gap: 0.5rem;
-		justify-content: center;
 	}
 
 	.event-cell {
@@ -543,8 +488,8 @@
 	}
 
 	@media (max-width: 900px) {
-		.detail-grid {
-			grid-template-columns: 1fr;
+		.span-two-columns {
+			grid-column: span 1;
 		}
 	}
 </style>

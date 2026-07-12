@@ -5,20 +5,25 @@
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminSection from '$lib/admin/components/AdminSection.svelte';
-	import AdminTableContainer from '$lib/admin/components/AdminTableContainer.svelte';
 	import AdminEmptyState from '$lib/admin/components/AdminEmptyState.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
 	import CustomerStatusBadge from '$lib/admin/components/CustomerStatusBadge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
+	import AdminToolbar from '$lib/admin/components/AdminToolbar.svelte';
+	import AdminFilterBar from '$lib/admin/components/AdminFilterBar.svelte';
+	import AdminTable from '$lib/admin/components/AdminTable.svelte';
+	import AdminInput from '$lib/admin/components/AdminInput.svelte';
+	import AdminSelect from '$lib/admin/components/AdminSelect.svelte';
+	import AdminButtonGroup from '$lib/admin/components/AdminButtonGroup.svelte';
 
 	interface CustomerListItem {
 		id: string;
-		name: string | null;
 		email: string;
+		name: string | null;
 		display_name: string | null;
-		image: string | null;
-		account_status: string;
 		email_verified: boolean;
+		account_status: string;
 		oauth_providers: string[];
 		purchases_count: number;
 		downloads_count: number;
@@ -32,10 +37,6 @@
 		page: number;
 		perPage: number;
 		totalPages: number;
-	}
-
-	interface FilterOption {
-		statuses: string[];
 	}
 
 	let customers = $state<CustomerListItem[]>([]);
@@ -56,7 +57,6 @@
 
 	let showFilters = $state(false);
 	let statusOptions = $state<string[]>([]);
-	let optionsLoaded = $state(false);
 
 	async function loadCustomers() {
 		loading = true;
@@ -65,7 +65,7 @@
 			const params = new URLSearchParams();
 			if (search) params.set('search', search);
 			if (statusFilter) params.set('status', statusFilter);
-			if (verifiedFilter) params.set('emailVerified', verifiedFilter);
+			if (verifiedFilter) params.set('verified', verifiedFilter);
 			if (oauthFilter) params.set('oauth', oauthFilter);
 			if (dateFrom) params.set('dateFrom', dateFrom);
 			if (dateTo) params.set('dateTo', dateTo);
@@ -89,18 +89,17 @@
 		}
 	}
 
-	async function loadOptions() {
+	async function loadMetadata() {
 		try {
-			const result = await adminFetch<FilterOption>('/customers/options');
+			const result = await adminFetch<{ statuses: string[] }>('/customers/metadata');
 			statusOptions = result.statuses;
-			optionsLoaded = true;
 		} catch {
 			// non-critical
 		}
 	}
 
 	onMount(() => {
-		loadOptions();
+		loadMetadata();
 		loadCustomers();
 	});
 
@@ -147,111 +146,111 @@
 	}
 </script>
 
-<AdminPageHeader title="Customers" description="View and manage customer accounts">
-	<Button variant="ghost" disabled>
-		<Users size={16} />
-		{total} Total
-	</Button>
-</AdminPageHeader>
+<svelte:head>
+	<title>Customers | Tarkify Admin</title>
+</svelte:head>
 
-<AdminPage {loading} {error} onRetry={loadCustomers}>
-	<div class="toolbar">
-		<div class="search-bar">
-			<span class="search-icon"><Search size={16} /></span>
-			<input
-				type="text"
-				bind:value={search}
-				placeholder="Search by name or email..."
-				onkeydown={handleKeydown}
-				aria-label="Search customers"
-			/>
-		</div>
-		<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
-			<SlidersHorizontal size={16} />
-			Filters
-			{#if filteredCount() > 0}
-				<span class="filter-badge">{filteredCount()}</span>
-			{/if}
+<AdminPageContainer>
+	<AdminPageHeader title="Customers" description="View and manage customer accounts">
+		<Button variant="ghost" disabled>
+			<Users size={16} />
+			{total} Total
 		</Button>
-	</div>
+	</AdminPageHeader>
 
-	{#if showFilters}
-		<div class="filters-bar">
-			<Input
-				type="select"
-				bind:value={statusFilter}
-				options={[
-					{ value: '', label: 'All Statuses' },
-					...statusOptions.map(s => ({ value: s, label: s.charAt(0) + s.slice(1).toLowerCase() }))
-				]}
-				class="filter-select"
-				onchange={loadCustomers}
-			/>
-			<Input
-				type="select"
-				bind:value={verifiedFilter}
-				options={[
-					{ value: '', label: 'All Verification' },
-					{ value: 'true', label: 'Verified' },
-					{ value: 'false', label: 'Not Verified' }
-				]}
-				class="filter-select"
-				onchange={loadCustomers}
-			/>
-			<Input
-				type="select"
-				bind:value={oauthFilter}
-				options={[
-					{ value: '', label: 'All Auth Types' },
-					{ value: 'none', label: 'Email Only' },
-					{ value: 'google', label: 'Google' }
-				]}
-				class="filter-select"
-				onchange={loadCustomers}
-			/>
-			<input
-				type="date"
-				bind:value={dateFrom}
-				placeholder="From date"
-				class="filter-date"
-				onchange={loadCustomers}
-			/>
-			<input
-				type="date"
-				bind:value={dateTo}
-				placeholder="To date"
-				class="filter-date"
-				onchange={loadCustomers}
-			/>
-			<Input
-				type="select"
-				bind:value={sort}
-				options={[
-					{ value: 'newest', label: 'Newest First' },
-					{ value: 'oldest', label: 'Oldest First' },
-					{ value: 'name', label: 'Name (A-Z)' },
-					{ value: 'last_login', label: 'Last Login' },
-					{ value: 'purchases', label: 'Most Purchases' }
-				]}
-				class="filter-select"
-				onchange={loadCustomers}
-			/>
-			<Button variant="ghost" size="sm" onclick={clearFilters}>Clear</Button>
-		</div>
-	{/if}
+	<AdminPage {loading} {error} onRetry={loadCustomers}>
+		<AdminToolbar>
+			<div class="search-bar-wrapper">
+				<AdminInput
+					type="text"
+					bind:value={search}
+					placeholder="Search by name or email..."
+					onkeydown={handleKeydown}
+					aria-label="Search customers"
+					icon={Search}
+				/>
+			</div>
+			<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
+				<SlidersHorizontal size={16} />
+				Filters
+				{#if filteredCount() > 0}
+					<span class="filter-badge">{filteredCount()}</span>
+				{/if}
+			</Button>
+		</AdminToolbar>
 
-	{#if customers.length === 0}
-		<AdminSection>
-			<AdminEmptyState
-				title="No customers found"
-				message={search || statusFilter || verifiedFilter || oauthFilter
-					? 'Try adjusting your search or filters.'
-					: 'Customers will appear here once users sign up.'}
-			/>
-		</AdminSection>
-	{:else}
-		<AdminTableContainer>
-			<table>
+		{#if showFilters}
+			<AdminFilterBar>
+				<AdminSelect
+					bind:value={statusFilter}
+					options={[
+						{ value: '', label: 'All Statuses' },
+						...statusOptions.map(s => ({ value: s, label: s.charAt(0) + s.slice(1).toLowerCase() }))
+					]}
+					class="filter-select"
+					onchange={loadCustomers}
+				/>
+				<AdminSelect
+					bind:value={verifiedFilter}
+					options={[
+						{ value: '', label: 'All Verification' },
+						{ value: 'true', label: 'Verified' },
+						{ value: 'false', label: 'Not Verified' }
+					]}
+					class="filter-select"
+					onchange={loadCustomers}
+				/>
+				<AdminSelect
+					bind:value={oauthFilter}
+					options={[
+						{ value: '', label: 'All Auth Types' },
+						{ value: 'none', label: 'Email Only' },
+						{ value: 'google', label: 'Google' }
+					]}
+					class="filter-select"
+					onchange={loadCustomers}
+				/>
+				<AdminInput
+					type="date"
+					bind:value={dateFrom}
+					class="filter-date"
+					onchange={loadCustomers}
+					aria-label="From Date"
+				/>
+				<AdminInput
+					type="date"
+					bind:value={dateTo}
+					class="filter-date"
+					onchange={loadCustomers}
+					aria-label="To Date"
+				/>
+				<AdminSelect
+					bind:value={sort}
+					options={[
+						{ value: 'newest', label: 'Newest First' },
+						{ value: 'oldest', label: 'Oldest First' },
+						{ value: 'name', label: 'Name (A-Z)' },
+						{ value: 'last_login', label: 'Last Login' },
+						{ value: 'purchases', label: 'Most Purchases' }
+					]}
+					class="filter-select"
+					onchange={loadCustomers}
+				/>
+				<Button variant="ghost" size="sm" onclick={clearFilters}>Clear</Button>
+			</AdminFilterBar>
+		{/if}
+
+		{#if customers.length === 0}
+			<AdminSection>
+				<AdminEmptyState
+					title="No customers found"
+					message={search || statusFilter || verifiedFilter || oauthFilter
+						? 'Try adjusting your search or filters.'
+						: 'Customers will appear here once users sign up.'}
+				/>
+			</AdminSection>
+		{:else}
+			<AdminTable>
 				<thead>
 					<tr>
 						<th>Customer</th>
@@ -280,7 +279,7 @@
 											? (customer.display_name || customer.name)!.charAt(0).toUpperCase()
 											: customer.email.charAt(0).toUpperCase()}
 									</div>
-									<div>
+									<div class="customer-details">
 										<div class="customer-name">{customer.display_name || customer.name || 'Unnamed'}</div>
 										<div class="customer-email">{customer.email}</div>
 									</div>
@@ -308,102 +307,58 @@
 						</tr>
 					{/each}
 				</tbody>
-			</table>
-		</AdminTableContainer>
+			</AdminTable>
 
-		{#if totalPages > 1}
-			<div class="pagination">
-				<span class="pagination-info">Page {page} of {totalPages} ({total} customers)</span>
-				<div class="pagination-buttons">
-					<Button variant="ghost" size="sm" disabled={page <= 1} onclick={() => goToPage(page - 1)}>Previous</Button>
-					{#each { length: Math.min(totalPages, 5) } as _, i}
-						{@const p = i + 1}
-						<Button variant={p === page ? 'primary' : 'ghost'} size="sm" onclick={() => goToPage(p)}>{p}</Button>
-					{/each}
-					<Button variant="ghost" size="sm" disabled={page >= totalPages} onclick={() => goToPage(page + 1)}>Next</Button>
+			{#if totalPages > 1}
+				<div class="pagination">
+					<span class="pagination-info">
+						Page {page} of {totalPages} ({total} customers)
+					</span>
+					<AdminButtonGroup align="right" class="pagination-buttons">
+						<Button variant="ghost" size="sm" disabled={page <= 1} onclick={() => goToPage(page - 1)}>
+							Previous
+						</Button>
+						{#each { length: Math.min(totalPages, 5) } as _, i}
+							{@const p = i + 1}
+							<Button
+								variant={p === page ? 'primary' : 'ghost'}
+								size="sm"
+								onclick={() => goToPage(p)}
+							>
+								{p}
+							</Button>
+						{/each}
+						<Button variant="ghost" size="sm" disabled={page >= totalPages} onclick={() => goToPage(page + 1)}>
+							Next
+						</Button>
+					</AdminButtonGroup>
 				</div>
-			</div>
+			{/if}
 		{/if}
-	{/if}
-</AdminPage>
+	</AdminPage>
+</AdminPageContainer>
 
 <style>
-	.toolbar {
-		display: flex;
-		gap: 0.75rem;
-		align-items: center;
-		margin-bottom: 1rem;
-	}
-
-	.search-bar {
+	.search-bar-wrapper {
 		flex: 1;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem 0.75rem;
-		background: var(--color-glass-bg);
-		border: 1px solid var(--color-glass-border);
-		border-radius: 12px;
-		transition: var(--transition-smooth);
-	}
-
-	.search-bar:focus-within {
-		border-color: var(--color-primary-green);
-		box-shadow: 0 0 0 3px rgba(39, 59, 9, 0.1);
-	}
-
-	.search-icon {
-		display: flex;
-		flex-shrink: 0;
-		opacity: 0.4;
-	}
-
-	.search-bar input {
-		flex: 1;
-		border: none;
-		background: transparent;
-		outline: none;
-		font-size: 0.9rem;
-		color: var(--color-text);
+		min-width: 220px;
 	}
 
 	.filter-badge {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 18px;
-		height: 18px;
-		font-size: 0.7rem;
-		font-weight: 700;
-		border-radius: 50%;
 		background: var(--color-accent-green);
-		color: var(--color-bg-dark);
-	}
-
-	.filters-bar {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		align-items: end;
-		margin-bottom: 1rem;
-		padding: 1rem;
-		border-radius: 12px;
-		background: var(--color-glass-bg);
+		color: #fff;
+		border-radius: 999px;
+		font-size: 0.7rem;
+		padding: 0.05rem 0.4rem;
+		margin-left: 0.25rem;
 	}
 
 	:global(.filter-select) {
 		min-width: 160px;
 	}
 
-	.filter-date {
-		padding: 0.5rem 0.75rem;
-		border: 1px solid var(--color-glass-border);
-		border-radius: 10px;
-		background: var(--color-glass-bg);
-		color: var(--color-text);
-		font-size: 0.85rem;
-		font-family: inherit;
-		min-width: 160px;
+	:global(.filter-date.admin-input-group) {
+		min-width: 130px;
 	}
 
 	.customer-row {
@@ -420,8 +375,9 @@
 		width: 34px;
 		height: 34px;
 		border-radius: 50%;
-		background: var(--color-glass-bg);
+		background: rgba(123, 144, 75, 0.1);
 		border: 1px solid var(--color-glass-border);
+		color: var(--color-accent-green);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -430,9 +386,16 @@
 		flex-shrink: 0;
 	}
 
+	.customer-details {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
 	.customer-name {
 		font-weight: 600;
 		font-size: 0.9rem;
+		color: var(--color-text);
 	}
 
 	.customer-email {
@@ -498,18 +461,17 @@
 		opacity: 0.6;
 	}
 
-	.pagination-buttons {
-		display: flex;
-		gap: 0.25rem;
-		align-items: center;
-	}
-
 	@media (max-width: 768px) {
-		.filters-bar {
-			flex-direction: column;
-		}
-		:global(.filter-select) {
+		.search-bar-wrapper {
 			width: 100%;
+		}
+		
+		:global(.filter-select) {
+			width: 100% !important;
+		}
+
+		:global(.filter-date.admin-input-group) {
+			width: 100% !important;
 		}
 	}
 </style>

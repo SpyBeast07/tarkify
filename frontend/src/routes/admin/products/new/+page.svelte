@@ -6,6 +6,7 @@
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminSection from '$lib/admin/components/AdminSection.svelte';
 	import ProductForm from '$lib/admin/components/ProductForm.svelte';
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
 
 	let data = $state({
 		name: '',
@@ -97,20 +98,22 @@
 	}
 </script>
 
-<AdminPageHeader title="New Product" description="Create a new product" />
+<AdminPageContainer>
+	<AdminPageHeader title="New Product" description="Create a new product" />
 
-<AdminPage>
-	<AdminSection title="Product Details">
-		<ProductForm
-			bind:data
-			bind:errors
-			{saving}
-			{error}
-			{success}
-			submitLabel="Create Product"
-			{categories}
-			onsubmit={handleSubmit}
-			oncancel={handleCancel}
-		/>
-	</AdminSection>
-</AdminPage>
+	<AdminPage>
+		<AdminSection title="Product Details">
+			<ProductForm
+				bind:data
+				bind:errors
+				{saving}
+				{error}
+				{success}
+				submitLabel="Create Product"
+				{categories}
+				onsubmit={handleSubmit}
+				oncancel={handleCancel}
+			/>
+		</AdminSection>
+	</AdminPage>
+</AdminPageContainer>

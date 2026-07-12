@@ -5,12 +5,17 @@
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminSection from '$lib/admin/components/AdminSection.svelte';
-	import AdminTableContainer from '$lib/admin/components/AdminTableContainer.svelte';
 	import AdminEmptyState from '$lib/admin/components/AdminEmptyState.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
-	import Loading from '$lib/components/ui/Loading.svelte';
 	import ProductStatusBadge from '$lib/admin/components/ProductStatusBadge.svelte';
+
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
+	import AdminToolbar from '$lib/admin/components/AdminToolbar.svelte';
+	import AdminFilterBar from '$lib/admin/components/AdminFilterBar.svelte';
+	import AdminTable from '$lib/admin/components/AdminTable.svelte';
+	import AdminInput from '$lib/admin/components/AdminInput.svelte';
+	import AdminSelect from '$lib/admin/components/AdminSelect.svelte';
+	import AdminButtonGroup from '$lib/admin/components/AdminButtonGroup.svelte';
 
 	interface ProductListItem {
 		id: string;
@@ -138,95 +143,91 @@
 	}
 </script>
 
-<AdminPageHeader title="Products" description="Manage your product catalog">
-	<Button href="/admin/products/new" variant="primary">
-		<Plus size={16} />
-		New Product
-	</Button>
-</AdminPageHeader>
-
-<AdminPage {loading} {error} onRetry={loadProducts}>
-	<div class="products-toolbar">
-		<div class="search-bar">
-		<span class="search-icon-wrap"><Search size={16} /></span>
-			<input
-				type="text"
-				bind:value={search}
-				placeholder="Search by name or slug..."
-				onkeydown={handleKeydown}
-				aria-label="Search products"
-			/>
-		</div>
-		<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
-			<SlidersHorizontal size={16} />
-			Filters
+<AdminPageContainer>
+	<AdminPageHeader title="Products" description="Manage your product catalog">
+		<Button href="/admin/products/new" variant="primary">
+			<Plus size={16} />
+			New Product
 		</Button>
-	</div>
+	</AdminPageHeader>
 
-	{#if showFilters}
-		<div class="filters-bar">
-			<Input
-				type="select"
-				bind:value={statusFilter}
-				options={[
-					{ value: '', label: 'All Status' },
-					{ value: 'draft', label: 'Draft' },
-					{ value: 'published', label: 'Published' },
-					{ value: 'archived', label: 'Archived' }
-				]}
-				class="filter-select"
-				onchange={loadProducts}
-			/>
-			<Input
-				type="select"
-				bind:value={visibilityFilter}
-				options={[
-					{ value: '', label: 'All Visibility' },
-					{ value: 'public', label: 'Public' },
-					{ value: 'hidden', label: 'Hidden' }
-				]}
-				class="filter-select"
-				onchange={loadProducts}
-			/>
-			<Input
-				type="select"
-				bind:value={categoryFilter}
-				options={[
-					{ value: '', label: 'All Categories' },
-					...categories.map(c => ({ value: c, label: c }))
-				]}
-				class="filter-select"
-				onchange={loadProducts}
-			/>
-			<Input
-				type="select"
-				bind:value={sort}
-				options={[
-					{ value: 'newest', label: 'Newest First' },
-					{ value: 'oldest', label: 'Oldest First' },
-					{ value: 'updated', label: 'Recently Updated' },
-					{ value: 'price', label: 'Price (Low)' },
-					{ value: 'name', label: 'Name (A-Z)' }
-				]}
-				class="filter-select"
-				onchange={loadProducts}
-			/>
-			<Button variant="ghost" size="sm" onclick={clearFilters}>Clear</Button>
-		</div>
-	{/if}
+	<AdminPage {loading} {error} onRetry={loadProducts}>
+		<AdminToolbar>
+			<div class="search-bar-wrapper">
+				<AdminInput
+					type="text"
+					bind:value={search}
+					placeholder="Search by name or slug..."
+					onkeydown={handleKeydown}
+					aria-label="Search products"
+					icon={Search}
+				/>
+			</div>
+			<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
+				<SlidersHorizontal size={16} />
+				Filters
+			</Button>
+		</AdminToolbar>
 
-	{#if products.length === 0}
-		<AdminSection>
-			<AdminEmptyState
-				title="No products found"
-				message={search || statusFilter || visibilityFilter || categoryFilter
-					? 'Try adjusting your search or filters.'
-					: 'Get started by creating your first product.'}
-			/>
-		</AdminSection>
-	{:else}
-		<AdminTableContainer>
-			<table>
+		{#if showFilters}
+			<AdminFilterBar>
+				<AdminSelect
+					bind:value={statusFilter}
+					options={[
+						{ value: '', label: 'All Status' },
+						{ value: 'draft', label: 'Draft' },
+						{ value: 'published', label: 'Published' },
+						{ value: 'archived', label: 'Archived' }
+					]}
+					class="filter-select"
+					onchange={loadProducts}
+				/>
+				<AdminSelect
+					bind:value={visibilityFilter}
+					options={[
+						{ value: '', label: 'All Visibility' },
+						{ value: 'public', label: 'Public' },
+						{ value: 'hidden', label: 'Hidden' }
+					]}
+					class="filter-select"
+					onchange={loadProducts}
+				/>
+				<AdminSelect
+					bind:value={categoryFilter}
+					options={[
+						{ value: '', label: 'All Categories' },
+						...categories.map(c => ({ value: c, label: c }))
+					]}
+					class="filter-select"
+					onchange={loadProducts}
+				/>
+				<AdminSelect
+					bind:value={sort}
+					options={[
+						{ value: 'newest', label: 'Newest First' },
+						{ value: 'oldest', label: 'Oldest First' },
+						{ value: 'updated', label: 'Recently Updated' },
+						{ value: 'price', label: 'Price (Low)' },
+						{ value: 'name', label: 'Name (A-Z)' }
+					]}
+					class="filter-select"
+					onchange={loadProducts}
+				/>
+				<Button variant="ghost" size="sm" onclick={clearFilters}>Clear</Button>
+			</AdminFilterBar>
+		{/if}
+
+		{#if products.length === 0}
+			<AdminSection>
+				<AdminEmptyState
+					title="No products found"
+					message={search || statusFilter || visibilityFilter || categoryFilter
+						? 'Try adjusting your search or filters.'
+						: 'Get started by creating your first product.'}
+				/>
+			</AdminSection>
+		{:else}
+			<AdminTable>
 				<thead>
 					<tr>
 						<th>Name</th>
@@ -241,13 +242,19 @@
 				</thead>
 				<tbody>
 					{#each products as product}
-						<tr class="product-row" onclick={() => window.location.href = `/admin/products/${product.id}`} role="link" tabindex="0" onkeydown={(e) => e.key === 'Enter' && (window.location.href = `/admin/products/${product.id}`)}>
+						<tr
+							class="product-row"
+							onclick={() => window.location.href = `/admin/products/${product.id}`}
+							role="link"
+							tabindex="0"
+							onkeydown={(e) => e.key === 'Enter' && (window.location.href = `/admin/products/${product.id}`)}
+						>
 							<td class="product-name-cell">
 								<div class="product-info">
 									<div class="product-avatar">
 										{product.name.charAt(0).toUpperCase()}
 									</div>
-									<div>
+									<div class="product-details">
 										<div class="product-name">{product.name}</div>
 										{#if product.short_description}
 											<div class="product-desc">{product.short_description}</div>
@@ -265,86 +272,41 @@
 						</tr>
 					{/each}
 				</tbody>
-			</table>
-		</AdminTableContainer>
+			</AdminTable>
 
-		{#if totalPages > 1}
-			<div class="pagination">
-				<span class="pagination-info">
-					Page {page} of {totalPages} ({total} products)
-				</span>
-				<div class="pagination-buttons">
-					<Button variant="ghost" size="sm" disabled={page <= 1} onclick={() => goToPage(page - 1)}>
-						Previous
-					</Button>
-					{#each { length: Math.min(totalPages, 5) } as _, i}
-						{@const p = i + 1}
-						<Button
-							variant={p === page ? 'primary' : 'ghost'}
-							size="sm"
-							onclick={() => goToPage(p)}
-						>
-							{p}
+			{#if totalPages > 1}
+				<div class="pagination">
+					<span class="pagination-info">
+						Page {page} of {totalPages} ({total} products)
+					</span>
+					<AdminButtonGroup align="right" class="pagination-buttons">
+						<Button variant="ghost" size="sm" disabled={page <= 1} onclick={() => goToPage(page - 1)}>
+							Previous
 						</Button>
-					{/each}
-					<Button variant="ghost" size="sm" disabled={page >= totalPages} onclick={() => goToPage(page + 1)}>
-						Next
-					</Button>
+						{#each { length: Math.min(totalPages, 5) } as _, i}
+							{@const p = i + 1}
+							<Button
+								variant={p === page ? 'primary' : 'ghost'}
+								size="sm"
+								onclick={() => goToPage(p)}
+							>
+								{p}
+							</Button>
+						{/each}
+						<Button variant="ghost" size="sm" disabled={page >= totalPages} onclick={() => goToPage(page + 1)}>
+							Next
+						</Button>
+					</AdminButtonGroup>
 				</div>
-			</div>
+			{/if}
 		{/if}
-	{/if}
-</AdminPage>
+	</AdminPage>
+</AdminPageContainer>
 
 <style>
-	.products-toolbar {
-		display: flex;
-		gap: 0.75rem;
-		align-items: center;
-		margin-bottom: 1rem;
-	}
-
-	.search-bar {
+	.search-bar-wrapper {
 		flex: 1;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem 0.75rem;
-		background: var(--color-glass-bg);
-		border: 1px solid var(--color-glass-border);
-		border-radius: 12px;
-		transition: var(--transition-smooth);
-	}
-
-	.search-bar:focus-within {
-		border-color: var(--color-primary-green);
-		box-shadow: 0 0 0 3px rgba(39, 59, 9, 0.1);
-	}
-
-	.search-icon-wrap {
-		display: flex;
-		flex-shrink: 0;
-		opacity: 0.4;
-	}
-
-	.search-bar input {
-		flex: 1;
-		border: none;
-		background: transparent;
-		outline: none;
-		font-size: 0.9rem;
-		color: var(--color-text);
-	}
-
-	.filters-bar {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		align-items: end;
-		margin-bottom: 1rem;
-		padding: 1rem;
-		border-radius: 12px;
-		background: var(--color-glass-bg);
+		min-width: 220px;
 	}
 
 	:global(.filter-select) {
@@ -375,8 +337,15 @@
 		flex-shrink: 0;
 	}
 
+	.product-details {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
 	.product-name {
 		font-weight: 600;
+		color: var(--color-text);
 	}
 
 	.product-desc {
@@ -392,7 +361,7 @@
 	.slug {
 		font-size: 0.8rem;
 		opacity: 0.7;
-		background: rgba(255,255,255,0.05);
+		background: rgba(255, 255, 255, 0.05);
 		padding: 0.15rem 0.4rem;
 		border-radius: 4px;
 	}
@@ -412,7 +381,7 @@
 	.version-badge {
 		font-size: 0.8rem;
 		padding: 0.15rem 0.4rem;
-		background: rgba(255,255,255,0.05);
+		background: rgba(255, 255, 255, 0.05);
 		border-radius: 4px;
 		font-family: var(--font-accent);
 	}
@@ -436,18 +405,12 @@
 		opacity: 0.6;
 	}
 
-	.pagination-buttons {
-		display: flex;
-		gap: 0.25rem;
-		align-items: center;
-	}
-
 	@media (max-width: 768px) {
-		.filters-bar {
-			flex-direction: column;
+		:global(.filter-select) {
+			width: 100% !important;
 		}
 
-		:global(.filter-select) {
+		.search-bar-wrapper {
 			width: 100%;
 		}
 	}

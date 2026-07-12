@@ -1,21 +1,23 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import {
-		ArrowLeft, CreditCard, User, Package, DollarSign,
-		RotateCcw, FileText, History
-	} from '@lucide/svelte';
+	import { ArrowLeft } from '@lucide/svelte';
 	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminSection from '$lib/admin/components/AdminSection.svelte';
-	import AdminTableContainer from '$lib/admin/components/AdminTableContainer.svelte';
 	import AdminEmptyState from '$lib/admin/components/AdminEmptyState.svelte';
-	import SectionCard from '$lib/components/ui/SectionCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import PaymentStatusBadge from '$lib/admin/components/PaymentStatusBadge.svelte';
-	import PaymentTimeline from '$lib/admin/components/PaymentTimeline.svelte';
 	import ReceiptCard from '$lib/admin/components/ReceiptCard.svelte';
+
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
+	import AdminCard from '$lib/admin/components/AdminCard.svelte';
+	import AdminGrid from '$lib/admin/components/AdminGrid.svelte';
+	import AdminStack from '$lib/admin/components/AdminStack.svelte';
+	import AdminTable from '$lib/admin/components/AdminTable.svelte';
+	import AdminSectionHeader from '$lib/admin/components/AdminSectionHeader.svelte';
+	import AdminButtonGroup from '$lib/admin/components/AdminButtonGroup.svelte';
 
 	let paymentId = $derived($page.params.id ?? '');
 
@@ -136,173 +138,186 @@
 	}
 </script>
 
-<AdminPage {loading} {error} onRetry={loadPayment}>
-	{#if payment}
-		<AdminPageHeader title={`Payment #${payment.id.substring(0, 8)}`} description={`${payment.payment_provider} · ${formatDate(payment.created_at)}`}>
-			<Button variant="ghost" href="/admin/payments">
-				<ArrowLeft size={16} />
-				Back to Payments
-			</Button>
-			<Button variant="ghost" href={`/admin/orders/${payment.id}`}>
-				View Order
-			</Button>
-		</AdminPageHeader>
+<svelte:head>
+	<title>Payment Detail | Tarkify Admin</title>
+</svelte:head>
 
-		<div class="tab-bar">
-			<button class="tab" class:active={activeTab === 'details'} onclick={() => (activeTab = 'details')}>Details</button>
-			<button class="tab" class:active={activeTab === 'receipt'} onclick={() => (activeTab = 'receipt')}>Receipt</button>
-			<button class="tab" class:active={activeTab === 'audit'} onclick={() => (activeTab = 'audit')}>Timeline</button>
-		</div>
+<AdminPageContainer>
+	<AdminPage {loading} {error} onRetry={loadPayment}>
+		{#if payment}
+			<AdminPageHeader title={`Payment #${payment.id.substring(0, 8)}`} description={`${payment.payment_provider} · ${formatDate(payment.created_at)}`}>
+				<AdminButtonGroup align="right">
+					<Button variant="ghost" href="/admin/payments" size="sm">
+						<ArrowLeft size={16} />
+						Back to Payments
+					</Button>
+					<Button variant="ghost" href={`/admin/orders/${payment.id}`} size="sm">
+						View Order
+					</Button>
+				</AdminButtonGroup>
+			</AdminPageHeader>
 
-		{#if activeTab === 'details'}
-			<div class="detail-grid">
-				<div class="detail-column detail-column-left">
-					<SectionCard title="Payment Information" icon={CreditCard}>
-						<div class="detail-list">
-							<div class="detail-item">
-								<span class="detail-label">Payment ID</span>
-								<span class="detail-value mono">{payment.id}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Status</span>
-								<span class="detail-value"><PaymentStatusBadge status={payment.status} /></span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Amount</span>
-								<span class="detail-value price">{formatPrice(payment.amount, payment.currency)}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Currency</span>
-								<span class="detail-value">{payment.currency}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Gateway</span>
-								<span class="detail-value">{payment.payment_provider}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Created</span>
-								<span class="detail-value">{formatDate(payment.created_at)}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Updated</span>
-								<span class="detail-value">{formatDate(payment.updated_at)}</span>
-							</div>
-						</div>
-					</SectionCard>
+			<div class="tab-bar">
+				<button class="tab" class:active={activeTab === 'details'} onclick={() => (activeTab = 'details')}>Details</button>
+				<button class="tab" class:active={activeTab === 'receipt'} onclick={() => (activeTab = 'receipt')}>Receipt</button>
+				<button class="tab" class:active={activeTab === 'audit'} onclick={() => (activeTab = 'audit')}>Timeline</button>
+			</div>
 
-					<SectionCard title="Transaction Details" icon={FileText}>
-						<div class="detail-list">
-							<div class="detail-item">
-								<span class="detail-label">Razorpay Order ID</span>
-								<span class="detail-value mono">{payment.razorpay_order_id}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Razorpay Payment ID</span>
-								<span class="detail-value mono">{payment.razorpay_payment_id || '—'}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Signature</span>
-								<span class="detail-value mono">{payment.razorpay_signature ? `${payment.razorpay_signature.substring(0, 30)}...` : '—'}</span>
-							</div>
-						</div>
-					</SectionCard>
+			{#if activeTab === 'details'}
+				<AdminGrid cols={{ default: 1, md: 3 }} gap="md">
+					<div class="span-two-columns">
+						<AdminStack gap="md">
+							<AdminCard>
+								<AdminSectionHeader title="Payment Information" />
+								<div class="detail-list">
+									<div class="detail-item">
+										<span class="detail-label">Payment ID</span>
+										<span class="detail-value mono">{payment.id}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Status</span>
+										<span class="detail-value"><PaymentStatusBadge status={payment.status} /></span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Amount</span>
+										<span class="detail-value price">{formatPrice(payment.amount, payment.currency)}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Currency</span>
+										<span class="detail-value">{payment.currency}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Gateway</span>
+										<span class="detail-value">{payment.payment_provider}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Created</span>
+										<span class="detail-value">{formatDate(payment.created_at)}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Updated</span>
+										<span class="detail-value">{formatDate(payment.updated_at)}</span>
+									</div>
+								</div>
+							</AdminCard>
 
-					{#if payment.status === 'failed'}
-						<SectionCard title="Failure Details" icon={RotateCcw}>
+							<AdminCard>
+								<AdminSectionHeader title="Transaction Details" />
+								<div class="detail-list">
+									<div class="detail-item">
+										<span class="detail-label">Razorpay Order ID</span>
+										<span class="detail-value mono">{payment.razorpay_order_id}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Razorpay Payment ID</span>
+										<span class="detail-value mono">{payment.razorpay_payment_id || '—'}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Signature</span>
+										<span class="detail-value mono">{payment.razorpay_signature ? `${payment.razorpay_signature.substring(0, 30)}...` : '—'}</span>
+									</div>
+								</div>
+							</AdminCard>
+
+							{#if payment.status === 'failed'}
+								<AdminCard>
+									<AdminSectionHeader title="Failure Details" />
+									<div class="detail-list">
+										<div class="detail-item">
+											<span class="detail-label">Failure Reason</span>
+											<span class="detail-value">{failureReason() || 'Unknown'}</span>
+										</div>
+										<div class="detail-item">
+											<span class="detail-label">Attempt Count</span>
+											<span class="detail-value">{attemptCount()}</span>
+										</div>
+										<div class="detail-item">
+											<span class="detail-label">Retry Possible</span>
+											<span class="detail-value">Yes — Customer can retry from the product page.</span>
+										</div>
+									</div>
+								</AdminCard>
+							{/if}
+
+							{#if payment.status === 'refunded'}
+								<AdminCard>
+									<AdminSectionHeader title="Refund Information" />
+									<div class="detail-list">
+										<div class="detail-item">
+											<span class="detail-label">Refund Status</span>
+											<span class="detail-value"><PaymentStatusBadge status="refunded" /></span>
+										</div>
+										<div class="detail-item">
+											<span class="detail-label">Refund Amount</span>
+											<span class="detail-value price">{refund ? formatPrice(refund.refund_amount ?? payment.amount, payment.currency) : formatPrice(payment.amount, payment.currency)}</span>
+										</div>
+										<div class="detail-item">
+											<span class="detail-label">Refund Date</span>
+											<span class="detail-value">{refund?.refunded_at ? formatDate(refund.refunded_at) : formatDate(payment.updated_at)}</span>
+										</div>
+										<div class="detail-item">
+											<span class="detail-label">Refund Reason</span>
+											<span class="detail-value">{refund?.refund_reason || 'No reason recorded'}</span>
+										</div>
+									</div>
+									<p class="refund-note">Refunds are managed via Razorpay dashboard. This page shows internal records only.</p>
+								</AdminCard>
+							{/if}
+						</AdminStack>
+					</div>
+
+					<AdminStack gap="md">
+						<AdminCard>
+							<AdminSectionHeader title="Customer" />
 							<div class="detail-list">
 								<div class="detail-item">
-									<span class="detail-label">Failure Reason</span>
-									<span class="detail-value">{failureReason() || 'Unknown'}</span>
+									<span class="detail-label">Name</span>
+									<span class="detail-value">{payment.customer_name || 'Guest'}</span>
 								</div>
 								<div class="detail-item">
-									<span class="detail-label">Attempt Count</span>
-									<span class="detail-value">{attemptCount()}</span>
-								</div>
-								<div class="detail-item">
-									<span class="detail-label">Retry Possible</span>
-									<span class="detail-value">Yes — Customer can retry from the product page.</span>
+									<span class="detail-label">Email</span>
+									<span class="detail-value">{payment.customer_email}</span>
 								</div>
 							</div>
-						</SectionCard>
-					{/if}
+						</AdminCard>
 
-					{#if payment.status === 'refunded'}
-						<SectionCard title="Refund Information" icon={RotateCcw}>
+						<AdminCard>
+							<AdminSectionHeader title="Product" />
 							<div class="detail-list">
 								<div class="detail-item">
-									<span class="detail-label">Refund Status</span>
-									<span class="detail-value"><PaymentStatusBadge status="refunded" /></span>
+									<span class="detail-label">Name</span>
+									<span class="detail-value">{payment.product_name}</span>
 								</div>
 								<div class="detail-item">
-									<span class="detail-label">Refund Amount</span>
-									<span class="detail-value price">{refund ? formatPrice(refund.refund_amount ?? payment.amount, payment.currency) : formatPrice(payment.amount, payment.currency)}</span>
-								</div>
-								<div class="detail-item">
-									<span class="detail-label">Refund Date</span>
-									<span class="detail-value">{refund?.refunded_at ? formatDate(refund.refunded_at) : formatDate(payment.updated_at)}</span>
-								</div>
-								<div class="detail-item">
-									<span class="detail-label">Refund Reason</span>
-									<span class="detail-value">{refund?.refund_reason || 'No reason recorded'}</span>
+									<span class="detail-label">Slug</span>
+									<span class="detail-value mono">{payment.product_slug}</span>
 								</div>
 							</div>
-							<p class="refund-note">Refunds are managed via Razorpay dashboard. This page shows internal records only.</p>
-						</SectionCard>
-					{/if}
-				</div>
+						</AdminCard>
 
-				<div class="detail-column detail-column-right">
-					<SectionCard title="Customer" icon={User}>
-						<div class="detail-list">
-							<div class="detail-item">
-								<span class="detail-label">Name</span>
-								<span class="detail-value">{payment.customer_name || 'Guest'}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Email</span>
-								<span class="detail-value">{payment.customer_email}</span>
-							</div>
-						</div>
-					</SectionCard>
-
-					<SectionCard title="Product" icon={Package}>
-						<div class="detail-list">
-							<div class="detail-item">
-								<span class="detail-label">Name</span>
-								<span class="detail-value">{payment.product_name}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Slug</span>
-								<span class="detail-value mono">{payment.product_slug}</span>
-							</div>
-						</div>
-					</SectionCard>
-
-					{#if payment.status !== 'paid' && payment.status !== 'refunded'}
-						<div class="section-card-placeholder">
-							<SectionCard title="Refund" icon={RotateCcw}>
+						{#if payment.status !== 'paid' && payment.status !== 'refunded'}
+							<AdminCard>
+								<AdminSectionHeader title="Refund" />
 								<p class="empty-text">Not Refunded</p>
 								<p class="refund-note">Design for future Razorpay refund API integration.</p>
-							</SectionCard>
-						</div>
-					{/if}
-				</div>
-			</div>
-		{:else if activeTab === 'receipt'}
-			{#if receipt}
-				<ReceiptCard {receipt} />
-			{:else}
-				<AdminSection title="Receipt">
-					<AdminEmptyState title="Receipt not available" message="Receipt data could not be loaded for this payment." />
-				</AdminSection>
-			{/if}
-		{:else}
-			<AdminSection title="Payment Timeline">
-				{#if audit.length === 0}
-					<AdminEmptyState title="No events recorded" message="No payment events recorded yet." />
+							</AdminCard>
+						{/if}
+					</AdminStack>
+				</AdminGrid>
+			{:else if activeTab === 'receipt'}
+				{#if receipt}
+					<ReceiptCard {receipt} />
 				{:else}
-					<AdminTableContainer>
-						<table>
+					<AdminSection title="Receipt">
+						<AdminEmptyState title="Receipt not available" message="Receipt data could not be loaded for this payment." />
+					</AdminSection>
+				{/if}
+			{:else}
+				<AdminSection title="Payment Timeline">
+					{#if audit.length === 0}
+						<AdminEmptyState title="No events recorded" message="No payment events recorded yet." />
+					{:else}
+						<AdminTable>
 							<thead>
 								<tr>
 									<th>Event</th>
@@ -319,20 +334,25 @@
 									</tr>
 								{/each}
 							</tbody>
-						</table>
-					</AdminTableContainer>
-				{/if}
-			</AdminSection>
+						</AdminTable>
+					{/if}
+				</AdminSection>
+			{/if}
 		{/if}
-	{/if}
-</AdminPage>
+	</AdminPage>
+</AdminPageContainer>
 
 <style>
+	.span-two-columns {
+		grid-column: span 2;
+	}
+
 	.tab-bar {
 		display: flex;
 		gap: 0;
 		margin-bottom: 1.5rem;
 		border-bottom: 1px solid var(--color-glass-border);
+		overflow-x: auto;
 	}
 
 	.tab {
@@ -346,6 +366,7 @@
 		opacity: 0.55;
 		color: var(--color-text);
 		transition: all 0.15s ease;
+		white-space: nowrap;
 	}
 
 	.tab:hover {
@@ -355,19 +376,6 @@
 	.tab.active {
 		opacity: 1;
 		border-bottom-color: var(--color-accent-green);
-	}
-
-	.detail-grid {
-		display: grid;
-		grid-template-columns: 1fr 380px;
-		gap: 1.5rem;
-		align-items: start;
-	}
-
-	.detail-column {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
 	}
 
 	.detail-list {
@@ -395,6 +403,7 @@
 		font-size: 0.95rem;
 		line-height: 1.5;
 		word-break: break-word;
+		color: var(--color-text);
 	}
 
 	.detail-value.mono {
@@ -429,8 +438,8 @@
 	}
 
 	@media (max-width: 900px) {
-		.detail-grid {
-			grid-template-columns: 1fr;
+		.span-two-columns {
+			grid-column: span 1;
 		}
 	}
 </style>

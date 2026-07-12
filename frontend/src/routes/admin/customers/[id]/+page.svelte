@@ -13,22 +13,28 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import {
-		ArrowLeft, User, Shield, ShoppingCart, Download, Monitor,
-		Link, History, Activity, AlertTriangle, Mail,
-		Lock, LogOut, Trash2, RotateCcw, XCircle
+		ArrowLeft, User, Shield, Monitor,
+		Link as LinkIcon, History, Activity,
+		Mail, Lock, LogOut, Trash2, RotateCcw, XCircle
 	} from '@lucide/svelte';
 	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminSection from '$lib/admin/components/AdminSection.svelte';
-	import AdminTableContainer from '$lib/admin/components/AdminTableContainer.svelte';
 	import AdminEmptyState from '$lib/admin/components/AdminEmptyState.svelte';
-	import SectionCard from '$lib/components/ui/SectionCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import CustomerStatusBadge from '$lib/admin/components/CustomerStatusBadge.svelte';
 	import SessionTable from '$lib/admin/components/SessionTable.svelte';
-	import CustomerOverviewCard from '$lib/admin/components/CustomerOverviewCard.svelte';
 	import ActivityTimeline from '$lib/admin/components/ActivityTimeline.svelte';
+
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
+	import AdminCard from '$lib/admin/components/AdminCard.svelte';
+	import AdminGrid from '$lib/admin/components/AdminGrid.svelte';
+	import AdminStack from '$lib/admin/components/AdminStack.svelte';
+	import AdminTable from '$lib/admin/components/AdminTable.svelte';
+	import AdminDialog from '$lib/admin/components/AdminDialog.svelte';
+	import AdminSectionHeader from '$lib/admin/components/AdminSectionHeader.svelte';
+	import AdminButtonGroup from '$lib/admin/components/AdminButtonGroup.svelte';
 
 	let customerId = $derived($page.params.id ?? '');
 
@@ -98,16 +104,18 @@
 	interface ActivityEntry {
 		id: string;
 		event: string;
-		metadata: Record<string, unknown>;
+		user_name: string | null;
 		created_at: string;
+		metadata: Record<string, unknown>;
 	}
 
 	let customer = $state<CustomerDetail | null>(null);
 	let purchases = $state<CustomerPurchase[]>([]);
 	let downloads = $state<CustomerDownload[]>([]);
 	let sessions = $state<CustomerSession[]>([]);
-	let activity = $state<ActivityEntry[]>([]);
 	let audit = $state<AuditEntry[]>([]);
+	let activity = $state<ActivityEntry[]>([]);
+
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let activeTab = $state<'overview' | 'purchases' | 'downloads' | 'sessions' | 'activity' | 'audit'>('overview');
@@ -115,8 +123,8 @@
 	let actionLoading = $state<string | null>(null);
 	let actionError = $state<string | null>(null);
 	let actionSuccess = $state<string | null>(null);
-
 	let confirmAction = $state<string | null>(null);
+	let showConfirmDialog = $state(false);
 
 	async function loadCustomer() {
 		loading = true;
@@ -127,23 +135,21 @@
 				purchases: CustomerPurchase[];
 				downloads: CustomerDownload[];
 				sessions: CustomerSession[];
-				activity: ActivityEntry[];
 				audit: AuditEntry[];
+				activity: ActivityEntry[];
 			}>(`/customers/${customerId}`);
+
 			customer = result.customer;
 			purchases = result.purchases;
 			downloads = result.downloads;
-			sessions = result.sessions.map(s => ({
-				...s,
-				is_current: s.id === customer?.id ? false : false
-			}));
-			activity = result.activity;
+			sessions = result.sessions;
 			audit = result.audit;
+			activity = result.activity;
 		} catch (err) {
 			if (err instanceof AdminApiError) {
 				error = err.message;
 			} else {
-				error = 'Failed to load customer';
+				error = 'Failed to load customer details';
 			}
 		} finally {
 			loading = false;
@@ -190,6 +196,7 @@
 		actionError = null;
 		actionSuccess = null;
 		confirmAction = null;
+		showConfirmDialog = false;
 		try {
 			const result = await adminFetch<{ success: boolean; result?: number }>(`/customers/${customerId}/${action}`, {
 				method: 'POST',
@@ -223,10 +230,12 @@
 
 	function confirmThen(action: string) {
 		confirmAction = action;
+		showConfirmDialog = true;
 	}
 
 	function cancelConfirm() {
 		confirmAction = null;
+		showConfirmDialog = false;
 	}
 
 	function isDangerousAction(action: string): boolean {
@@ -234,263 +243,239 @@
 	}
 </script>
 
-<AdminPage {loading} {error} onRetry={loadCustomer}>
-	{#if customer}
-		<AdminPageHeader
-			title={customer.display_name || customer.name || customer.email}
-			description={`Customer since ${shortDate(customer.created_at)}`}
-		>
-			<Button variant="ghost" href="/admin/customers">
-				<ArrowLeft size={16} />
-				Back to Customers
-			</Button>
-		</AdminPageHeader>
+<svelte:head>
+	<title>Customer Detail | Tarkify Admin</title>
+</svelte:head>
 
-		{#if actionSuccess}
-			<div class="alert alert-success" role="alert">
-				{actionSuccess}
+<AdminPageContainer>
+	<AdminPage {loading} {error} onRetry={loadCustomer}>
+		{#if customer}
+			<AdminPageHeader
+				title={customer.display_name || customer.name || customer.email}
+				description={`Customer since ${shortDate(customer.created_at)}`}
+			>
+				<Button variant="ghost" href="/admin/customers" size="sm">
+					<ArrowLeft size={16} />
+					Back to Customers
+				</Button>
+			</AdminPageHeader>
+
+			{#if actionSuccess}
+				<div class="alert alert-success" role="alert">
+					{actionSuccess}
+				</div>
+			{/if}
+			{#if actionError}
+				<div class="alert alert-error" role="alert">
+					{actionError}
+				</div>
+			{/if}
+
+			<div class="tab-bar">
+				<button class="tab" class:active={activeTab === 'overview'} onclick={() => (activeTab = 'overview')}>Overview</button>
+				<button class="tab" class:active={activeTab === 'purchases'} onclick={() => (activeTab = 'purchases')}>Purchases ({purchases.length})</button>
+				<button class="tab" class:active={activeTab === 'downloads'} onclick={() => (activeTab = 'downloads')}>Downloads ({downloads.length})</button>
+				<button class="tab" class:active={activeTab === 'sessions'} onclick={() => (activeTab = 'sessions')}>Sessions ({sessions.length})</button>
+				<button class="tab" class:active={activeTab === 'activity'} onclick={() => (activeTab = 'activity')}>Activity</button>
+				<button class="tab" class:active={activeTab === 'audit'} onclick={() => (activeTab = 'audit')}>Audit History</button>
 			</div>
-		{/if}
-		{#if actionError}
-			<div class="alert alert-error" role="alert">
-				{actionError}
-			</div>
-		{/if}
 
-		<div class="tab-bar">
-			<button class="tab" class:active={activeTab === 'overview'} onclick={() => (activeTab = 'overview')}>Overview</button>
-			<button class="tab" class:active={activeTab === 'purchases'} onclick={() => (activeTab = 'purchases')}>Purchases ({purchases.length})</button>
-			<button class="tab" class:active={activeTab === 'downloads'} onclick={() => (activeTab = 'downloads')}>Downloads ({downloads.length})</button>
-			<button class="tab" class:active={activeTab === 'sessions'} onclick={() => (activeTab = 'sessions')}>Sessions ({sessions.length})</button>
-			<button class="tab" class:active={activeTab === 'activity'} onclick={() => (activeTab = 'activity')}>Activity</button>
-			<button class="tab" class:active={activeTab === 'audit'} onclick={() => (activeTab = 'audit')}>Audit History</button>
-		</div>
+			{#if activeTab === 'overview'}
+				<AdminGrid cols={{ default: 1, md: 3 }} gap="md">
+					<div class="span-two-columns">
+						<AdminStack gap="md">
+							<AdminCard>
+								<AdminSectionHeader title="Profile" />
+								<div class="detail-list">
+									<div class="detail-item">
+										<span class="detail-label">Name</span>
+										<span class="detail-value">{customer.name || '—'}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Display Name</span>
+										<span class="detail-value">{customer.display_name || '—'}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Email</span>
+										<span class="detail-value">{customer.email}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Timezone</span>
+										<span class="detail-value">{customer.timezone || 'UTC'}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Created</span>
+										<span class="detail-value">{formatDate(customer.created_at)}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Updated</span>
+										<span class="detail-value">{formatDate(customer.updated_at)}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Last Login</span>
+										<span class="detail-value">{formatDate(customer.last_login_at)}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Last Activity</span>
+										<span class="detail-value">{formatDate(customer.last_activity_at)}</span>
+									</div>
+								</div>
+							</AdminCard>
 
-		{#if activeTab === 'overview'}
-			<div class="detail-grid">
-				<div class="detail-column detail-column-left">
-					<SectionCard title="Profile" icon={User}>
-						<div class="detail-list">
-							<div class="detail-item">
-								<span class="detail-label">Name</span>
-								<span class="detail-value">{customer.name || '—'}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Display Name</span>
-								<span class="detail-value">{customer.display_name || '—'}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Email</span>
-								<span class="detail-value">{customer.email}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Timezone</span>
-								<span class="detail-value">{customer.timezone || 'UTC'}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Created</span>
-								<span class="detail-value">{formatDate(customer.created_at)}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Updated</span>
-								<span class="detail-value">{formatDate(customer.updated_at)}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Last Login</span>
-								<span class="detail-value">{formatDate(customer.last_login_at)}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Last Activity</span>
-								<span class="detail-value">{formatDate(customer.last_activity_at)}</span>
-							</div>
-						</div>
-					</SectionCard>
+							<AdminCard>
+								<AdminSectionHeader title="Account" />
+								<div class="detail-list">
+									<div class="detail-item">
+										<span class="detail-label">Account Status</span>
+										<span class="detail-value"><CustomerStatusBadge status={customer.account_status} /></span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Email Verified</span>
+										<span class="detail-value">{customer.email_verified ? 'Yes' : 'No'}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Authentication</span>
+										<span class="detail-value">
+											{customer.oauth_accounts.filter(a => a.provider_id !== 'credential').map(a => a.provider_id).join(', ') || 'Email & Password'}
+										</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Has Password</span>
+										<span class="detail-value">{customer.has_password ? 'Yes' : 'No'}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Role</span>
+										<span class="detail-value">{customer.role}</span>
+									</div>
+									<div class="detail-item">
+										<span class="detail-label">Member Since</span>
+										<span class="detail-value">{shortDate(customer.created_at)}</span>
+									</div>
+								</div>
+							</AdminCard>
 
-					<SectionCard title="Account" icon={Shield}>
-						<div class="detail-list">
-							<div class="detail-item">
-								<span class="detail-label">Account Status</span>
-								<span class="detail-value"><CustomerStatusBadge status={customer.account_status} /></span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Email Verified</span>
-								<span class="detail-value">{customer.email_verified ? 'Yes' : 'No'}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Authentication</span>
-								<span class="detail-value">
-									{customer.oauth_accounts.filter(a => a.provider_id !== 'credential').map(a => a.provider_id).join(', ') || 'Email & Password'}
-								</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Has Password</span>
-								<span class="detail-value">{customer.has_password ? 'Yes' : 'No'}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Role</span>
-								<span class="detail-value">{customer.role}</span>
-							</div>
-							<div class="detail-item">
-								<span class="detail-label">Member Since</span>
-								<span class="detail-value">{shortDate(customer.created_at)}</span>
-							</div>
-						</div>
-					</SectionCard>
-
-					<SectionCard title="OAuth Accounts" icon={Link}>
-						{#if customer.oauth_accounts.length === 0}
-							<p class="empty-text">No OAuth accounts linked.</p>
-						{:else}
-							<AdminTableContainer>
-								<table>
-									<thead>
-										<tr>
-											<th>Provider</th>
-											<th>Account ID</th>
-											<th>Linked Since</th>
-										</tr>
-									</thead>
-									<tbody>
-										{#each customer.oauth_accounts as oa}
+							<AdminCard>
+								<AdminSectionHeader title="OAuth Accounts" />
+								{#if customer.oauth_accounts.length === 0}
+									<p class="empty-text">No OAuth accounts linked.</p>
+								{:else}
+									<AdminTable>
+										<thead>
 											<tr>
-												<td class="provider-cell">{oa.provider_id}</td>
-												<td class="mono-small">{oa.account_id.substring(0, 16)}...</td>
-												<td class="date-cell">{shortDate(oa.created_at)}</td>
+												<th>Provider</th>
+												<th>Account ID</th>
+												<th>Linked Since</th>
 											</tr>
-										{/each}
-									</tbody>
-								</table>
-							</AdminTableContainer>
-						{/if}
-					</SectionCard>
+										</thead>
+										<tbody>
+											{#each customer.oauth_accounts as oa}
+												<tr>
+													<td class="provider-cell">{oa.provider_id}</td>
+													<td class="mono-small">{oa.account_id.substring(0, 16)}...</td>
+													<td class="date-cell">{shortDate(oa.created_at)}</td>
+												</tr>
+											{/each}
+										</tbody>
+									</AdminTable>
+								{/if}
+							</AdminCard>
 
-					<div class="admin-actions-section">
-						<h3 class="actions-title">Admin Actions</h3>
-						<p class="actions-desc">Perform administrative actions on this customer account. All actions are logged.</p>
-
-						<div class="actions-grid">
-							{#if customer.email_verified}
-								<Button variant="ghost" size="sm" disabled title="Email already verified">
-									<Mail size={14} />
-									Resend Verification
-								</Button>
-							{:else}
-								<Button
-									variant="ghost"
-									size="sm"
-									disabled={actionLoading !== null}
-									onclick={() => confirmThen('resend-verification')}
-								>
-									<Mail size={14} />
-									Resend Verification
-								</Button>
-							{/if}
-
-							<Button
-								variant="ghost"
-								size="sm"
-								disabled={actionLoading !== null}
-								onclick={() => confirmThen('reset-password')}
-							>
-								<Lock size={14} />
-								Send Password Reset
-							</Button>
-
-							{#if customer.account_status === 'ACTIVE'}
-								<Button
-									variant="ghost"
-									size="sm"
-									disabled={actionLoading !== null}
-									onclick={() => confirmThen('suspend')}
-								>
-									<XCircle size={14} />
-									Suspend
-								</Button>
-							{:else if customer.account_status === 'SUSPENDED'}
-								<Button
-									variant="ghost"
-									size="sm"
-									disabled={actionLoading !== null}
-									onclick={() => confirmThen('reactivate')}
-								>
-									<RotateCcw size={14} />
-									Reactivate
-								</Button>
-							{/if}
-
-							<Button
-								variant="ghost"
-								size="sm"
-								disabled={actionLoading !== null}
-								onclick={() => confirmThen('revoke-sessions')}
-							>
-								<LogOut size={14} />
-								Terminate Sessions
-							</Button>
-
-							{#if customer.account_status !== 'DELETED'}
-								<Button
-									variant="ghost"
-									size="sm"
-									class="danger-btn"
-									disabled={actionLoading !== null}
-									onclick={() => confirmThen('delete')}
-								>
-									<Trash2 size={14} />
-									Delete Account
-								</Button>
-							{/if}
-						</div>
-
-						{#if confirmAction}
-							<div class="confirm-dialog" role="alertdialog" aria-labelledby="confirm-title">
-								<div class="confirm-content">
-									{#if isDangerousAction(confirmAction)}
-										<div class="confirm-icon"><AlertTriangle size={20} /></div>
-									{/if}
-									<h4 id="confirm-title">Confirm {confirmAction.replace(/-/g, ' ')}</h4>
-									<p>{CONFIRM_MESSAGES[confirmAction]?.(customer.email) || 'Are you sure?'}</p>
-									<div class="confirm-buttons">
-										<Button
-											variant="primary"
-											size="sm"
-											disabled={actionLoading === confirmAction}
-											onclick={() => confirmAction && performAction(confirmAction)}
-										>
-											{actionLoading === confirmAction ? 'Processing...' : 'Confirm'}
+							<AdminCard>
+								<AdminSectionHeader title="Admin Actions" description="Perform administrative actions on this customer account. All actions are logged." />
+								<AdminButtonGroup align="left" class="actions-group">
+									{#if customer.email_verified}
+										<Button variant="ghost" size="sm" disabled title="Email already verified">
+											<Mail size={14} />
+											Resend Verification
 										</Button>
+									{:else}
 										<Button
 											variant="ghost"
 											size="sm"
 											disabled={actionLoading !== null}
-											onclick={cancelConfirm}
+											onclick={() => confirmThen('resend-verification')}
 										>
-											Cancel
+											<Mail size={14} />
+											Resend Verification
 										</Button>
-									</div>
-								</div>
-							</div>
-						{/if}
-					</div>
-				</div>
+									{/if}
 
-				<div class="detail-column detail-column-right">
-					<SectionCard title="Recent Activity" icon={Activity}>
-						{#if activity.length === 0}
-							<p class="empty-text">No recent activity recorded.</p>
-						{:else}
-							<ActivityTimeline entries={activity.slice(0, 10)} />
-						{/if}
-					</SectionCard>
-				</div>
-			</div>
-		{:else if activeTab === 'purchases'}
-			<AdminSection title="Purchases">
-				{#if purchases.length === 0}
-					<AdminEmptyState title="No purchases" message="This customer has not made any purchases yet." />
-				{:else}
-					<AdminTableContainer>
-						<table>
+									<Button
+										variant="ghost"
+										size="sm"
+										disabled={actionLoading !== null}
+										onclick={() => confirmThen('reset-password')}
+									>
+										<Lock size={14} />
+										Send Password Reset
+									</Button>
+
+									{#if customer.account_status === 'ACTIVE'}
+										<Button
+											variant="ghost"
+											size="sm"
+											disabled={actionLoading !== null}
+											onclick={() => confirmThen('suspend')}
+										>
+											<XCircle size={14} />
+											Suspend
+										</Button>
+									{:else}
+										<Button
+											variant="ghost"
+											size="sm"
+											disabled={actionLoading !== null}
+											onclick={() => confirmThen('reactivate')}
+										>
+											<RotateCcw size={14} />
+											Reactivate
+										</Button>
+									{/if}
+
+									<Button
+										variant="ghost"
+										size="sm"
+										disabled={actionLoading !== null}
+										onclick={() => confirmThen('revoke-sessions')}
+									>
+										<LogOut size={14} />
+										Terminate Sessions
+									</Button>
+
+									{#if customer.account_status !== 'DELETED'}
+										<Button
+											variant="ghost"
+											size="sm"
+											class="danger-btn"
+											disabled={actionLoading !== null}
+											onclick={() => confirmThen('delete')}
+										>
+											<Trash2 size={14} />
+											Delete Account
+										</Button>
+									{/if}
+								</AdminButtonGroup>
+							</AdminCard>
+						</AdminStack>
+					</div>
+
+					<AdminStack gap="md">
+						<AdminCard>
+							<AdminSectionHeader title="Recent Activity" />
+							{#if activity.length === 0}
+								<p class="empty-text">No recent activity recorded.</p>
+							{:else}
+								<ActivityTimeline entries={activity.slice(0, 10)} />
+							{/if}
+						</AdminCard>
+					</AdminStack>
+				</AdminGrid>
+			{:else if activeTab === 'purchases'}
+				<AdminSection title="Purchases">
+					{#if purchases.length === 0}
+						<AdminEmptyState title="No purchases" message="This customer has not made any purchases yet." />
+					{:else}
+						<AdminTable>
 							<thead>
 								<tr>
 									<th>Product</th>
@@ -515,17 +500,15 @@
 									</tr>
 								{/each}
 							</tbody>
-						</table>
-					</AdminTableContainer>
-				{/if}
-			</AdminSection>
-		{:else if activeTab === 'downloads'}
-			<AdminSection title="Downloads">
-				{#if downloads.length === 0}
-					<AdminEmptyState title="No downloads" message="This customer has no download records." />
-				{:else}
-					<AdminTableContainer>
-						<table>
+						</AdminTable>
+					{/if}
+				</AdminSection>
+			{:else if activeTab === 'downloads'}
+				<AdminSection title="Downloads">
+					{#if downloads.length === 0}
+						<AdminEmptyState title="No downloads" message="This customer has no download records." />
+					{:else}
+						<AdminTable>
 							<thead>
 								<tr>
 									<th>Product</th>
@@ -546,44 +529,42 @@
 									</tr>
 								{/each}
 							</tbody>
-						</table>
-					</AdminTableContainer>
-				{/if}
-			</AdminSection>
-		{:else if activeTab === 'sessions'}
-			<AdminSection title="Sessions">
-				<div class="section-actions">
-					<Button
-						variant="ghost"
-						size="sm"
-						disabled={actionLoading !== null}
-						onclick={() => confirmThen('revoke-sessions')}
-					>
-						<LogOut size={14} />
-						Terminate All Sessions
-					</Button>
-				</div>
-				{#if sessions.length === 0}
-					<AdminEmptyState title="No active sessions" message="This customer has no active sessions." />
-				{:else}
-					<SessionTable sessions={sessions} />
-				{/if}
-			</AdminSection>
-		{:else if activeTab === 'activity'}
-			<AdminSection title="Recent Activity">
-				{#if activity.length === 0}
-					<AdminEmptyState title="No activity" message="No activity recorded for this customer." />
-				{:else}
-					<ActivityTimeline entries={activity} />
-				{/if}
-			</AdminSection>
-		{:else if activeTab === 'audit'}
-			<AdminSection title="Audit History">
-				{#if audit.length === 0}
-					<AdminEmptyState title="No audit entries" message="No administrative actions recorded for this customer." />
-				{:else}
-					<AdminTableContainer>
-						<table>
+						</AdminTable>
+					{/if}
+				</AdminSection>
+			{:else if activeTab === 'sessions'}
+				<AdminSection title="Sessions">
+					<div class="section-actions">
+						<Button
+							variant="ghost"
+							size="sm"
+							disabled={actionLoading !== null}
+							onclick={() => confirmThen('revoke-sessions')}
+						>
+							<LogOut size={14} />
+							Terminate All Sessions
+						</Button>
+					</div>
+					{#if sessions.length === 0}
+						<AdminEmptyState title="No active sessions" message="This customer has no active sessions." />
+					{:else}
+						<SessionTable sessions={sessions} />
+					{/if}
+				</AdminSection>
+			{:else if activeTab === 'activity'}
+				<AdminSection title="Recent Activity">
+					{#if activity.length === 0}
+						<AdminEmptyState title="No activity" message="No activity recorded for this customer." />
+					{:else}
+						<ActivityTimeline entries={activity} />
+					{/if}
+				</AdminSection>
+			{:else}
+				<AdminSection title="Audit History">
+					{#if audit.length === 0}
+						<AdminEmptyState title="No audit entries" message="No administrative actions recorded for this customer." />
+					{:else}
+						<AdminTable>
 							<thead>
 								<tr>
 									<th>Event</th>
@@ -602,15 +583,30 @@
 									</tr>
 								{/each}
 							</tbody>
-						</table>
-					</AdminTableContainer>
-				{/if}
-			</AdminSection>
+						</AdminTable>
+					{/if}
+				</AdminSection>
+			{/if}
 		{/if}
-	{/if}
-</AdminPage>
+	</AdminPage>
+</AdminPageContainer>
+
+<AdminDialog
+	bind:open={showConfirmDialog}
+	title={`Confirm ${confirmAction ? confirmAction.replace(/-/g, ' ') : ''}`}
+	message={confirmAction && customer ? CONFIRM_MESSAGES[confirmAction]?.(customer.email) : 'Are you sure?'}
+	confirmText={actionLoading ? 'Processing...' : 'Confirm'}
+	disabled={actionLoading !== null}
+	onconfirm={() => confirmAction && performAction(confirmAction)}
+	oncancel={cancelConfirm}
+	variant={confirmAction && isDangerousAction(confirmAction) ? 'danger' : 'primary'}
+/>
 
 <style>
+	.span-two-columns {
+		grid-column: span 2;
+	}
+
 	.tab-bar {
 		display: flex;
 		gap: 0;
@@ -662,19 +658,6 @@
 		border: 1px solid rgba(220, 38, 38, 0.2);
 	}
 
-	.detail-grid {
-		display: grid;
-		grid-template-columns: 1fr 380px;
-		gap: 1.5rem;
-		align-items: start;
-	}
-
-	.detail-column {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
-	}
-
 	.detail-list {
 		display: flex;
 		flex-direction: column;
@@ -700,6 +683,7 @@
 		font-size: 0.95rem;
 		line-height: 1.5;
 		word-break: break-word;
+		color: var(--color-text);
 	}
 
 	.empty-text {
@@ -730,72 +714,18 @@
 		text-transform: capitalize;
 	}
 
-	.admin-actions-section {
-		margin-top: 0.5rem;
-	}
-
-	.actions-title {
-		font-size: 0.95rem;
-		font-weight: 700;
-		margin-bottom: 0.25rem;
-	}
-
-	.actions-desc {
-		font-size: 0.8rem;
-		opacity: 0.5;
-		margin-bottom: 1rem;
-	}
-
-	.actions-grid {
+	.actions-group :global(button) {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
+		align-items: center;
+		gap: 0.35rem;
 	}
 
-	:global(.danger-btn) {
-		color: #ef4444;
+	.danger-btn {
+		color: #ef4444 !important;
 	}
 
 	:global(.danger-btn:hover) {
 		background: rgba(220, 38, 38, 0.1) !important;
-	}
-
-	.confirm-dialog {
-		margin-top: 1rem;
-		padding: 1rem;
-		border-radius: 12px;
-		background: rgba(220, 38, 38, 0.06);
-		border: 1px solid rgba(220, 38, 38, 0.15);
-	}
-
-	.confirm-content {
-		text-align: center;
-	}
-
-	.confirm-icon {
-		display: flex;
-		justify-content: center;
-		margin-bottom: 0.75rem;
-		opacity: 0.6;
-	}
-
-	.confirm-content h4 {
-		font-size: 1rem;
-		font-weight: 700;
-		margin-bottom: 0.5rem;
-		text-transform: capitalize;
-	}
-
-	.confirm-content p {
-		font-size: 0.85rem;
-		opacity: 0.7;
-		margin-bottom: 1rem;
-	}
-
-	.confirm-buttons {
-		display: flex;
-		gap: 0.5rem;
-		justify-content: center;
 	}
 
 	.section-actions {
@@ -807,8 +737,8 @@
 	}
 
 	@media (max-width: 900px) {
-		.detail-grid {
-			grid-template-columns: 1fr;
+		.span-two-columns {
+			grid-column: span 1;
 		}
 	}
 </style>

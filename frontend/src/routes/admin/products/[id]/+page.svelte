@@ -11,9 +11,7 @@
 		Search,
 		Tag,
 		FileText,
-		Clock,
 		BarChart3,
-		History,
 		Archive,
 		RotateCcw,
 		Send
@@ -22,14 +20,19 @@
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminSection from '$lib/admin/components/AdminSection.svelte';
-	import AdminTableContainer from '$lib/admin/components/AdminTableContainer.svelte';
 	import AdminEmptyState from '$lib/admin/components/AdminEmptyState.svelte';
-	import SectionCard from '$lib/components/ui/SectionCard.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
-	import Dialog from '$lib/components/ui/Dialog.svelte';
-	import StatusBadge from '$lib/components/ui/StatusBadge.svelte';
 	import Badge from '$lib/components/ui/Badge.svelte';
 	import ProductStatusBadge from '$lib/admin/components/ProductStatusBadge.svelte';
+
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
+	import AdminCard from '$lib/admin/components/AdminCard.svelte';
+	import AdminGrid from '$lib/admin/components/AdminGrid.svelte';
+	import AdminStack from '$lib/admin/components/AdminStack.svelte';
+	import AdminTable from '$lib/admin/components/AdminTable.svelte';
+	import AdminDialog from '$lib/admin/components/AdminDialog.svelte';
+	import AdminSectionHeader from '$lib/admin/components/AdminSectionHeader.svelte';
+	import AdminButtonGroup from '$lib/admin/components/AdminButtonGroup.svelte';
 
 	let productId = $derived($page.params.id ?? '');
 
@@ -148,246 +151,264 @@
 	}
 </script>
 
-<AdminPage {loading} {error} onRetry={loadProduct}>
-	{#if product}
-		<AdminPageHeader title={product.name} description={product.short_description || `Slug: ${product.slug}`}>
-			<Button variant="ghost" href="/admin/products">
-				<ArrowLeft size={16} />
-				Back
-			</Button>
-			<Button variant="secondary" href={`/admin/products/${product.id}/edit`}>
-				<Edit size={16} />
-				Edit
-			</Button>
-			{#if product.status === 'draft'}
-				<Button variant="primary" onclick={() => (showPublishDialog = true)}>
-					<Send size={16} />
-					Publish
-				</Button>
-			{/if}
-			{#if product.status === 'published'}
-				<Button variant="secondary" onclick={() => (showUnpublishDialog = true)}>
-					<RotateCcw size={16} />
-					Unpublish
-				</Button>
-			{/if}
-			{#if product.status === 'archived'}
-				<Button variant="secondary" onclick={() => (showRestoreDialog = true)}>
-					<RotateCcw size={16} />
-					Restore
-				</Button>
-			{/if}
-			{#if product.status !== 'archived'}
-				<Button variant="danger" onclick={() => (showArchiveDialog = true)}>
-					<Archive size={16} />
-					Archive
-				</Button>
-			{/if}
-		</AdminPageHeader>
-
-		<div class="detail-grid">
-			<div class="detail-column detail-column-left">
-				<SectionCard title="Overview" icon={Package}>
-					<div class="detail-list">
-						<div class="detail-item">
-							<span class="detail-label">Name</span>
-							<span class="detail-value">{product.name}</span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">Slug</span>
-							<span class="detail-value"><code>{product.slug}</code></span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">Description</span>
-							<span class="detail-value">{product.description || '—'}</span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">Short Description</span>
-							<span class="detail-value">{product.short_description || '—'}</span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">Category</span>
-							<span class="detail-value"><span class="category-tag">{product.category}</span></span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">Tags</span>
-							<span class="detail-value">
-								{#if product.tags && product.tags.length > 0}
-									<div class="tags-list">
-										{#each product.tags as tag}
-											<Badge><span>{tag}</span></Badge>
-										{/each}
-									</div>
-								{:else}
-									—
-								{/if}
-							</span>
-						</div>
-					</div>
-				</SectionCard>
-
-				<SectionCard title="Pricing" icon={DollarSign}>
-					<div class="detail-list">
-						<div class="detail-item">
-							<span class="detail-label">Price</span>
-							<span class="detail-value price-value">{formatPrice(product.price, product.currency)}</span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">Type</span>
-							<span class="detail-value">{product.type}</span>
-						</div>
-					</div>
-				</SectionCard>
-
-				<SectionCard title="SEO" icon={Search}>
-					<div class="detail-list">
-						<div class="detail-item">
-							<span class="detail-label">SEO Title</span>
-							<span class="detail-value">{product.seo_title || '—'}</span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">SEO Description</span>
-							<span class="detail-value">{product.seo_description || '—'}</span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">OG Image</span>
-							<span class="detail-value">{product.og_image || '—'}</span>
-						</div>
-					</div>
-				</SectionCard>
-
-				<AdminSection title="Audit Summary">
-					{#if audit.length === 0}
-						<AdminEmptyState title="No audit entries" message="No activity recorded for this product." />
-					{:else}
-						<AdminTableContainer>
-							<table>
-								<thead>
-									<tr>
-										<th>Event</th>
-										<th>User</th>
-										<th>Date</th>
-									</tr>
-								</thead>
-								<tbody>
-									{#each audit.slice(0, 10) as entry}
-										<tr>
-											<td>{formatAuditEvent(entry.event)}</td>
-											<td>{entry.user_name || entry.user_id || 'System'}</td>
-											<td>{formatDate(entry.created_at)}</td>
-										</tr>
-									{/each}
-								</tbody>
-							</table>
-						</AdminTableContainer>
+<AdminPageContainer>
+	<AdminPage {loading} {error} onRetry={loadProduct}>
+		{#if product}
+			<AdminPageHeader title={product.name} description={product.short_description || `Slug: ${product.slug}`}>
+				<AdminButtonGroup align="right">
+					<Button variant="ghost" href="/admin/products" size="sm">
+						<ArrowLeft size={16} />
+						Back
+					</Button>
+					<Button variant="secondary" href={`/admin/products/${product.id}/edit`} size="sm">
+						<Edit size={16} />
+						Edit
+					</Button>
+					{#if product.status === 'draft'}
+						<Button variant="primary" onclick={() => (showPublishDialog = true)} size="sm">
+							<Send size={16} />
+							Publish
+						</Button>
 					{/if}
-				</AdminSection>
-			</div>
+					{#if product.status === 'published'}
+						<Button variant="secondary" onclick={() => (showUnpublishDialog = true)} size="sm">
+							<RotateCcw size={16} />
+							Unpublish
+						</Button>
+					{/if}
+					{#if product.status === 'archived'}
+						<Button variant="secondary" onclick={() => (showRestoreDialog = true)} size="sm">
+							<RotateCcw size={16} />
+							Restore
+						</Button>
+					{/if}
+					{#if product.status !== 'archived'}
+						<Button variant="danger" onclick={() => (showArchiveDialog = true)} size="sm">
+							<Archive size={16} />
+							Archive
+						</Button>
+					{/if}
+				</AdminButtonGroup>
+			</AdminPageHeader>
 
-			<div class="detail-column detail-column-right">
-				<SectionCard title="Status & Visibility" icon={Eye}>
-					<div class="detail-list">
-						<div class="detail-item">
-							<span class="detail-label">Status</span>
-							<span class="detail-value"><ProductStatusBadge status={product.status} /></span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">Visibility</span>
-							<span class="detail-value">{product.visibility}</span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">Created</span>
-							<span class="detail-value">{formatDate(product.created_at)}</span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">Updated</span>
-							<span class="detail-value">{formatDate(product.updated_at)}</span>
-						</div>
-					</div>
-				</SectionCard>
+			{#if actionError}
+				<div class="alert alert-error" role="alert" style="margin-bottom: 1rem;">
+					{actionError}
+				</div>
+			{/if}
 
-				<SectionCard title="Versions" icon={Tag}>
-					<div class="detail-list">
-						<div class="detail-item">
-							<span class="detail-label">Current Version</span>
-							<span class="detail-value version-value">v{product.version}</span>
-						</div>
-						<div class="detail-item">
-							<span class="detail-label">Release Date</span>
-							<span class="detail-value">{product.release_date ? formatDate(product.release_date) : '—'}</span>
-						</div>
-					</div>
-				</SectionCard>
+			{#if actionSuccess}
+				<div class="alert alert-success" role="alert" style="margin-bottom: 1rem;">
+					{actionSuccess}
+				</div>
+			{/if}
 
-				{#if product.release_notes}
-					<SectionCard title="Release Notes" icon={FileText}>
-						<div class="release-notes">
-							{product.release_notes}
-						</div>
-					</SectionCard>
-				{/if}
+			<AdminGrid cols={{ default: 1, md: 3 }} gap="md">
+				<div class="span-two-columns">
+					<AdminStack gap="md">
+						<AdminCard>
+							<AdminSectionHeader title="Overview" />
+							<div class="detail-list">
+								<div class="detail-item">
+									<span class="detail-label">Name</span>
+									<span class="detail-value">{product.name}</span>
+								</div>
+								<div class="detail-item">
+									<span class="detail-label">Slug</span>
+									<span class="detail-value"><code>{product.slug}</code></span>
+								</div>
+								<div class="detail-item">
+									<span class="detail-label">Description</span>
+									<span class="detail-value">{product.description || '—'}</span>
+								</div>
+								<div class="detail-item">
+									<span class="detail-label">Short Description</span>
+									<span class="detail-value">{product.short_description || '—'}</span>
+								</div>
+								<div class="detail-item">
+									<span class="detail-label">Category</span>
+									<span class="detail-value"><span class="category-tag">{product.category}</span></span>
+								</div>
+								<div class="detail-item">
+									<span class="detail-label">Tags</span>
+									<span class="detail-value">
+										{#if product.tags && product.tags.length > 0}
+											<div class="tags-list">
+												{#each product.tags as tag}
+													<Badge><span>{tag}</span></Badge>
+												{/each}
+											</div>
+										{:else}
+											—
+										{/if}
+									</span>
+								</div>
+							</div>
+						</AdminCard>
 
-				<SectionCard title="Statistics" icon={BarChart3}>
-					<div class="detail-list">
-						<div class="detail-item">
-							<span class="detail-label">Download Key</span>
-							<span class="detail-value">{product.download_key || '—'}</span>
-						</div>
-					</div>
-				</SectionCard>
-			</div>
-		</div>
-	{/if}
-</AdminPage>
+						<AdminCard>
+							<AdminSectionHeader title="Pricing" />
+							<div class="detail-list">
+								<div class="detail-item">
+									<span class="detail-label">Price</span>
+									<span class="detail-value price-value">{formatPrice(product.price, product.currency)}</span>
+								</div>
+								<div class="detail-item">
+									<span class="detail-label">Type</span>
+									<span class="detail-value">{product.type}</span>
+								</div>
+							</div>
+						</AdminCard>
 
-<Dialog
+						<AdminCard>
+							<AdminSectionHeader title="SEO" />
+							<div class="detail-list">
+								<div class="detail-item">
+									<span class="detail-label">SEO Title</span>
+									<span class="detail-value">{product.seo_title || '—'}</span>
+								</div>
+								<div class="detail-item">
+									<span class="detail-label">SEO Description</span>
+									<span class="detail-value">{product.seo_description || '—'}</span>
+								</div>
+								<div class="detail-item">
+									<span class="detail-label">OG Image</span>
+									<span class="detail-value">{product.og_image || '—'}</span>
+								</div>
+							</div>
+						</AdminCard>
+
+						<AdminSection title="Audit Summary">
+							{#if audit.length === 0}
+								<AdminEmptyState title="No audit entries" message="No activity recorded for this product." />
+							{:else}
+								<AdminTable>
+									<thead>
+										<tr>
+											<th>Event</th>
+											<th>User</th>
+											<th>Date</th>
+										</tr>
+									</thead>
+									<tbody>
+										{#each audit.slice(0, 10) as entry}
+											<tr>
+												<td>{formatAuditEvent(entry.event)}</td>
+												<td>{entry.user_name || entry.user_id || 'System'}</td>
+												<td>{formatDate(entry.created_at)}</td>
+											</tr>
+										{/each}
+									</tbody>
+								</AdminTable>
+							{/if}
+						</AdminSection>
+					</AdminStack>
+				</div>
+
+				<AdminStack gap="md">
+					<AdminCard>
+						<AdminSectionHeader title="Status & Visibility" />
+						<div class="detail-list">
+							<div class="detail-item">
+								<span class="detail-label">Status</span>
+								<span class="detail-value"><ProductStatusBadge status={product.status} /></span>
+							</div>
+							<div class="detail-item">
+								<span class="detail-label">Visibility</span>
+								<span class="detail-value">{product.visibility}</span>
+							</div>
+							<div class="detail-item">
+								<span class="detail-label">Created</span>
+								<span class="detail-value">{formatDate(product.created_at)}</span>
+							</div>
+							<div class="detail-item">
+								<span class="detail-label">Updated</span>
+								<span class="detail-value">{formatDate(product.updated_at)}</span>
+							</div>
+						</div>
+					</AdminCard>
+
+					<AdminCard>
+						<AdminSectionHeader title="Versions" />
+						<div class="detail-list">
+							<div class="detail-item">
+								<span class="detail-label">Current Version</span>
+								<span class="detail-value version-value">v{product.version}</span>
+							</div>
+							<div class="detail-item">
+								<span class="detail-label">Release Date</span>
+								<span class="detail-value">{product.release_date ? formatDate(product.release_date) : '—'}</span>
+							</div>
+						</div>
+					</AdminCard>
+
+					{#if product.release_notes}
+						<AdminCard>
+							<AdminSectionHeader title="Release Notes" />
+							<div class="release-notes">
+								{product.release_notes}
+							</div>
+						</AdminCard>
+					{/if}
+
+					<AdminCard>
+						<AdminSectionHeader title="Statistics" />
+						<div class="detail-list">
+							<div class="detail-item">
+								<span class="detail-label">Download Key</span>
+								<span class="detail-value">{product.download_key || '—'}</span>
+							</div>
+						</div>
+					</AdminCard>
+				</AdminStack>
+			</AdminGrid>
+		{/if}
+	</AdminPage>
+</AdminPageContainer>
+
+<AdminDialog
 	bind:open={showPublishDialog}
 	title="Publish Product"
 	message="Are you sure you want to publish this product? It will become visible to customers."
 	confirmText="Publish"
+	disabled={actionLoading}
 	onconfirm={() => performAction('publish')}
-	variant={actionLoading ? 'primary' : 'primary'}
+	variant="primary"
 />
 
-<Dialog
+<AdminDialog
 	bind:open={showUnpublishDialog}
 	title="Unpublish Product"
 	message="This will set the product back to draft. Customers will no longer see it in the catalog."
 	confirmText="Unpublish"
+	disabled={actionLoading}
 	onconfirm={() => performAction('unpublish')}
 	variant="danger"
 />
 
-<Dialog
+<AdminDialog
 	bind:open={showArchiveDialog}
 	title="Archive Product"
 	message="This will archive the product. It will remain in history but won't be visible to customers. You can restore it later."
 	confirmText="Archive"
+	disabled={actionLoading}
 	onconfirm={() => performAction('archive')}
 	variant="danger"
 />
 
-<Dialog
+<AdminDialog
 	bind:open={showRestoreDialog}
 	title="Restore Product"
 	message="This will restore the product as a draft. You can publish it when ready."
 	confirmText="Restore"
+	disabled={actionLoading}
 	onconfirm={() => performAction('restore')}
 	variant="primary"
 />
 
 <style>
-	.detail-grid {
-		display: grid;
-		grid-template-columns: 1fr 380px;
-		gap: 1.5rem;
-		align-items: start;
-	}
-
-	.detail-column {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
+	.span-two-columns {
+		grid-column: span 2;
 	}
 
 	.detail-list {
@@ -420,7 +441,7 @@
 	.detail-value code {
 		font-size: 0.85rem;
 		opacity: 0.7;
-		background: rgba(255,255,255,0.05);
+		background: rgba(255, 255, 255, 0.05);
 		padding: 0.1rem 0.35rem;
 		border-radius: 4px;
 	}
@@ -457,8 +478,8 @@
 	}
 
 	@media (max-width: 900px) {
-		.detail-grid {
-			grid-template-columns: 1fr;
+		.span-two-columns {
+			grid-column: span 1;
 		}
 	}
 </style>

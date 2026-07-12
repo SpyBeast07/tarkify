@@ -1,5 +1,7 @@
 <script lang="ts">
-	import Input from '$lib/components/ui/Input.svelte';
+	import AdminInput from './AdminInput.svelte';
+	import AdminSelect from './AdminSelect.svelte';
+	import AdminTextarea from './AdminTextarea.svelte';
 	import SettingsToggle from './SettingsToggle.svelte';
 	import type { FieldConfig, SocialLink } from '$lib/admin/types/settings';
 
@@ -72,7 +74,7 @@
 				disabled={fieldDisabled}
 				aria-label={config.label}
 			/>
-			<Input
+			<AdminInput
 				id="{config.key}-input"
 				type="text"
 				bind:value
@@ -100,7 +102,7 @@
 			{/each}
 		</div>
 		<div class="tag-input-row">
-			<Input
+			<AdminInput
 				id="{config.key}-input"
 				type="text"
 				bind:value={tagDraft}
@@ -123,7 +125,7 @@
 		<div class="social-list">
 			{#each (value as SocialLink[]) || [] as link, i}
 				<div class="social-row">
-					<Input
+					<AdminInput
 						id={`${config.key}-label-${i}`}
 						type="text"
 						bind:value={link.label}
@@ -131,7 +133,7 @@
 						placeholder="Label (e.g. Twitter)"
 						label="Label"
 					/>
-					<Input
+					<AdminInput
 						id={`${config.key}-url-${i}`}
 						type="url"
 						value={link.url}
@@ -154,17 +156,38 @@
 			>Add Social Link</button
 		>
 	</div>
-{:else}
-	<Input
+{:else if config.type === 'select'}
+	<AdminSelect
 		id={config.key}
-		type={config.type}
+		bind:value
+		label={config.label}
+		disabled={fieldDisabled}
+		required={config.required}
+		{error}
+		options={config.options}
+		help={config.help}
+	/>
+{:else if config.type === 'textarea'}
+	<AdminTextarea
+		id={config.key}
 		bind:value
 		label={config.label}
 		disabled={fieldDisabled}
 		required={config.required}
 		placeholder={config.placeholder}
 		{error}
-		options={config.options}
+		help={config.help}
+	/>
+{:else}
+	<AdminInput
+		id={config.key}
+		type={config.type as any}
+		bind:value
+		label={config.label}
+		disabled={fieldDisabled}
+		required={config.required}
+		placeholder={config.placeholder}
+		{error}
 		min={config.min}
 		max={config.max}
 		help={config.help}
@@ -176,12 +199,14 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.4rem;
+		width: 100%;
 	}
 
 	.field-label {
-		font-size: 0.9rem;
+		font-size: 0.85rem;
 		font-weight: 500;
 		color: var(--color-text);
+		opacity: 0.85;
 	}
 
 	.field-help {
@@ -196,6 +221,7 @@
 		justify-content: space-between;
 		gap: 1rem;
 		padding: 0.5rem 0;
+		width: 100%;
 	}
 
 	.field-row-text {
@@ -207,6 +233,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
+		width: 100%;
 	}
 
 	.color-swatch {
@@ -220,7 +247,7 @@
 		flex-shrink: 0;
 	}
 
-	.color-row :global(.form-group) {
+	.color-row :global(.admin-input-group) {
 		flex: 1;
 	}
 
@@ -259,9 +286,10 @@
 		display: flex;
 		gap: 0.5rem;
 		align-items: flex-start;
+		width: 100%;
 	}
 
-	.tag-input-row :global(.form-group) {
+	.tag-input-row :global(.admin-input-group) {
 		flex: 1;
 	}
 
@@ -275,11 +303,14 @@
 		cursor: pointer;
 		color: var(--color-text);
 		white-space: nowrap;
+		height: 38px;
+		transition: var(--transition-smooth);
 	}
 
 	.tag-add:hover,
 	.social-add:hover {
 		background: rgba(123, 144, 75, 0.12);
+		border-color: var(--color-accent-green);
 	}
 
 	.social-list {
@@ -287,13 +318,15 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		margin-bottom: 0.5rem;
+		width: 100%;
 	}
 
 	.social-row {
 		display: grid;
 		grid-template-columns: 1fr 1.5fr auto;
 		gap: 0.5rem;
-		align-items: start;
+		align-items: end;
+		width: 100%;
 	}
 
 	.social-remove {
@@ -306,17 +339,24 @@
 		cursor: pointer;
 		color: var(--color-text);
 		opacity: 0.7;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: var(--transition-smooth);
 	}
 
 	.social-remove:hover {
 		opacity: 1;
 		color: #ef4444;
+		border-color: rgba(239, 68, 68, 0.3);
+		background: rgba(239, 68, 68, 0.05);
 	}
 
 	@media (max-width: 640px) {
 		.social-row {
 			grid-template-columns: 1fr;
 		}
+
 		.social-remove {
 			width: 100%;
 		}

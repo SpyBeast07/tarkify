@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
+	import AdminStatCard from './AdminStatCard.svelte';
 
 	interface Props {
 		label: string;
@@ -11,51 +12,26 @@
 	let { label, value, icon, variant = 'default' }: Props = $props();
 </script>
 
-<div class="stat-card glass variant-{variant}">
-	{#if icon}
-		{@const IconComp = icon}
-		<div class="stat-icon"><IconComp size={20} /></div>
-	{/if}
-	<div class="stat-body">
-		<span class="stat-value">{value}</span>
-		<span class="stat-label">{label}</span>
-	</div>
-</div>
+<AdminStatCard
+	{label}
+	{value}
+	{icon}
+	class="variant-{variant}"
+/>
 
 <style>
-	.stat-card {
-		display: flex;
-		align-items: center;
-		gap: 0.85rem;
-		padding: 1.1rem 1.25rem;
-		border-radius: 16px;
+	:global(.variant-success .stat-card-icon) {
+		color: #5a7a1a !important;
+		background: rgba(90, 122, 26, 0.08) !important;
 	}
-	.stat-icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 42px;
-		height: 42px;
-		border-radius: 12px;
-		background: var(--color-glass-bg);
-		color: var(--color-primary-green);
-		flex-shrink: 0;
+	
+	:global(.variant-danger .stat-card-icon) {
+		color: #ef4444 !important;
+		background: rgba(239, 68, 68, 0.08) !important;
 	}
-	.variant-success .stat-icon { color: #5a7a1a; }
-	.variant-danger .stat-icon { color: #ef4444; }
-	.variant-warning .stat-icon { color: #d97706; }
-	.stat-body {
-		display: flex;
-		flex-direction: column;
-	}
-	.stat-value {
-		font-size: 1.5rem;
-		font-weight: 700;
-		font-family: var(--font-heading);
-		line-height: 1.1;
-	}
-	.stat-label {
-		font-size: 0.8rem;
-		opacity: 0.55;
+	
+	:global(.variant-warning .stat-card-icon) {
+		color: #d97706 !important;
+		background: rgba(217, 119, 6, 0.08) !important;
 	}
 </style>

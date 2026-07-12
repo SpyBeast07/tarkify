@@ -44,6 +44,13 @@
 	import AnalyticsFilterBar from '$lib/admin/components/AnalyticsFilterBar.svelte';
 	import ActivityTimeline from '$lib/admin/components/ActivityTimeline.svelte';
 
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
+	import AdminGrid from '$lib/admin/components/AdminGrid.svelte';
+	import AdminStack from '$lib/admin/components/AdminStack.svelte';
+	import AdminCard from '$lib/admin/components/AdminCard.svelte';
+	import AdminButtonGroup from '$lib/admin/components/AdminButtonGroup.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+
 	interface DashboardData {
 		summary: {
 			revenue: { total: number; paidOrders: number; pendingPayments: number; failedPayments: number };
@@ -153,8 +160,8 @@
 		if (deltaPct == null) return '';
 		const abs = Math.abs(deltaPct);
 		const formatted = Number.isInteger(abs) ? String(abs) : abs.toFixed(1);
-		if (deltaPct > 0) return `↑ ${formatted}% vs previous`;
-		if (deltaPct < 0) return `↓ ${formatted}% vs previous`;
+		if (deltaPct > 0) return `↑ {formatted}% vs previous`;
+		if (deltaPct < 0) return `↓ {formatted}% vs previous`;
 		return '— 0% vs previous';
 	}
 
@@ -184,216 +191,195 @@
 	<meta name="robots" content="noindex,nofollow" />
 </svelte:head>
 
-<div class="dashboard-page">
+<AdminPageContainer>
 	<AdminPageHeader title="Dashboard" description="Executive overview of business performance, sales, and key metrics.">
-		<div class="quick-actions">
-			<a href="/admin/products" class="btn btn-outline btn-sm">
+		<AdminButtonGroup align="right" class="dashboard-actions">
+			<Button variant="outline" size="sm" href="/admin/products">
 				<Plus size={14} aria-hidden="true" /> New Product
-			</a>
-			<a href="/admin/orders" class="btn btn-outline btn-sm">Orders</a>
-			<a href="/admin/customers" class="btn btn-outline btn-sm">Customers</a>
-			<a href="/admin/communication" class="btn btn-outline btn-sm">
+			</Button>
+			<Button variant="outline" size="sm" href="/admin/orders">Orders</Button>
+			<Button variant="outline" size="sm" href="/admin/customers">Customers</Button>
+			<Button variant="outline" size="sm" href="/admin/communication">
 				<MessageSquare size={14} aria-hidden="true" /> Communication
-			</a>
-			<a href="/admin/settings" class="btn btn-outline btn-sm">
+			</Button>
+			<Button variant="outline" size="sm" href="/admin/settings">
 				<Settings size={14} aria-hidden="true" /> Settings
-			</a>
-		</div>
+			</Button>
+		</AdminButtonGroup>
 	</AdminPageHeader>
 
 	<AdminPage loading={pageLoading} error={dashError} onRetry={handleRetry}>
 		{#if data}
-			<AnalyticsFilterBar {range} {start} {end} onchange={onRangeChange} disabled={analyticsLoading} />
+			<AdminStack gap="md">
+				<AnalyticsFilterBar {range} {start} {end} onchange={onRangeChange} disabled={analyticsLoading} />
 
-			{#if analyticsError}
-				<div class="alert alert-error analytics-error" role="alert">
-					{analyticsError}
-					<button class="btn btn-ghost btn-sm" onclick={() => loadAnalytics()}>Retry</button>
-				</div>
-			{/if}
-
-			{#if overview}
-				<!-- KPIs -->
-				<section class="kpi-grid" aria-label="Key performance indicators">
-					<DashboardStatCard
-						label="Revenue"
-						value={formatCurrency(overview.revenue)}
-						icon={IndianRupee}
-						subtext={growth ? trendText(growth.revenue.deltaPct) : ''}
-						href="/admin/orders"
-					/>
-					<DashboardStatCard
-						label="Orders"
-						value={fmtNumber(overview.orders)}
-						icon={ShoppingCart}
-						subtext={growth ? trendText(growth.orders.deltaPct) : ''}
-						href="/admin/orders"
-					/>
-					<DashboardStatCard
-						label="Customers"
-						value={fmtNumber(overview.customers)}
-						icon={Users}
-						subtext={growth ? trendText(growth.customers.deltaPct) : ''}
-						href="/admin/customers"
-					/>
-					<DashboardStatCard
-						label="Downloads"
-						value={fmtNumber(overview.downloads)}
-						icon={Download}
-						subtext={growth ? trendText(growth.downloads.deltaPct) : ''}
-						href="/admin/downloads"
-					/>
-					<DashboardStatCard
-						label="Products"
-						value={fmtNumber(overview.products)}
-						icon={Package}
-						subtext={`${data.summary.products.published} published, ${data.summary.products.inactive} inactive`}
-						href="/admin/products"
-					/>
-					<EmailStatsCard label="Conversion Rate" value={fmtPercent(overview.conversionRate)} icon={Percent} />
-				</section>
-
-				<!-- Revenue & Sales -->
-				<section class="dashboard-group">
-					<h2 class="group-title">Revenue & Sales</h2>
-					<div class="charts-grid">
-						{#if revenue}
-							<AdminSection title="Revenue over time">
-								<AnalyticsChart type="line" data={toChart(revenue.trend)} color="#5a7a1a" valueFormatter={formatCurrency} loading={analyticsLoading} ariaLabel="Revenue over time" />
-								<div class="mini-stats">
-									<span><strong>{formatCurrency(revenue.paid)}</strong> Paid</span>
-									<span><strong>{formatCurrency(revenue.pending)}</strong> Pending</span>
-									<span><strong>{formatCurrency(revenue.failed)}</strong> Failed</span>
-									<span><strong>{formatCurrency(revenue.refunded)}</strong> Refunded</span>
-								</div>
-							</AdminSection>
-						{/if}
-						{#if orders}
-							<AdminSection title="Orders over time">
-								<AnalyticsChart type="bar" data={toChart(orders.daily)} color="#3b82f6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Orders over time" />
-								<div class="mini-stats">
-									<span><strong>{orders.paid}</strong> Paid</span>
-									<span><strong>{orders.pending}</strong> Pending</span>
-									<span><strong>{orders.failed}</strong> Failed</span>
-									<span><strong>{orders.refunded}</strong> Refunded</span>
-								</div>
-							</AdminSection>
-						{/if}
-						{#if customers}
-							<AdminSection title="Customer growth">
-								<AnalyticsChart type="line" data={toChart(customers.trend)} color="#8b5cf6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Customer growth" />
-								<div class="mini-stats">
-									<span><strong>{fmtNumber(customers.newCustomers)}</strong> New</span>
-									<span><strong>{fmtNumber(customers.returning)}</strong> Returning</span>
-									<span><strong>{fmtNumber(customers.verified)}</strong> Verified</span>
-								</div>
-							</AdminSection>
-						{/if}
+				{#if analyticsError}
+					<div class="alert alert-error analytics-error" role="alert">
+						{analyticsError}
+						<Button variant="ghost" size="sm" onclick={() => loadAnalytics()}>Retry</Button>
 					</div>
-				</section>
+				{/if}
 
-				<!-- Product Insights -->
-				<section class="dashboard-group">
-					<h2 class="group-title">Product Insights</h2>
-					<div class="charts-grid">
-						{#if products && products.topSelling.length > 0}
-							<AdminSection title="Top selling products">
-								<AnalyticsChart type="bar" data={toNamed(products.topSelling)} color="#5a7a1a" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Top selling products by orders" />
-							</AdminSection>
-						{/if}
-						{#if products && products.mostDownloaded.length > 0}
-							<AdminSection title="Most downloaded products">
-								<AnalyticsChart type="bar" data={toNamed(products.mostDownloaded)} color="#3b82f6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Most downloaded products" />
-							</AdminSection>
-						{/if}
-					</div>
-				</section>
-
-				<!-- Customer Insights -->
-				{#if customers}
-					<AdminSection title="Customer Insights">
-						<div class="insight-grid">
-							<EmailStatsCard label="New Customers" value={fmtNumber(customers.newCustomers)} icon={Users} variant="success" />
-							<EmailStatsCard label="Returning" value={fmtNumber(customers.returning)} icon={Users} />
-							<EmailStatsCard
-								label="Email Verified"
-								value={customers.total > 0 ? `${((customers.verified / customers.total) * 100).toFixed(0)}%` : '—'}
-								icon={Mail}
-								variant="success"
+				{#if overview}
+					<!-- KPIs -->
+					<section aria-label="Key performance indicators">
+						<AdminGrid cols={{ default: 1, sm: 2, md: 3, lg: 6 }} gap="sm">
+							<DashboardStatCard
+								label="Revenue"
+								value={formatCurrency(overview.revenue)}
+								icon={IndianRupee}
+								subtext={growth ? trendText(growth.revenue.deltaPct) : ''}
+								href="/admin/orders"
 							/>
-							<EmailStatsCard label="OAuth Accounts" value={fmtNumber(customers.oauth)} icon={Users} variant="warning" />
-						</div>
+							<DashboardStatCard
+								label="Orders"
+								value={fmtNumber(overview.orders)}
+								icon={ShoppingCart}
+								subtext={growth ? trendText(growth.orders.deltaPct) : ''}
+								href="/admin/orders"
+							/>
+							<DashboardStatCard
+								label="Customers"
+								value={fmtNumber(overview.customers)}
+								icon={Users}
+								subtext={growth ? trendText(growth.customers.deltaPct) : ''}
+								href="/admin/customers"
+							/>
+							<DashboardStatCard
+								label="Downloads"
+								value={fmtNumber(overview.downloads)}
+								icon={Download}
+								subtext={growth ? trendText(growth.downloads.deltaPct) : ''}
+								href="/admin/downloads"
+							/>
+							<DashboardStatCard
+								label="Products"
+								value={fmtNumber(overview.products)}
+								icon={Package}
+								subtext={`${data.summary.products.published} published, ${data.summary.products.inactive} inactive`}
+								href="/admin/products"
+							/>
+							<EmailStatsCard label="Conversion Rate" value={fmtPercent(overview.conversionRate)} icon={Percent} />
+						</AdminGrid>
+					</section>
+
+					<!-- Revenue & Sales -->
+					<AdminStack gap="sm">
+						<h2 class="group-title">Revenue & Sales</h2>
+						<AdminGrid cols={{ default: 1, xl: 3 }} gap="md">
+							{#if revenue}
+								<AdminSection title="Revenue over time">
+									<AnalyticsChart type="line" data={toChart(revenue.trend)} color="#5a7a1a" valueFormatter={formatCurrency} loading={analyticsLoading} ariaLabel="Revenue over time" />
+									<div class="mini-stats">
+										<span><strong>{formatCurrency(revenue.paid)}</strong> Paid</span>
+										<span><strong>{formatCurrency(revenue.pending)}</strong> Pending</span>
+										<span><strong>{formatCurrency(revenue.failed)}</strong> Failed</span>
+										<span><strong>{formatCurrency(revenue.refunded)}</strong> Refunded</span>
+									</div>
+								</AdminSection>
+							{/if}
+							{#if orders}
+								<AdminSection title="Orders over time">
+									<AnalyticsChart type="bar" data={toChart(orders.daily)} color="#3b82f6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Orders over time" />
+									<div class="mini-stats">
+										<span><strong>{orders.paid}</strong> Paid</span>
+										<span><strong>{orders.pending}</strong> Pending</span>
+										<span><strong>{orders.failed}</strong> Failed</span>
+										<span><strong>{orders.refunded}</strong> Refunded</span>
+									</div>
+								</AdminSection>
+							{/if}
+							{#if customers}
+								<AdminSection title="Customer growth">
+									<AnalyticsChart type="line" data={toChart(customers.trend)} color="#8b5cf6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Customer growth" />
+									<div class="mini-stats">
+										<span><strong>{fmtNumber(customers.newCustomers)}</strong> New</span>
+										<span><strong>{fmtNumber(customers.returning)}</strong> Returning</span>
+										<span><strong>{fmtNumber(customers.verified)}</strong> Verified</span>
+									</div>
+								</AdminSection>
+							{/if}
+						</AdminGrid>
+					</AdminStack>
+
+					<!-- Product Insights -->
+					<AdminStack gap="sm">
+						<h2 class="group-title">Product Insights</h2>
+						<AdminGrid cols={{ default: 1, lg: 2 }} gap="md">
+							{#if products && products.topSelling.length > 0}
+								<AdminSection title="Top selling products">
+									<AnalyticsChart type="bar" data={toNamed(products.topSelling)} color="#5a7a1a" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Top selling products by orders" />
+								</AdminSection>
+							{/if}
+							{#if products && products.mostDownloaded.length > 0}
+								<AdminSection title="Most downloaded products">
+									<AnalyticsChart type="bar" data={toNamed(products.mostDownloaded)} color="#3b82f6" valueFormatter={fmtNumber} loading={analyticsLoading} ariaLabel="Most downloaded products" />
+								</AdminSection>
+							{/if}
+						</AdminGrid>
+					</AdminStack>
+
+					<!-- Customer Insights -->
+					{#if customers}
+						<AdminSection title="Customer Insights">
+							<AdminGrid cols={{ default: 2, lg: 4 }} gap="sm">
+								<EmailStatsCard label="New Customers" value={fmtNumber(customers.newCustomers)} icon={Users} variant="success" />
+								<EmailStatsCard label="Returning" value={fmtNumber(customers.returning)} icon={Users} />
+								<EmailStatsCard
+									label="Email Verified"
+									value={customers.total > 0 ? `${((customers.verified / customers.total) * 100).toFixed(0)}%` : '—'}
+									icon={Mail}
+									variant="success"
+								/>
+								<EmailStatsCard label="OAuth Accounts" value={fmtNumber(customers.oauth)} icon={Users} variant="warning" />
+							</AdminGrid>
+						</AdminSection>
+					{/if}
+
+					<!-- Communication Summary -->
+					{#if traffic}
+						<AdminSection title="Communication Summary">
+							<AdminGrid cols={{ default: 2, lg: 4 }} gap="sm">
+								<EmailStatsCard label="Contact Messages" value={fmtNumber(traffic.contacts)} icon={MessageSquare} />
+								<EmailStatsCard label="Feedback" value={fmtNumber(traffic.feedback)} icon={Mail} />
+								<EmailStatsCard label="Newsletter Signups" value={fmtNumber(traffic.newsletter)} icon={Mail} variant="success" />
+								<EmailStatsCard label="Career Applications" value={fmtNumber(traffic.careers)} icon={Users} />
+							</AdminGrid>
+						</AdminSection>
+					{/if}
+
+					<!-- Recent Activity -->
+					<AdminSection title="Recent Activity">
+						<ActivityTimeline entries={data.recentActivity || []} />
 					</AdminSection>
-				{/if}
 
-				<!-- Communication Summary -->
-				{#if traffic}
-					<AdminSection title="Communication Summary">
-						<div class="insight-grid">
-							<EmailStatsCard label="Contact Messages" value={fmtNumber(traffic.contacts)} icon={MessageSquare} />
-							<EmailStatsCard label="Feedback" value={fmtNumber(traffic.feedback)} icon={Mail} />
-							<EmailStatsCard label="Newsletter Signups" value={fmtNumber(traffic.newsletter)} icon={Mail} variant="success" />
-							<EmailStatsCard label="Career Applications" value={fmtNumber(traffic.careers)} icon={Users} />
+					<!-- System Health -->
+					<AdminCard class="health-strip-card">
+						<div class="health-strip" aria-label="System health">
+							<span class="health-strip-label">System</span>
+							{#each ['backend', 'database', 'storage', 'email', 'payments'] as key}
+								{@const status = data.systemHealth[key as keyof typeof data.systemHealth] || 'unknown'}
+								<span class="health-strip-item">
+									<span class="hs-dot" style="background: {healthColor(status)};" aria-hidden="true"></span>
+									{systemLabel(key)}
+									<span class="hs-status" style="color: {healthColor(status)};">{status}</span>
+								</span>
+							{/each}
 						</div>
-					</AdminSection>
+					</AdminCard>
 				{/if}
-
-				<!-- Recent Activity -->
-				<AdminSection title="Recent Activity">
-					<ActivityTimeline entries={data.recentActivity || []} />
-				</AdminSection>
-
-				<!-- System Health -->
-				<section class="health-strip" aria-label="System health">
-					<span class="health-strip-label">System</span>
-					{#each ['backend', 'database', 'storage', 'email', 'payments'] as key}
-						{@const status = data.systemHealth[key as keyof typeof data.systemHealth] || 'unknown'}
-						<span class="health-strip-item">
-							<span class="hs-dot" style="background: {healthColor(status)};" aria-hidden="true"></span>
-							{systemLabel(key)}
-							<span class="hs-status" style="color: {healthColor(status)};">{status}</span>
-						</span>
-					{/each}
-				</section>
-			{/if}
+			</AdminStack>
 		{/if}
 	</AdminPage>
-</div>
+</AdminPageContainer>
 
 <style>
-	.dashboard-page {
-		width: 100%;
-	}
-
-	.quick-actions {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.375rem;
-	}
-
-	.kpi-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-		gap: 1rem;
-		margin-bottom: 2rem;
-	}
-
-	.dashboard-group {
-		margin-bottom: 2rem;
-	}
-
 	.group-title {
 		font-family: var(--font-heading);
 		font-size: 1.1rem;
 		font-weight: 700;
-		margin: 0 0 1rem;
+		margin: 0;
 		color: var(--color-primary-green);
-	}
-
-	.charts-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-		gap: 1.25rem;
 	}
 
 	.mini-stats {
@@ -410,12 +396,6 @@
 		opacity: 0.9;
 	}
 
-	.insight-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-		gap: 0.75rem;
-	}
-
 	.analytics-error {
 		margin-bottom: 1rem;
 		display: flex;
@@ -423,16 +403,15 @@
 		justify-content: space-between;
 	}
 
+	:global(.health-strip-card.admin-card) {
+		padding: 0.65rem 1rem;
+	}
+
 	.health-strip {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: center;
 		gap: 0.75rem 1.25rem;
-		padding: 0.65rem 1rem;
-		background: var(--color-glass-bg);
-		border: 1px solid var(--color-glass-border);
-		border-radius: 12px;
-		margin-top: 0.5rem;
 		font-size: 0.8rem;
 	}
 
@@ -464,22 +443,9 @@
 		text-transform: capitalize;
 	}
 
-	@media (max-width: 768px) {
-		.quick-actions {
-			width: 100%;
-		}
-
-		.quick-actions :global(.btn) {
-			flex: 1;
-			min-width: 0;
-		}
-
-		.charts-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.insight-grid {
-			grid-template-columns: repeat(2, 1fr);
+	@media (max-width: 640px) {
+		:global(.dashboard-actions.admin-btn-group) {
+			flex-direction: column;
 		}
 	}
 </style>

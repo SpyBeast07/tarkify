@@ -1,30 +1,33 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Search, SlidersHorizontal, ShoppingCart } from '@lucide/svelte';
+	import { Search, SlidersHorizontal } from '@lucide/svelte';
 	import { adminFetch, AdminApiError } from '$lib/admin/api/client';
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminSection from '$lib/admin/components/AdminSection.svelte';
-	import AdminTableContainer from '$lib/admin/components/AdminTableContainer.svelte';
 	import AdminEmptyState from '$lib/admin/components/AdminEmptyState.svelte';
-	import Button from '$lib/components/ui/Button.svelte';
-	import Input from '$lib/components/ui/Input.svelte';
 	import OrderStatusBadge from '$lib/admin/components/OrderStatusBadge.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
+	import AdminToolbar from '$lib/admin/components/AdminToolbar.svelte';
+	import AdminFilterBar from '$lib/admin/components/AdminFilterBar.svelte';
+	import AdminTable from '$lib/admin/components/AdminTable.svelte';
+	import AdminInput from '$lib/admin/components/AdminInput.svelte';
+	import AdminSelect from '$lib/admin/components/AdminSelect.svelte';
+	import AdminButtonGroup from '$lib/admin/components/AdminButtonGroup.svelte';
 
 	interface OrderListItem {
 		id: string;
-		customer_name: string | null;
+		order_number: string;
 		customer_email: string;
-		product_name: string;
-		product_slug: string;
+		customer_name: string | null;
+		customer_id: string | null;
 		amount: number;
 		currency: string;
 		status: string;
-		payment_provider: string;
-		razorpay_order_id: string;
-		razorpay_payment_id: string | null;
+		payment_id: string | null;
 		created_at: string;
-		updated_at: string;
 	}
 
 	interface OrderListResponse {
@@ -33,11 +36,6 @@
 		page: number;
 		perPage: number;
 		totalPages: number;
-	}
-
-	interface FilterOption {
-		products: { id: string; name: string }[];
-		statuses: string[];
 	}
 
 	let orders = $state<OrderListItem[]>([]);
@@ -57,8 +55,7 @@
 
 	let showFilters = $state(false);
 	let statusOptions = $state<string[]>([]);
-	let productOptions = $state<{ id: string; name: string }[]>([]);
-	let optionsLoaded = $state(false);
+	let productOptions = $state<Array<{ id: string; name: string }>>([]);
 
 	async function loadOrders() {
 		loading = true;
@@ -90,19 +87,21 @@
 		}
 	}
 
-	async function loadOptions() {
+	async function loadMetadata() {
 		try {
-			const result = await adminFetch<FilterOption>('/orders/options');
-			statusOptions = result.statuses;
-			productOptions = result.products;
-			optionsLoaded = true;
+			const [meta, prodRes] = await Promise.all([
+				adminFetch<{ statuses: string[] }>('/orders/metadata'),
+				adminFetch<{ products: Array<{ id: string; name: string }> }>('/products?perPage=100')
+			]);
+			statusOptions = meta.statuses;
+			productOptions = prodRes.products;
 		} catch {
 			// non-critical
 		}
 	}
 
 	onMount(() => {
-		loadOptions();
+		loadMetadata();
 		loadOrders();
 	});
 
@@ -149,102 +148,102 @@
 	}
 </script>
 
-<AdminPageHeader title="Orders" description="View and manage customer orders">
-	<Button variant="ghost" href="/admin/payments">
-		View Payments
-	</Button>
-</AdminPageHeader>
+<svelte:head>
+	<title>Orders | Tarkify Admin</title>
+</svelte:head>
 
-<AdminPage {loading} {error} onRetry={loadOrders}>
-	<div class="toolbar">
-		<div class="search-bar">
-			<span class="search-icon"><Search size={16} /></span>
-			<input
-				type="text"
-				bind:value={search}
-				placeholder="Search by name, email, order ID, or payment ID..."
-				onkeydown={handleKeydown}
-				aria-label="Search orders"
-			/>
-		</div>
-		<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
-			<SlidersHorizontal size={16} />
-			Filters
+<AdminPageContainer>
+	<AdminPageHeader title="Orders" description="View and manage customer orders">
+		<Button variant="ghost" href="/admin/payments">
+			View Payments
 		</Button>
-	</div>
+	</AdminPageHeader>
 
-	{#if showFilters}
-		<div class="filters-bar">
-			<Input
-				type="select"
-				bind:value={statusFilter}
-				options={[
-					{ value: '', label: 'All Statuses' },
-					...statusOptions.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))
-				]}
-				class="filter-select"
-				onchange={loadOrders}
-			/>
-			<Input
-				type="select"
-				bind:value={productFilter}
-				options={[
-					{ value: '', label: 'All Products' },
-					...productOptions.map(p => ({ value: p.id, label: p.name }))
-				]}
-				class="filter-select"
-				onchange={loadOrders}
-			/>
-			<input
-				type="date"
-				bind:value={dateFrom}
-				placeholder="From date"
-				class="filter-date"
-				onchange={loadOrders}
-			/>
-			<input
-				type="date"
-				bind:value={dateTo}
-				placeholder="To date"
-				class="filter-date"
-				onchange={loadOrders}
-			/>
-			<Input
-				type="select"
-				bind:value={sort}
-				options={[
-					{ value: 'newest', label: 'Newest First' },
-					{ value: 'oldest', label: 'Oldest First' },
-					{ value: 'amount', label: 'Amount (High)' },
-					{ value: 'status', label: 'Status' }
-				]}
-				class="filter-select"
-				onchange={loadOrders}
-			/>
-			<Button variant="ghost" size="sm" onclick={clearFilters}>Clear</Button>
-		</div>
-	{/if}
+	<AdminPage {loading} {error} onRetry={loadOrders}>
+		<AdminToolbar>
+			<div class="search-bar-wrapper">
+				<AdminInput
+					type="text"
+					bind:value={search}
+					placeholder="Search by name, email, order ID, or payment ID..."
+					onkeydown={handleKeydown}
+					aria-label="Search orders"
+					icon={Search}
+				/>
+			</div>
+			<Button variant="ghost" size="sm" onclick={() => (showFilters = !showFilters)}>
+				<SlidersHorizontal size={16} />
+				Filters
+			</Button>
+		</AdminToolbar>
 
-	{#if orders.length === 0}
-		<AdminSection>
-			<AdminEmptyState
-				title="No orders found"
-				message={search || statusFilter || productFilter
-					? 'Try adjusting your search or filters.'
-					: 'Orders will appear here once customers start purchasing.'}
-			/>
-		</AdminSection>
-	{:else}
-		<AdminTableContainer>
-			<table>
+		{#if showFilters}
+			<AdminFilterBar>
+				<AdminSelect
+					bind:value={statusFilter}
+					options={[
+						{ value: '', label: 'All Statuses' },
+						...statusOptions.map(s => ({ value: s, label: s.charAt(0).toUpperCase() + s.slice(1) }))
+					]}
+					class="filter-select"
+					onchange={loadOrders}
+				/>
+				<AdminSelect
+					bind:value={productFilter}
+					options={[
+						{ value: '', label: 'All Products' },
+						...productOptions.map(p => ({ value: p.id, label: p.name }))
+					]}
+					class="filter-select"
+					onchange={loadOrders}
+				/>
+				<AdminInput
+					type="date"
+					bind:value={dateFrom}
+					class="filter-date"
+					onchange={loadOrders}
+					aria-label="From Date"
+				/>
+				<AdminInput
+					type="date"
+					bind:value={dateTo}
+					class="filter-date"
+					onchange={loadOrders}
+					aria-label="To Date"
+				/>
+				<AdminSelect
+					bind:value={sort}
+					options={[
+						{ value: 'newest', label: 'Newest First' },
+						{ value: 'oldest', label: 'Oldest First' },
+						{ value: 'amount', label: 'Amount (High)' },
+						{ value: 'status', label: 'Status' }
+					]}
+					class="filter-select"
+					onchange={loadOrders}
+				/>
+				<Button variant="ghost" size="sm" onclick={clearFilters}>Clear</Button>
+			</AdminFilterBar>
+		{/if}
+
+		{#if orders.length === 0}
+			<AdminSection>
+				<AdminEmptyState
+					title="No orders found"
+					message={search || statusFilter || productFilter || dateFrom || dateTo
+						? 'Try adjusting your search or filters.'
+						: 'Orders will appear here once customers make purchases.'}
+				/>
+			</AdminSection>
+		{:else}
+			<AdminTable>
 				<thead>
 					<tr>
-						<th>Order ID</th>
+						<th>Order Number</th>
 						<th>Customer</th>
-						<th>Product</th>
 						<th>Amount</th>
 						<th>Status</th>
-						<th>Payment Method</th>
+						<th>Payment ID</th>
 						<th>Date</th>
 					</tr>
 				</thead>
@@ -257,106 +256,69 @@
 							tabindex="0"
 							onkeydown={(e) => e.key === 'Enter' && (window.location.href = `/admin/orders/${order.id}`)}
 						>
-							<td class="id-cell">
-								<code>#{order.id.substring(0, 8)}</code>
-							</td>
+							<td class="id-cell"><code>{order.order_number}</code></td>
 							<td>
 								<div class="customer-info">
 									<span class="customer-name">{order.customer_name || 'Guest'}</span>
 									<span class="customer-email">{order.customer_email}</span>
 								</div>
 							</td>
-							<td>{order.product_name}</td>
 							<td class="amount-cell">{formatPrice(order.amount, order.currency)}</td>
 							<td><OrderStatusBadge status={order.status} /></td>
-							<td class="method-cell">{order.payment_provider}</td>
+							<td class="id-cell">
+								{#if order.payment_id}
+									<code>{order.payment_id.substring(0, 15)}...</code>
+								{:else}
+									—
+								{/if}
+							</td>
 							<td class="date-cell">{formatDate(order.created_at)}</td>
 						</tr>
 					{/each}
 				</tbody>
-			</table>
-		</AdminTableContainer>
+			</AdminTable>
 
-		{#if totalPages > 1}
-			<div class="pagination">
-				<span class="pagination-info">Page {page} of {totalPages} ({total} orders)</span>
-				<div class="pagination-buttons">
-					<Button variant="ghost" size="sm" disabled={page <= 1} onclick={() => goToPage(page - 1)}>Previous</Button>
-					{#each { length: Math.min(totalPages, 5) } as _, i}
-						{@const p = i + 1}
-						<Button variant={p === page ? 'primary' : 'ghost'} size="sm" onclick={() => goToPage(p)}>{p}</Button>
-					{/each}
-					<Button variant="ghost" size="sm" disabled={page >= totalPages} onclick={() => goToPage(page + 1)}>Next</Button>
+			{#if totalPages > 1}
+				<div class="pagination">
+					<span class="pagination-info">
+						Page {page} of {totalPages} ({total} orders)
+					</span>
+					<AdminButtonGroup align="right" class="pagination-buttons">
+						<Button variant="ghost" size="sm" disabled={page <= 1} onclick={() => goToPage(page - 1)}>
+							Previous
+						</Button>
+						{#each { length: Math.min(totalPages, 5) } as _, i}
+							{@const p = i + 1}
+							<Button
+								variant={p === page ? 'primary' : 'ghost'}
+								size="sm"
+								onclick={() => goToPage(p)}
+							>
+								{p}
+							</Button>
+						{/each}
+						<Button variant="ghost" size="sm" disabled={page >= totalPages} onclick={() => goToPage(page + 1)}>
+							Next
+						</Button>
+					</AdminButtonGroup>
 				</div>
-			</div>
+			{/if}
 		{/if}
-	{/if}
-</AdminPage>
+	</AdminPage>
+</AdminPageContainer>
 
 <style>
-	.toolbar {
-		display: flex;
-		gap: 0.75rem;
-		align-items: center;
-		margin-bottom: 1rem;
-	}
-
-	.search-bar {
+	.search-bar-wrapper {
 		flex: 1;
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.5rem 0.75rem;
-		background: var(--color-glass-bg);
-		border: 1px solid var(--color-glass-border);
-		border-radius: 12px;
-		transition: var(--transition-smooth);
-	}
-
-	.search-bar:focus-within {
-		border-color: var(--color-primary-green);
-		box-shadow: 0 0 0 3px rgba(39, 59, 9, 0.1);
-	}
-
-	.search-icon {
-		display: flex;
-		flex-shrink: 0;
-		opacity: 0.4;
-	}
-
-	.search-bar input {
-		flex: 1;
-		border: none;
-		background: transparent;
-		outline: none;
-		font-size: 0.9rem;
-		color: var(--color-text);
-	}
-
-	.filters-bar {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.75rem;
-		align-items: end;
-		margin-bottom: 1rem;
-		padding: 1rem;
-		border-radius: 12px;
-		background: var(--color-glass-bg);
+		min-width: 220px;
 	}
 
 	:global(.filter-select) {
 		min-width: 160px;
 	}
 
-	.filter-date {
-		padding: 0.5rem 0.75rem;
-		border: 1px solid var(--color-glass-border);
-		border-radius: 10px;
-		background: var(--color-glass-bg);
-		color: var(--color-text);
-		font-size: 0.85rem;
-		font-family: inherit;
-		min-width: 160px;
+	:global(.filter-date.admin-input-group) {
+		min-width: 130px;
 	}
 
 	.order-row {
@@ -366,7 +328,7 @@
 	.id-cell code {
 		font-size: 0.8rem;
 		opacity: 0.7;
-		background: rgba(255,255,255,0.05);
+		background: rgba(255, 255, 255, 0.05);
 		padding: 0.15rem 0.4rem;
 		border-radius: 4px;
 	}
@@ -410,18 +372,17 @@
 		opacity: 0.6;
 	}
 
-	.pagination-buttons {
-		display: flex;
-		gap: 0.25rem;
-		align-items: center;
-	}
-
 	@media (max-width: 768px) {
-		.filters-bar {
-			flex-direction: column;
-		}
-		:global(.filter-select) {
+		.search-bar-wrapper {
 			width: 100%;
+		}
+
+		:global(.filter-select) {
+			width: 100% !important;
+		}
+
+		:global(.filter-date.admin-input-group) {
+			width: 100% !important;
 		}
 	}
 </style>

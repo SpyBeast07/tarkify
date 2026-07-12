@@ -20,9 +20,8 @@
 	import type { SettingsGroup } from '$lib/admin/types/settings';
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
-	import AdminLoading from '$lib/admin/components/AdminLoading.svelte';
-	import AdminError from '$lib/admin/components/AdminError.svelte';
 	import SettingsSection from '$lib/admin/components/SettingsSection.svelte';
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
 
 	const ICONS: Record<SettingsGroup, Component<any>> = {
 		general: SlidersHorizontal,
@@ -138,47 +137,49 @@
 	<title>Settings | Tarkify Admin</title>
 </svelte:head>
 
-<AdminPage {loading} error={loadError} onRetry={load}>
+<AdminPageContainer>
 	<AdminPageHeader
 		title="Settings"
 		description="Manage runtime application configuration. Secrets and deployment settings are managed outside the app."
 	/>
 
-	{#if saved && draft}
-		<div class="settings-layout">
-			<nav class="settings-nav" aria-label="Settings sections">
-				{#each SETTINGS_SECTIONS as section (section.id)}
-					{@const SectionIcon = ICONS[section.id]}
-					<button
-						class="settings-nav-item"
-						class:active={active === section.id}
-						aria-current={active === section.id ? 'page' : undefined}
-						onclick={() => selectSection(section.id)}
-					>
-						<SectionIcon size={18} aria-hidden="true" />
-						<span>{section.label}</span>
-						{#if isDirty(section.id)}
-							<span class="dirty-dot" aria-label="Unsaved changes" title="Unsaved changes"></span>
-						{/if}
-					</button>
-				{/each}
-			</nav>
+	<AdminPage {loading} error={loadError} onRetry={load}>
+		{#if saved && draft}
+			<div class="settings-layout">
+				<nav class="settings-nav" aria-label="Settings sections">
+					{#each SETTINGS_SECTIONS as section (section.id)}
+						{@const SectionIcon = ICONS[section.id]}
+						<button
+							class="settings-nav-item"
+							class:active={active === section.id}
+							aria-current={active === section.id ? 'page' : undefined}
+							onclick={() => selectSection(section.id)}
+						>
+							<SectionIcon size={18} aria-hidden="true" />
+							<span>{section.label}</span>
+							{#if isDirty(section.id)}
+								<span class="dirty-dot" aria-label="Unsaved changes" title="Unsaved changes"></span>
+							{/if}
+						</button>
+					{/each}
+				</nav>
 
-			<div class="settings-content">
-				<SettingsSection
-					section={activeSection}
-					bind:values={draft[active]}
-					dirty={isDirty(active)}
-					saving={activeState.saving}
-					success={activeState.success}
-					error={activeState.error}
-					onSave={() => saveSection(active)}
-					onReset={() => resetSection(active)}
-				/>
+				<div class="settings-content">
+					<SettingsSection
+						section={activeSection}
+						bind:values={draft[active]}
+						dirty={isDirty(active)}
+						saving={activeState.saving}
+						success={activeState.success}
+						error={activeState.error}
+						onSave={() => saveSection(active)}
+						onReset={() => resetSection(active)}
+					/>
+				</div>
 			</div>
-		</div>
-	{/if}
-</AdminPage>
+		{/if}
+	</AdminPage>
+</AdminPageContainer>
 
 <style>
 	.settings-layout {

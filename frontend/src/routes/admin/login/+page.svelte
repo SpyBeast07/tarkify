@@ -2,11 +2,14 @@
 	import { getContext } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { Mail, Lock, ArrowRight, Eye, EyeOff } from '@lucide/svelte';
+	import { Mail, Lock, ArrowRight } from '@lucide/svelte';
 	import AuthLayout from '$lib/components/ui/AuthLayout.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
 	import { signIn, signOut } from '$lib/api/auth';
 	import type { AuthState } from '$lib/context/auth.svelte';
+
+	import AdminInput from '$lib/admin/components/AdminInput.svelte';
+	import AdminCheckbox from '$lib/admin/components/AdminCheckbox.svelte';
 
 	let email = $state('');
 	let password = $state('');
@@ -61,6 +64,7 @@
 
 <svelte:head>
 	<meta name="robots" content="noindex,nofollow" />
+	<title>Admin Login | Tarkify</title>
 </svelte:head>
 
 <div class="admin-login-wrapper">
@@ -73,57 +77,34 @@
 			</div>
 		{/if}
 
-		<form onsubmit={handleLogin} novalidate>
-			<div class="form-group">
-				<label for="email" class="form-label">Email</label>
-				<div class="input-container-wrapper input-with-icon">
-					<Mail size={20} class="input-icon" aria-hidden="true" />
-					<input
-						id="email"
-						type="email"
-						placeholder="you@example.com"
-						bind:value={email}
-						required
-						autocomplete="email"
-						disabled={loading}
-					/>
-				</div>
-			</div>
+		<form onsubmit={handleLogin} novalidate class="login-form">
+			<AdminInput
+				id="email"
+				type="email"
+				label="Email Address"
+				placeholder="you@example.com"
+				bind:value={email}
+				icon={Mail}
+				required
+				autocomplete="email"
+				disabled={loading}
+			/>
 
-			<div class="form-group">
-				<label for="password" class="form-label">Password</label>
-				<div class="input-container-wrapper input-with-icon">
-					<Lock size={20} class="input-icon" aria-hidden="true" />
-					<input
-						id="password"
-						type={showPassword ? 'text' : 'password'}
-						placeholder="Enter your password"
-						bind:value={password}
-						required
-						autocomplete="current-password"
-						disabled={loading}
-					/>
-					<button
-						type="button"
-						class="input-toggle"
-						onclick={() => { showPassword = !showPassword }}
-						aria-label={showPassword ? 'Hide password' : 'Show password'}
-						disabled={loading}
-					>
-						{#if showPassword}
-							<EyeOff size={20} aria-hidden="true" />
-						{:else}
-							<Eye size={20} aria-hidden="true" />
-						{/if}
-					</button>
-				</div>
-			</div>
+			<AdminInput
+				id="password"
+				type={showPassword ? 'text' : 'password'}
+				label="Password"
+				placeholder="Enter your password"
+				bind:value={password}
+				icon={Lock}
+				required
+				autocomplete="current-password"
+				disabled={loading}
+			/>
 
 			<div class="form-options">
-				<label class="checkbox-label">
-					<input type="checkbox" bind:checked={rememberMe} disabled={loading} />
-					<span>Remember me</span>
-				</label>
+				<AdminCheckbox bind:checked={rememberMe} label="Remember me" disabled={loading} />
+				<AdminCheckbox bind:checked={showPassword} label="Show password" disabled={loading} />
 			</div>
 
 			<button type="submit" class="btn btn-primary btn-full" disabled={loading}>
@@ -141,24 +122,19 @@
 		padding-top: 3rem;
 	}
 
+	.login-form {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
 	.form-options {
 		display: flex;
-		justify-content: center;
+		justify-content: space-between;
 		align-items: center;
-		font-size: 0.9rem;
-	}
-
-	.checkbox-label {
-		display: flex;
-		align-items: center;
+		margin-top: 0.25rem;
+		margin-bottom: 0.5rem;
+		flex-wrap: wrap;
 		gap: 0.5rem;
-		cursor: pointer;
-		opacity: 0.8;
-	}
-
-	.checkbox-label :global(input[type='checkbox']) {
-		width: 1rem;
-		height: 1rem;
-		accent-color: var(--color-primary-green);
 	}
 </style>

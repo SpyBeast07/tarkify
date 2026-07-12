@@ -7,11 +7,17 @@
 	import AdminPage from '$lib/admin/components/AdminPage.svelte';
 	import AdminPageHeader from '$lib/admin/components/AdminPageHeader.svelte';
 	import AdminSection from '$lib/admin/components/AdminSection.svelte';
-	import AdminLoading from '$lib/admin/components/AdminLoading.svelte';
 	import AdminError from '$lib/admin/components/AdminError.svelte';
 	import AuditEventBadge from '$lib/admin/components/AuditEventBadge.svelte';
 	import AuditMetadata from '$lib/admin/components/AuditMetadata.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
+
+	import AdminPageContainer from '$lib/admin/components/AdminPageContainer.svelte';
+	import AdminCard from '$lib/admin/components/AdminCard.svelte';
+	import AdminGrid from '$lib/admin/components/AdminGrid.svelte';
+	import AdminStack from '$lib/admin/components/AdminStack.svelte';
+	import AdminSectionHeader from '$lib/admin/components/AdminSectionHeader.svelte';
+	import AdminButtonGroup from '$lib/admin/components/AdminButtonGroup.svelte';
 
 	const id = $derived($page.params.id);
 
@@ -23,7 +29,7 @@
 		loading = true;
 		error = null;
 		try {
-      detail = await getAuditDetail(id ?? '');
+			detail = await getAuditDetail(id ?? '');
 		} catch (err) {
 			if (err instanceof AdminApiError && (err as any).status === 404) {
 				detail = null;
@@ -53,120 +59,133 @@
 	<title>Audit Detail | Tarkify Admin</title>
 </svelte:head>
 
-<AdminPage {loading} {error} onRetry={load}>
-	<AdminPageHeader title="Audit Entry">
-		<Button variant="ghost" size="sm" href="/admin/audit">
-			<ArrowLeft size={15} aria-hidden="true" /> Back to Audit Logs
-		</Button>
-	</AdminPageHeader>
+<AdminPageContainer>
+	<AdminPage {loading} {error} onRetry={load}>
+		<AdminPageHeader title="Audit Entry">
+			<Button variant="ghost" size="sm" href="/admin/audit">
+				<ArrowLeft size={15} aria-hidden="true" /> Back to Audit Logs
+			</Button>
+		</AdminPageHeader>
 
-	{#if !detail}
-		<AdminError
-			title="Not Found"
-			message="This audit entry does not exist or has been removed."
-			onRetry={load}
-		/>
-	{:else}
-		<div class="detail-header glass">
-			<div class="detail-badges">
-				<AuditEventBadge event={detail.event} variant="event" />
-				<AuditEventBadge module={detail.module} variant="module" />
-				<AuditEventBadge status={detail.status} variant="status" />
-			</div>
-			<p class="detail-summary">{detail.summary}</p>
-		</div>
+		{#if !detail}
+			<AdminError
+				title="Not Found"
+				message="This audit entry does not exist or has been removed."
+				onRetry={load}
+			/>
+		{:else}
+			<AdminStack gap="md">
+				<AdminCard class="detail-header-card">
+					<div class="detail-header-content">
+						<div class="detail-badges">
+							<AuditEventBadge event={detail.event} variant="event" />
+							<AuditEventBadge module={detail.module} variant="module" />
+							<AuditEventBadge status={detail.status} variant="status" />
+						</div>
+						<p class="detail-summary">{detail.summary}</p>
+					</div>
+				</AdminCard>
 
-		<div class="detail-grid">
-			<AdminSection title="Overview">
-				<dl class="detail-list">
-					<div class="detail-item">
-						<dt><Clock size={15} aria-hidden="true" /> Timestamp</dt>
-						<dd>{formatDateTime(detail.createdAt)}</dd>
-					</div>
-					<div class="detail-item">
-						<dt><User size={15} aria-hidden="true" /> Actor</dt>
-						<dd>
-							{#if detail.actor}
-								{detail.actor.email}{detail.actor.name ? ` (${detail.actor.name})` : ''}
-							{:else}
-								— (system)
-							{/if}
-						</dd>
-					</div>
-					<div class="detail-item">
-						<dt><Target size={15} aria-hidden="true" /> Target</dt>
-						<dd class="mono">{detail.target ?? '—'}</dd>
-					</div>
-					<div class="detail-item">
-						<dt><Globe size={15} aria-hidden="true" /> IP Address</dt>
-						<dd class="mono">{detail.ipAddress ?? '—'}</dd>
-					</div>
-					<div class="detail-item">
-						<dt><Monitor size={15} aria-hidden="true" /> Device</dt>
-						<dd>{detail.device ?? '—'}</dd>
-					</div>
-					<div class="detail-item">
-						<dt><Hash size={15} aria-hidden="true" /> Request ID</dt>
-						<dd class="mono">{detail.requestId ?? '—'}</dd>
-					</div>
-					<div class="detail-item">
-						<dt><FileJson size={15} aria-hidden="true" /> Event</dt>
-						<dd class="mono">{detail.event}</dd>
-					</div>
-					<div class="detail-item">
-						<dt>Module</dt>
-						<dd>{detail.module}</dd>
-					</div>
-				</dl>
-			</AdminSection>
-
-			{#if detail.relatedEntity.length > 0}
-				<AdminSection title="Related Entity">
-					<dl class="detail-list">
-						{#each detail.relatedEntity as rel (rel.key)}
+				<AdminGrid cols={{ default: 1, lg: 2 }} gap="md">
+					<AdminCard>
+						<AdminSectionHeader title="Overview" />
+						<dl class="detail-list">
 							<div class="detail-item">
-								<dt>{rel.key}</dt>
-								<dd class="mono">{rel.value}</dd>
+								<dt><Clock size={15} aria-hidden="true" /> Timestamp</dt>
+								<dd>{formatDateTime(detail.createdAt)}</dd>
 							</div>
-						{/each}
-					</dl>
-				</AdminSection>
-			{/if}
+							<div class="detail-item">
+								<dt><User size={15} aria-hidden="true" /> Actor</dt>
+								<dd>
+									{#if detail.actor}
+										{detail.actor.email}{detail.actor.name ? ` (${detail.actor.name})` : ''}
+									{:else}
+										— (system)
+									{/if}
+								</dd>
+							</div>
+							<div class="detail-item">
+								<dt><Target size={15} aria-hidden="true" /> Target</dt>
+								<dd class="mono">{detail.target ?? '—'}</dd>
+							</div>
+							<div class="detail-item">
+								<dt><Globe size={15} aria-hidden="true" /> IP Address</dt>
+								<dd class="mono">{detail.ipAddress ?? '—'}</dd>
+							</div>
+							<div class="detail-item">
+								<dt><Monitor size={15} aria-hidden="true" /> Device</dt>
+								<dd>{detail.device ?? '—'}</dd>
+							</div>
+							<div class="detail-item">
+								<dt><Hash size={15} aria-hidden="true" /> Request ID</dt>
+								<dd class="mono">{detail.requestId ?? '—'}</dd>
+							</div>
+							<div class="detail-item">
+								<dt><FileJson size={15} aria-hidden="true" /> Event</dt>
+								<dd class="mono">{detail.event}</dd>
+							</div>
+							<div class="detail-item">
+								<dt>Module</dt>
+								<dd>{detail.module}</dd>
+							</div>
+						</dl>
+					</AdminCard>
 
-			<AdminSection title="User Agent">
-				<p class="ua">{detail.userAgent ?? '—'}</p>
-			</AdminSection>
+					<AdminStack gap="md">
+						{#if detail.relatedEntity.length > 0}
+							<AdminCard>
+								<AdminSectionHeader title="Related Entity" />
+								<dl class="detail-list">
+									{#each detail.relatedEntity as rel (rel.key)}
+										<div class="detail-item">
+											<dt>{rel.key}</dt>
+											<dd class="mono">{rel.value}</dd>
+										</div>
+									{/each}
+								</dl>
+							</AdminCard>
+						{/if}
 
-			<AdminSection title="Metadata">
-				<AuditMetadata data={detail.metadata} />
-			</AdminSection>
-		</div>
-	{/if}
-</AdminPage>
+						<AdminCard>
+							<AdminSectionHeader title="User Agent" />
+							<p class="ua">{detail.userAgent ?? '—'}</p>
+						</AdminCard>
+
+						<AdminCard>
+							<AdminSectionHeader title="Metadata" />
+							<div class="meta-wrapper">
+								<AuditMetadata data={detail.metadata} />
+							</div>
+						</AdminCard>
+					</AdminStack>
+				</AdminGrid>
+			</AdminStack>
+		{/if}
+	</AdminPage>
+</AdminPageContainer>
 
 <style>
-	.detail-header {
+	:global(.detail-header-card.admin-card) {
 		padding: 1.25rem;
-		border-radius: 16px;
-		margin-bottom: 1rem;
+	}
+
+	.detail-header-content {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
 	}
 
 	.detail-badges {
 		display: flex;
 		gap: 0.5rem;
 		flex-wrap: wrap;
-		margin-bottom: 0.5rem;
 	}
 
 	.detail-summary {
 		font-size: 1rem;
 		margin: 0;
-	}
-
-	.detail-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-		gap: 1rem;
+		color: var(--color-text);
+		font-weight: 500;
 	}
 
 	.detail-list {
@@ -190,12 +209,14 @@
 		font-size: 0.82rem;
 		font-weight: 600;
 		opacity: 0.65;
+		color: var(--color-text);
 	}
 
 	.detail-item dd {
 		margin: 0;
 		font-size: 0.88rem;
 		word-break: break-word;
+		color: var(--color-text);
 	}
 
 	.mono {
@@ -209,6 +230,12 @@
 		opacity: 0.85;
 		word-break: break-word;
 		margin: 0;
+		color: var(--color-text);
+		line-height: 1.4;
+	}
+
+	.meta-wrapper {
+		width: 100%;
 	}
 
 	@media (max-width: 640px) {

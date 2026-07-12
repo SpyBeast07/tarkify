@@ -1,10 +1,18 @@
 <script lang="ts">
 	import { type Snippet } from 'svelte';
-	import Input from '$lib/components/ui/Input.svelte';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Alert from '$lib/components/ui/Alert.svelte';
-	import TagInput from './TagInput.svelte';
 	import Loading from '$lib/components/ui/Loading.svelte';
+	import TagInput from './TagInput.svelte';
+
+	import AdminForm from './AdminForm.svelte';
+	import AdminFormSection from './AdminFormSection.svelte';
+	import AdminInput from './AdminInput.svelte';
+	import AdminSelect from './AdminSelect.svelte';
+	import AdminTextarea from './AdminTextarea.svelte';
+	import AdminGrid from './AdminGrid.svelte';
+	import AdminStack from './AdminStack.svelte';
+	import AdminButtonGroup from './AdminButtonGroup.svelte';
 
 	interface FormData {
 		name: string;
@@ -72,7 +80,7 @@
 	}
 </script>
 
-<form onsubmit={onsubmit} novalidate>
+<AdminForm {onsubmit}>
 	{#if error}
 		<Alert type="error"><span>{error}</span></Alert>
 	{/if}
@@ -80,11 +88,11 @@
 		<Alert type="success"><span>{success}</span></Alert>
 	{/if}
 
-	<div class="form-grid">
-		<div class="form-column">
-			<Input
+	<AdminGrid cols={{ default: 1, md: 2 }} gap="md">
+		<AdminStack gap="sm">
+			<AdminInput
 				type="text"
-				label="Product Name *"
+				label="Product Name"
 				bind:value={data.name}
 				error={errors.name}
 				required
@@ -92,9 +100,9 @@
 				oninput={generateSlug}
 			/>
 
-			<Input
+			<AdminInput
 				type="text"
-				label="Slug *"
+				label="Slug"
 				bind:value={data.slug}
 				error={errors.slug}
 				required
@@ -102,8 +110,7 @@
 				oninput={markChanged}
 			/>
 
-			<Input
-				type="textarea"
+			<AdminTextarea
 				label="Short Description"
 				bind:value={data.short_description}
 				error={errors.short_description}
@@ -112,8 +119,7 @@
 				maxlength={500}
 			/>
 
-			<Input
-				type="textarea"
+			<AdminTextarea
 				label="Description"
 				bind:value={data.description}
 				error={errors.description}
@@ -121,40 +127,37 @@
 				rows={6}
 			/>
 
-			<Input
-				type="select"
+			<AdminSelect
 				label="Category"
 				bind:value={data.category}
 				error={errors.category}
 				options={categories.length > 1 ? categories : ['General']}
 			/>
 
-			<TagInput bind:tags={data.tags} error={errors.tags} />
-		</div>
+			<div class="tag-input-field-wrapper">
+				<TagInput bind:tags={data.tags} error={errors.tags} />
+			</div>
+		</AdminStack>
 
-		<div class="form-column">
-			<div class="form-row">
-				<Input
+		<AdminStack gap="sm">
+			<AdminGrid cols={2} gap="sm">
+				<AdminInput
 					type="number"
-					label="Price *"
+					label="Price"
 					bind:value={data.price}
 					error={errors.price}
 					required
 					placeholder="0"
-					class="price-input"
 				/>
-				<Input
-					type="select"
+				<AdminSelect
 					label="Currency"
 					bind:value={data.currency}
 					error={errors.currency}
 					options={['INR', 'USD', 'EUR', 'GBP']}
-					class="currency-input"
 				/>
-			</div>
+			</AdminGrid>
 
-			<Input
-				type="select"
+			<AdminSelect
 				label="Status"
 				bind:value={data.status}
 				error={errors.status}
@@ -165,8 +168,7 @@
 				]}
 			/>
 
-			<Input
-				type="select"
+			<AdminSelect
 				label="Visibility"
 				bind:value={data.visibility}
 				error={errors.visibility}
@@ -176,7 +178,7 @@
 				]}
 			/>
 
-			<Input
+			<AdminInput
 				type="text"
 				label="Version"
 				bind:value={data.version}
@@ -184,7 +186,7 @@
 				placeholder="1.0.0"
 			/>
 
-			<Input
+			<AdminInput
 				type="text"
 				label="Download Key"
 				bind:value={data.download_key}
@@ -192,7 +194,7 @@
 				placeholder="storage folder key"
 			/>
 
-			<Input
+			<AdminInput
 				type="text"
 				label="Release Date"
 				bind:value={data.release_date}
@@ -200,8 +202,7 @@
 				placeholder="YYYY-MM-DD"
 			/>
 
-			<Input
-				type="textarea"
+			<AdminTextarea
 				label="Release Notes"
 				bind:value={data.release_notes}
 				error={errors.release_notes}
@@ -209,10 +210,8 @@
 				rows={4}
 			/>
 
-			<div class="form-section">
-				<h3 class="section-label">SEO Settings</h3>
-
-				<Input
+			<AdminFormSection title="SEO Settings">
+				<AdminInput
 					type="text"
 					label="SEO Title"
 					bind:value={data.seo_title}
@@ -221,8 +220,7 @@
 					maxlength={255}
 				/>
 
-				<Input
-					type="textarea"
+				<AdminTextarea
 					label="SEO Description"
 					bind:value={data.seo_description}
 					error={errors.seo_description}
@@ -231,22 +229,22 @@
 					maxlength={500}
 				/>
 
-				<Input
+				<AdminInput
 					type="text"
 					label="OG Image URL"
 					bind:value={data.og_image}
 					error={errors.og_image}
 					placeholder="https://example.com/og-image.jpg"
 				/>
-			</div>
-		</div>
-	</div>
+			</AdminFormSection>
+		</AdminStack>
+	</AdminGrid>
 
 	{#if children}
 		{@render children()}
 	{/if}
 
-	<div class="form-actions">
+	<AdminButtonGroup align="right">
 		<Button type="button" variant="ghost" onclick={oncancel} disabled={saving}>
 			Cancel
 		</Button>
@@ -256,63 +254,11 @@
 			{/if}
 			{submitLabel}
 		</Button>
-	</div>
-</form>
+	</AdminButtonGroup>
+</AdminForm>
 
 <style>
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.form-grid {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 1.5rem;
-	}
-
-	.form-column {
-		display: flex;
-		flex-direction: column;
-		gap: 1rem;
-	}
-
-	.form-row {
-		display: grid;
-		grid-template-columns: 1fr 120px;
-		gap: 0.75rem;
-	}
-
-	.form-section {
-		border-top: 1px solid var(--color-glass-border);
-		padding-top: 1rem;
-		margin-top: 0.5rem;
-	}
-
-	.section-label {
-		font-family: var(--font-heading);
-		font-size: 1rem;
-		font-weight: 600;
-		margin: 0 0 0.75rem;
-		color: var(--color-text);
-	}
-
-	.form-actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: 0.75rem;
-		padding-top: 1rem;
-		border-top: 1px solid var(--color-glass-border);
-	}
-
-	@media (max-width: 768px) {
-		.form-grid {
-			grid-template-columns: 1fr;
-		}
-
-		.form-row {
-			grid-template-columns: 1fr;
-		}
+	.tag-input-field-wrapper {
+		width: 100%;
 	}
 </style>
