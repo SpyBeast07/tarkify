@@ -8,36 +8,7 @@ Tarkify is a business automation platform featuring a production-grade checkout 
 
 The Tarkify platform splits into three decoupled layers: SvelteKit (Frontend), Bun/Hono (Backend), and PostgreSQL (Database). Traffic routes securely through a Cloudflare Tunnel.
 
-```
-                         +-----------------------------------+
-                         |         SvelteKit Frontend        |
-                         |  (Static/SSR — Hosted on Vercel)  |
-                         +-----------------+-----------------+
-                                           |
-                                  HTTPS (via Cloudflare)
-                                           |
-                                           v
-                         +-----------------+-----------------+
-                         |      Cloudflare Tunnel (Edge)     |
-                         |  (Maps backend.tarkify.qzz.io)    |
-                         +-----------------+-----------------+
-                                           |
-                                Local HTTP (VPS Host:3009)
-                                           |
-                                           v
-                         +-----------------+-----------------+
-                         |         Hono API Router           |
-                         |  (Docker Container — Port 3001)   |
-                         +-----------------+-----------------+
-                                           |
-                                Internal Docker Network
-                                           |
-                                           v
-                         +-----------------+-----------------+
-                         |       PostgreSQL Database         |
-                         |  (Docker Container — Port 5432)   |
-                         +-----------------------------------+
-```
+![Architecture Diagram](images/archDiagram.png)
 
 ### Components
 
